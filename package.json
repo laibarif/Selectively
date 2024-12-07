@@ -1,0 +1,54 @@
+{
+  "name": "selectively-project",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@ark-ui/react": "^4.4.4",
+    "@babel/preset-react": "^7.26.3",
+    "@fortawesome/fontawesome-free": "^6.7.1",
+    "assert": "^2.1.0",
+    "axios": "^1.7.9",
+    "browserify-zlib": "^0.2.0",
+    "cors": "^2.8.5",
+    "cra-template": "1.2.0",
+    "https-browserify": "^1.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.28.0",
+    "react-scripts": "5.0.1",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "url": "^0.11.4",
+    "util": "^0.12.5",
+    "web-vitals": "^4.2.4"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+"build": "react-app-rewired build",
+"test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "react-app-rewired": "^2.2.1",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^5.1.4"
+  }
+}

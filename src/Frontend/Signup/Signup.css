@@ -1,0 +1,78 @@
+.signup-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    overflow: hidden; /* Prevent overflow */
+    animation: slideUp 0.5s ease-out forwards;
+  }
+  
+  .signup-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    overflow-y: auto; /* Allow scroll for long forms */
+  }
+  
+  .input-field {
+    width: 95%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  
+  .input-group {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .child-section {
+    margin-bottom: 20px;
+  }
+  
+  button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 16px;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  .add-child-btn {
+    background-color: #28a745;
+  }
+  
+  .remove-child-btn {
+    background-color: #dc3545;
+  }
+  
+  .terms {
+    font-size: 14px;
+    color: #555;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .send-2fa-btn {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: #ffc107;
+  }
+  
+  .terms input[type="checkbox"] {
+    position: relative;
+    z-index: 10;
+  }
+  .error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+}

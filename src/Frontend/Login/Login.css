@@ -1,0 +1,165 @@
+/* Center the login page */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px; 
+    box-sizing: border-box;
+}
+
+/* Styling for the login form */
+.login-form {
+    width: 100%;
+    max-width: 400px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Dense shadow for form */
+    padding: 2rem;
+    text-align: center;
+    color: #333333;
+    transform: translateY(-50px);
+    animation: slideUp 0.5s ease-out forwards; /* Animation for sliding the form up */
+}
+
+/* Styling for the title */
+h2 {
+    color: #333333;
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+/* Input Group Styling */
+.input-group {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.success-message {
+    color: green;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+
+/* Styling for the login button */
+.login-btn {
+    background-color: #007bff;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 30px; /* Rounded corners */
+    cursor: pointer;
+    width: 100%;
+    margin-top: 1.5rem;
+    transition: all 0.3s ease-in-out; /* Smooth hover transition */
+}
+
+.login-btn:hover {
+    background-color: #e65b00;
+    transform: scale(1.05); /* Slightly enlarge the button on hover */
+}
+
+/* Styling for the forgot password link */
+.forgot-password {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.forgot-password a {
+    color: #f05b33;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+}
+
+/* Styling for the signup link */
+.signup-link {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.signup-link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+/* Animation for the form */
+@keyframes slideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Media Query for Small Screens */
+@media (max-width: 600px) {
+    .login-form {
+        max-width: 100%;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Reduce shadow intensity on smaller screens */
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    .login-btn {
+        font-size: 0.95rem;
+        padding: 12px 18px;
+    }
+
+    .forgot-password,
+    .signup-link {
+        font-size: 0.85rem;
+    }
+}
+
+/* Media Query for Extra Small Screens */
+@media (max-width: 400px) {
+    .login-form {
+        padding: 1rem;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+    }
+
+    .login-btn {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    .forgot-password,
+    .signup-link {
+        font-size: 0.75rem;
+    }
+}

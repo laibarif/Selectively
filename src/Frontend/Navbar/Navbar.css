@@ -1,0 +1,165 @@
+/* General Navbar styles */
+.navbar {
+    background-color: #FBFBFB;
+    height: 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.responsive-logo {
+    width: 115px;
+}
+
+.title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #A93339;
+    margin: 0;
+    text-align: center;
+}
+.navbar-nav .login-item .login-btn {
+    background-color: #A93339;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.navbar-nav .login-item .login-btn:hover {
+    background-color: #d68d91;
+    color: #fff;
+}
+
+/* Desktop navigation */
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 20px;
+    margin: 5 auto; 
+    /* padding-left: 5%; */
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    color: #888181;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.nav-link:hover {
+    color: #A93339;
+}
+
+/* Dropdown for "Other Services" on desktop */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    display: none;
+    background-color: white;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 10px 0;
+    width: 320px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 10px 20px;
+    color: #888181;
+    text-decoration: none;
+    display: block; 
+    white-space: nowrap; 
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+    color: #A93339;
+}
+
+/* Hide the hamburger menu on larger screens */
+.menu-icon {
+    display: none; /* Hide the menu icon on larger screens by default */
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+/* Show hamburger menu on small screens */
+@media (max-width: 768px) {
+    .menu-icon {
+        display: block; /* Only display the menu icon on small screens */
+    }
+
+    .navbar-nav {
+        display: none; /* Hide desktop navigation links on small screens */
+    }
+}
+
+/* Ensure nav links are shown on larger screens */
+@media (min-width: 769px) {
+    .menu-icon {
+        display: none !important; /* Ensure the hamburger icon is hidden on larger screens */
+    }
+
+    .navbar-nav {
+        display: flex !important; /* Ensure nav links are shown on larger screens */
+    }
+}
+
+/* Drawer navigation for mobile */
+.drawer-nav {
+    list-style: none;
+    padding: 20px;
+}
+
+.drawer-item {
+    margin-bottom: 15px;
+}
+
+.drawer-link {
+    font-size: 1.1rem;
+    color: #A93339;
+    text-decoration: none;
+}
+
+.drawer-link:hover {
+    color: #00A79D;
+}
+
+/* Services drawer navigation for mobile */
+.services-drawer-nav {
+    list-style: none;
+    padding: 20px;
+}
+
+.services-drawer-nav .drawer-item {
+    margin-bottom: 15px;
+}
+
+.services-drawer-nav .drawer-link {
+    font-size: 1.1rem;
+    color: #A93339;
+    text-decoration: none;
+}
+
+.services-drawer-nav .drawer-link:hover {
+    color: #00A79D;
+}
