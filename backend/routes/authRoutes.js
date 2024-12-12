@@ -1,0 +1,319 @@
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const speakeasy = require('speakeasy');
+const nodemailer = require('nodemailer');
+const db = require('../config/db');
+
+const router = express.Router();
+const jwt = require('jsonwebtoken');
+
+// Utility function to execute queries with promises
+const query = (sql, values) => {
+  return new Promise((resolve, reject) => {
+    db.query(sql, values, (err, results) => {
+      if (err) reject(err);
+      else resolve(results);
+    });
+  });
+};
+
+// Route to check username availability
+router.get('/check-username', async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ message: 'Username is required.' });
+  }
+
+  try {
+    const [results] = await db.promise().query('SELECT * FROM users WHERE username = ?', [username]);
+
+    if (results.length > 0) {
+      return res.status(200).json({ available: false, message: 'Username is already taken.' });
+    } else {
+      return res.status(200).json({ available: true, message: 'Username is available.' });
+    }
+  } catch (error) {
+    console.error('Error checking username availability:', error);
+    return res.status(500).json({ message: 'Database error.' });
+  }
+});
+
+// Route to handle user registration (Signup)
+router.post('/signup', async (req, res) => {
+  const { parent, children, terms } = req.body;
+  console.log('Children Data:', children);
+
+  // Basic validation
+  if (
+    !parent ||
+    !parent.firstName ||
+    !parent.lastName ||
+    !parent.phone ||
+    !parent.email ||
+    !parent.username ||
+    !parent.password
+  ) {
+    return res.status(400).json({ message: 'Please provide all required parent details.' });
+  }
+
+  const connection = db.promise(); // Use promise-based queries
+
+  try {
+    // Check if username is already taken
+    const [existingUsers] = await connection.query('SELECT * FROM users WHERE username = ?', [parent.username]);
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ message: 'Username already taken.' });
+    }
+
+    // Start transaction
+    await connection.beginTransaction();
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(parent.password, 10);
+
+    // Insert parent into the database
+    const [parentResult] = await connection.query(
+      'INSERT INTO users (first_name, last_name, phone, email, username, password) VALUES (?, ?, ?, ?, ?, ?)',
+      [parent.firstName, parent.lastName, parent.phone, parent.email, parent.username, hashedPassword]
+    );
+
+    const parentId = parentResult.insertId;
+
+    // Insert children details
+    for (const child of children) {
+      if (!child.firstName || !child.lastName || !child.grade) {
+        throw new Error('Child details are incomplete.');
+      }
+      console.log('Children:', children);
+      try {
+        await connection.query(
+            'INSERT INTO children (parent_id, first_name, last_name, grade, school) VALUES (?, ?, ?, ?, ?)',
+            [parentId, child.firstName, child.lastName, child.grade, child.school || null]
+        );
+    } catch (childError) {
+        console.error('Error inserting child:', childError);
+        throw new Error('Child data insertion failed');
+    }
+    }
+
+    // Generate 2FA secret
+    const secret = speakeasy.generateSecret({ length: 20 });
+
+    // Store 2FA secret in the database
+    await connection.query('UPDATE users SET two_fa_secret = ? WHERE id = ?', [secret.base32, parentId]);
+
+    // Generate OTP
+    const otpCode = speakeasy.totp({
+      secret: secret.base32,
+      encoding: 'base32',
+      step: 600, // 10 minutes validity
+    });
+
+    // Store OTP and expiry in the database
+    await connection.query(
+      'UPDATE users SET two_fa_otp = ?, two_fa_otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?',
+      [otpCode, parentId]
+    );
+
+    // Commit transaction
+    await connection.commit();
+
+    // Send OTP via email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER, // Your Gmail address
+        pass: process.env.EMAIL_PASSWORD, // Your Gmail password or App Password
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: parent.email,
+      subject: 'Your 2FA OTP Code',
+      text: `Thank you for registering. Your One-Time Password (OTP) for 2FA is: ${otpCode}. It is valid for 10 minutes.`,
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error('Error sending 2FA email:', err);
+        return res.status(500).json({ message: 'Failed to send 2FA email.' });
+      }
+      res.status(200).json({ message: 'Registration successful, 2FA OTP sent to your email.' });
+    });
+  } catch (error) {
+    // Rollback transaction in case of error
+    await connection.rollback();
+    console.error('Error during signup:', error);
+    res.status(500).json({ message: error.message || 'Signup failed. Please try again.' });
+  }
+});
+
+// Route to verify OTP
+router.post('/verify-otp', async (req, res) => {
+  const { username, otp } = req.body;
+
+  if (!username || !otp) {
+    return res.status(400).json({ message: 'Username and OTP are required.' });
+  }
+
+  try {
+    // Fetch user by username
+    const [users] = await db.promise().query('SELECT * FROM users WHERE username = ?', [username]);
+    if (users.length === 0) {
+      return res.status(400).json({ message: 'Invalid username or OTP.' });
+    }
+
+    const user = users[0];
+
+    // Check if OTP matches and is not expired
+    if (
+      user.two_fa_otp === otp &&
+      new Date(user.two_fa_otp_expiry) > new Date()
+    ) {
+      // OTP is valid
+      // Mark 2FA as verified and clear OTP fields
+      await db.promise().query(
+        'UPDATE users SET two_fa_verified = 1, two_fa_otp = NULL, two_fa_otp_expiry = NULL WHERE id = ?',
+        [user.id]
+      );
+      res.status(200).json({ message: 'OTP verified successfully.' });
+    } else {
+      res.status(400).json({ message: 'Invalid or expired OTP.' });
+    }
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ message: 'Error verifying OTP. Please try again.' });
+  }
+});
+
+// Route to send OTP (resend feature)
+router.post('/send-otp', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required.' });
+  }
+
+  try {
+    // Fetch user by email
+    const [users] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+    if (users.length === 0) {
+      return res.status(400).json({ message: 'No user found with this email.' });
+    }
+
+    const user = users[0];
+
+    // Generate new OTP
+    const otpCode = speakeasy.totp({
+      secret: user.two_fa_secret,
+      encoding: 'base32',
+      step: 600, // 10 minutes validity
+    });
+
+    // Update OTP and expiry
+    await db.promise().query(
+      'UPDATE users SET two_fa_otp = ?, two_fa_otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?',
+      [otpCode, user.id]
+    );
+
+    // Send OTP via email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER, // Your Gmail address
+        pass: process.env.EMAIL_PASSWORD, // Your Gmail password or App Password
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Your 2FA OTP Code',
+      text: `Your new One-Time Password (OTP) for 2FA is: ${otpCode}. It is valid for 10 minutes.`,
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error('Error sending 2FA email:', err);
+        return res.status(500).json({ message: 'Failed to send 2FA email.' });
+      }
+      res.status(200).json({ message: '2FA OTP sent to your email.' });
+    });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ message: 'Error sending OTP. Please try again.' });
+  }
+});
+
+router.post('/login', async (req, res) => {
+    const { email_or_username, password } = req.body;
+
+    // Log the request body for debugging
+    console.log('Request Body:', req.body);
+
+    if (!email_or_username || !password) {
+        return res.status(400).json({ message: 'Username/Email and Password are required.' });
+    }
+
+    const connection = db.promise(); // Use promise-based queries
+
+    try {
+        // Fetch user by username or email (fixed variable reference here)
+        const [users] = await connection.query(
+            'SELECT * FROM users WHERE username = ? OR email = ?',
+            [email_or_username, email_or_username]  // Use email_or_username, not usernameOrEmail
+        );
+
+        if (users.length === 0) {
+            return res.status(400).json({ message: 'Invalid credentials.' });
+        }
+
+        const user = users[0];
+
+        // Compare password with hashed password stored in the database
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: 'Invalid credentials.' });
+        }
+
+        // If user has enabled 2FA, we need to verify OTP
+        if (user.two_fa_verified === 0) {
+            return res.status(400).json({
+                message: 'Two-factor authentication is not verified. Please verify your OTP first.'
+            });
+        }
+
+        // Generate JWT tokens (access and refresh tokens)
+        const accessToken = jwt.sign(
+            { userId: user.id, username: user.username },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }  // Access token expires in 1 hour
+        );
+        const refreshToken = jwt.sign(
+            { userId: user.id, username: user.username },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }  // Refresh token expires in 7 days
+        );
+
+        // Respond with tokens and user info
+        res.status(200).json({
+            access: accessToken,
+            refresh: refreshToken,
+            user: {
+                id: user.id,
+                username: user.username,
+                firstName: user.first_name,
+                lastName: user.last_name,
+                email: user.email
+            }
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+});
+
+module.exports = router;

@@ -76,3 +76,24 @@
   margin-top: 5px;
   display: block;
 }
+
+.verify-otp-btn,
+.resend-otp-btn {
+  width: auto;
+  margin-right: 10px;
+}
+
+.otp-verification {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.otp-verification h3 {
+  margin-bottom: 10px;
+}
+
+.otp-verification p {
+  margin-bottom: 15px;
+}
