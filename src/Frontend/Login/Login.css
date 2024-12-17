@@ -24,8 +24,8 @@
 }
 
 /* Styling for the title */
-h2 {
-    color: #333333;
+login-form-heading{
+    color: #2593b4 !important;
     font-size: 1.6rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
@@ -57,7 +57,7 @@ h2 {
 
 /* Styling for the login button */
 .login-btn {
-    background-color: #007bff;
+    background-color: #2593b4;
     color: #ffffff;
     font-size: 1rem;
     font-weight: bold;
@@ -71,7 +71,7 @@ h2 {
 }
 
 .login-btn:hover {
-    background-color: #e65b00;
+    background-color: #075c76;
     transform: scale(1.05); /* Slightly enlarge the button on hover */
 }
 

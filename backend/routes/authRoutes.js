@@ -91,6 +91,7 @@ router.post('/signup', async (req, res) => {
             'INSERT INTO children (parent_id, first_name, last_name, grade, school) VALUES (?, ?, ?, ?, ?)',
             [parentId, child.firstName, child.lastName, child.grade, child.school || null]
         );
+        console.log('Children added:', children);
     } catch (childError) {
         console.error('Error inserting child:', childError);
         throw new Error('Child data insertion failed');
@@ -191,6 +192,7 @@ router.post('/verify-otp', async (req, res) => {
 // Route to send OTP (resend feature)
 router.post('/send-otp', async (req, res) => {
   const { email } = req.body;
+  console.log(email);
 
   if (!email) {
     return res.status(400).json({ message: 'Email is required.' });
@@ -211,12 +213,18 @@ router.post('/send-otp', async (req, res) => {
       encoding: 'base32',
       step: 600, // 10 minutes validity
     });
-
+    try{
     // Update OTP and expiry
     await db.promise().query(
       'UPDATE users SET two_fa_otp = ?, two_fa_otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?',
       [otpCode, user.id]
     );
+    console.log("Verified");
+  }
+    catch{
+      console.log("Not Verified");
+    }
+
 
     // Send OTP via email
     const transporter = nodemailer.createTransport({
@@ -248,72 +256,66 @@ router.post('/send-otp', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { email_or_username, password } = req.body;
+  const { email_or_username, password } = req.body;
 
-    // Log the request body for debugging
-    console.log('Request Body:', req.body);
+  if (!email_or_username || !password) {
+      return res.status(400).json({ message: 'Username/Email and Password are required.' });
+  }
 
-    if (!email_or_username || !password) {
-        return res.status(400).json({ message: 'Username/Email and Password are required.' });
-    }
+  const connection = db.promise(); // Use promise-based queries
 
-    const connection = db.promise(); // Use promise-based queries
+  try {
+      const [users] = await connection.query(
+          'SELECT * FROM users WHERE username = ? OR email = ?',
+          [email_or_username, email_or_username]
+      );
 
-    try {
-        // Fetch user by username or email (fixed variable reference here)
-        const [users] = await connection.query(
-            'SELECT * FROM users WHERE username = ? OR email = ?',
-            [email_or_username, email_or_username]  // Use email_or_username, not usernameOrEmail
-        );
+      if (users.length === 0) {
+          return res.status(400).json({ message: 'Invalid credentials.' });
+      }
 
-        if (users.length === 0) {
-            return res.status(400).json({ message: 'Invalid credentials.' });
-        }
+      const user = users[0];
 
-        const user = users[0];
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+          return res.status(400).json({ message: 'Invalid credentials.' });
+      }
 
-        // Compare password with hashed password stored in the database
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(400).json({ message: 'Invalid credentials.' });
-        }
+      if (user.two_fa_verified === 0) {
+          return res.status(400).json({
+              message: 'Two-factor authentication is not verified. Please verify your OTP first.'
+          });
+      }
 
-        // If user has enabled 2FA, we need to verify OTP
-        if (user.two_fa_verified === 0) {
-            return res.status(400).json({
-                message: 'Two-factor authentication is not verified. Please verify your OTP first.'
-            });
-        }
+      const accessToken = jwt.sign(
+          { userId: user.id, username: user.username, role: user.role }, // Add role here
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' }
+      );
 
-        // Generate JWT tokens (access and refresh tokens)
-        const accessToken = jwt.sign(
-            { userId: user.id, username: user.username },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }  // Access token expires in 1 hour
-        );
-        const refreshToken = jwt.sign(
-            { userId: user.id, username: user.username },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }  // Refresh token expires in 7 days
-        );
+      const refreshToken = jwt.sign(
+          { userId: user.id, username: user.username, role: user.role },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+      );
 
-        // Respond with tokens and user info
-        res.status(200).json({
-            access: accessToken,
-            refresh: refreshToken,
-            user: {
-                id: user.id,
-                username: user.username,
-                firstName: user.first_name,
-                lastName: user.last_name,
-                email: user.email
-            }
-        });
+      res.status(200).json({
+          access: accessToken,
+          refresh: refreshToken,
+          user: {
+              id: user.id,
+              username: user.username,
+              firstName: user.first_name,
+              lastName: user.last_name,
+              email: user.email,
+              role: user.role  // Return the role
+          }
+      });
 
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ message: 'Server error. Please try again later.' });
-    }
+  } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
 });
 
 module.exports = router;

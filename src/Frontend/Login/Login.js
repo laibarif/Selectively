@@ -27,16 +27,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);  // Reset error message on new submission
-    setSuccessMessage(''); // Reset success message on new submission
-
-    const loginField = formData.usernameOrEmail;  // Either username or email
-
-    // Log the request payload for debugging
-    console.log('Request Payload:', {
-      email_or_username: formData.usernameOrEmail,
-      password: formData.password,
-    });
+    setError(null);
+    setSuccessMessage('');
 
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/login`, {
@@ -44,7 +36,6 @@ const Login = () => {
         password: formData.password,
       });
 
-      // Handle successful login response
       const { access, refresh, user } = response.data;
 
       // Store the tokens and user data in localStorage
@@ -53,9 +44,14 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(user));
 
       setSuccessMessage('Login Successful! Welcome, ' + user.username);
-      navigate('/dashboard');  // Redirect to dashboard or home page after login
+
+      // Navigate to the appropriate dashboard based on the role
+      if (user.role === 'admin') {
+        navigate('/admin-dashboard');  // Admin dashboard
+      } else {
+        navigate('/student-dashboard');  // Student dashboard
+      }
     } catch (err) {
-      // Handle error based on response from the backend
       if (err.response) {
         setError(err.response.data.message || 'Invalid credentials. Please try again.');
       } else {
@@ -70,7 +66,7 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-form">
-        <h2>Log in to your account</h2>
+        <h2 className='login-form-heading'>Log in to your account</h2>
         <form onSubmit={handleSubmit}>
           {/* Login Details */}
           <div className="input-group">
@@ -108,9 +104,9 @@ const Login = () => {
         {/* Show success message */}
         {successMessage && <p className="success-message">{successMessage}</p>}
 
-        <p className="forgot-password">
+        {/* <p className="forgot-password">
           <a href="/forgot-password">Forgot your password?</a>
-        </p>
+        </p> */}
         <p className="signup-link">
           Don't have an account? <a href="/signup">Sign up</a>
         </p>

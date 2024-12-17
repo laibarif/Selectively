@@ -89,10 +89,11 @@ const Signup = () => {
       // Handle text and other fields
       if (name.startsWith('parent_')) {
         const parentField = name.replace('parent_', '');
-        setFormData((prevData) => ({
+        const updatedFormData = setFormData((prevData) => ({
           ...prevData,
           parent: { ...prevData.parent, [parentField]: value },
         }));
+        console.log('Updated form data:', updatedFormData);
       }
       else if (name.startsWith('child_')) {
         const childField = name.replace('child_', '');
@@ -106,31 +107,30 @@ const Signup = () => {
 
 
   // Add current child to children array
-  // Add current child to children array
-const handleAddChild = () => {
-  const { firstName, lastName, grade, school } = formData.currentChild;
+  const handleAddChild = () => {
+    const { firstName, lastName, grade, school } = formData.currentChild;
 
-  if (!firstName || !lastName || !grade) {
-    alert('Please fill in all required child fields (First Name, Last Name, Grade).');
-    return;
-  }
+    // Ensure all required fields are filled
+    if (!firstName || !lastName || !grade) {
+      alert('Please fill in all required child fields (First Name, Last Name, Grade).');
+      return;
+    }
 
-  // Log before state update
-  console.log('Before adding child:', formData.children);
+    // Add new child to the formData state
+    setFormData((prevData) => {
+      const newChild = { firstName, lastName, grade, school };
 
-  const updatedChildren = [...formData.children, { firstName, lastName, grade, school }];
-  
-  // Log after preparing the new children array
-  console.log('After adding child:', updatedChildren);
+      // Update the children state by adding the new child
+      const updatedChildren = [...prevData.children, newChild];
 
-  setFormData((prevData) => ({
-    ...prevData,
-    children: updatedChildren,  // Update the children state
-    currentChild: { firstName: '', lastName: '', grade: '', school: '' },  // Reset the form for the next child
-  }));
-
-  setChildCount(childCount + 1);
-};
+      // Reset the currentChild state for next entry
+      return {
+        ...prevData,
+        children: updatedChildren,
+        currentChild: { firstName: '', lastName: '', grade: '', school: '' }, // Reset for next child
+      };
+    });
+  };
 
   // Remove a child by index
   const handleRemoveChild = (index) => {
@@ -143,15 +143,16 @@ const handleAddChild = () => {
   };
 
   // Handle form submission
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submitted');
+    console.log("Username:", usernameForOTP);
+    console.log("OTP:", otp);
 
-    console.log('Form Data before submit :', formData);
 
-    // Ensure all children are added before submission
-    if (childCount > formData.children.length + 1) {
-      alert('Please add all children details before submitting the form.');
+    // Ensure at least one child is added
+    if (formData.children.length === 0) {
+      alert('Please add at least one child.');
       return;
     }
 
@@ -179,10 +180,7 @@ const handleAddChild = () => {
       parent: formData.parent,
       children: formData.children,  // This should now correctly contain the children data
       terms: formData.terms,
-      // otp will be sent in a separate verification step
     };
-
-    console.log('Sending Payload:', payload);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/signup`, {
@@ -195,19 +193,14 @@ const handleAddChild = () => {
 
       if (response.ok) {
         alert('Signup successful! Please check your email for the 2FA OTP code.');
-        // Capture the username for OTP verification
-        setUsernameForOTP(formData.parent.username);
-        // Reset form
+        setIs2FASent(true);
+        console.log("2FA Sent", setIs2FASent);
         setFormData({
           parent: { firstName: '', lastName: '', phone: '', email: '', username: '', password: '' },
           children: [],
           currentChild: { firstName: '', lastName: '', grade: '', school: '' },
           terms: false,
         });
-        setOtp('');
-        setIs2FASent(false);
-        setChildCount(1);
-        setUsernameAvailable(null);
       } else {
         alert(data.message || 'Signup failed. Please try again.');
       }
@@ -217,27 +210,31 @@ const handleAddChild = () => {
     }
   };
 
-
   // Send the 2FA code (Resend OTP)
   const handleSend2FA = async () => {
-    // Validate parent email before sending 2FA
-    const { email } = formData.parent;
-    if (!email) {
+    console.log('Sending OTP request...');
+    const { email, username } = formData.parent;
+    console.log('Parent Username:', username);
+    if (!email || !username) {
       alert('Please enter your email before requesting 2FA code.');
       return;
     }
-
+  
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-
+  
       const data = await response.json();
       if (response.ok) {
+        console.log('OTP sent successfully');
         alert('2FA OTP sent to your email.');
         setIs2FASent(true);
+        setUsernameForOTP(username);  // Ensure this is updating the state correctly
+        console.log('Username for OTP:', usernameForOTP);  // Log here to confirm
+        console.log('Parent username:', formData.parent.username);
       } else {
         alert(data.message || 'Error sending 2FA OTP.');
       }
@@ -246,9 +243,17 @@ const handleAddChild = () => {
       alert('An error occurred while sending 2FA OTP.');
     }
   };
+  
+  useEffect(() => {
+    console.log('usernameForOTP:', usernameForOTP);
+    console.log('otp:', otp);
+  }, [usernameForOTP, otp]);
+  
 
-  // Verify OTP
   const handleVerifyOTP = async () => {
+    console.log('Verifying OTP');
+    console.log('Username:', usernameForOTP);
+    console.log('OTP:', otp);
     if (!usernameForOTP || !otp) {
       alert('Username and OTP are required.');
       return;
@@ -262,12 +267,12 @@ const handleAddChild = () => {
       });
 
       const data = await response.json();
+      console.log("OTP verification response:", data);
 
       if (response.ok) {
         alert('OTP verified successfully! Your account is now active.');
-        // Optionally, redirect to login or dashboard
-        setUsernameForOTP('');
-        setOtp('');
+        setUsernameForOTP('');  // Clear after successful verification
+        setOtp('');  // Reset OTP field
       } else {
         alert(data.message || 'OTP verification failed. Please try again.');
       }
@@ -441,7 +446,7 @@ const handleAddChild = () => {
         </form>
 
         {/* OTP Verification Section */}
-        {usernameForOTP && (
+        {is2FASent && (
           <div className="otp-verification">
             <h3>Verify Your Email</h3>
             <p>An OTP has been sent to your email. Please enter it below to verify your account.</p>

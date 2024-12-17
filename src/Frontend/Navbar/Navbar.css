@@ -28,16 +28,16 @@
     text-align: center;
 }
 .navbar-nav .login-item .login-btn {
-    background-color: #A93339;
+    background-color: #2593b4;
     color: white;
-    padding: 5px 10px;
+    padding: 10px 30px;
     border-radius: 5px;
     font-size: 1rem;
     text-align: center;
 }
 
 .navbar-nav .login-item .login-btn:hover {
-    background-color: #d68d91;
+    background-color: #075c76;
     color: #fff;
 }
 
@@ -46,7 +46,7 @@
     display: flex;
     align-items: center;
     list-style: none;
-    gap: 20px;
+    gap: 30px;
     margin: 5 auto; 
     /* padding-left: 5%; */
 }
@@ -62,7 +62,7 @@
 }
 
 .nav-link:hover {
-    color: #A93339;
+    color: #51b1cd;
 }
 
 /* Dropdown for "Other Services" on desktop */
@@ -92,7 +92,7 @@
 
 .dropdown-item:hover {
     background-color: #f0f0f0;
-    color: #A93339;
+    color: #51b1cd;
 }
 
 /* Hide the hamburger menu on larger screens */

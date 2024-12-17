@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
+const questionRoutes = require('./routes/questionRoutes');
 const cors = require('cors'); 
 
 dotenv.config(); 
@@ -17,6 +18,7 @@ app.use(cors({
 
 // Register routes
 app.use('/api/auth', authRoutes);
+app.use('/api/questions', questionRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 5000;

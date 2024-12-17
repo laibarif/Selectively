@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 // import { Drawer, DrawerBody, DrawerHeader, DrawerContent, DrawerCloseButton, Button, useDisclosure } from '@chakra-ui/react';
 // import { Drawer, DrawerBody, DrawerHeader, DrawerCloseButton,DrawerContent, Button, useDisclosure  } from '@chakra-ui/react';
 // import { HamburgerIcon } from '@chakra-ui/icons';
-// import logo from "../../assets/FinalWhiteBG.svg";
+import logo from "../../assets/Logo_Transparent - Complete.svg";
 import './Navbar.css';
 
 function Navbar() {
@@ -25,9 +25,9 @@ function Navbar() {
         <nav className="navbar">
             <div className="navbar-brand">
                 <Link to="/">
-                    {/* <img src={logo} alt="Logo" className="responsive-logo" /> */}
+                    <img src={logo} alt="Logo" className="responsive-logo" />
                 </Link>
-                <h2 className="title">Selectively</h2>
+                {/* <h2 className="title">Selectively</h2> */}
             </div>
 
             {/* Desktop Navigation */}

@@ -5,6 +5,8 @@ import Home from './Frontend/Home/Home';
 import './App.css';
 import Login from './Frontend/Login/Login';
 import Signup from './Frontend/Signup/Signup';
+import AdminDashboard from './Frontend/AdminDashboard/AdminDashboard';
+import SelectQuestionPage from './Frontend/SelectQuestion/SelectQuestionPage';
 
 function App() {
   const location = useLocation();
@@ -15,7 +17,8 @@ function App() {
         <Route index element={<Home/>} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/select_question/:subject" element={<SelectQuestionPage/>} />
       </Routes>
     </>
   );
