@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams,  useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import './SelectQuestionPage.css'; // Add custom styles
 
 const SelectQuestionPage = () => {
   const { subject } = useParams();
-  const [questions, setQuestions] = useState([]); // Holds questions fetched from the backend
-  const [loading, setLoading] = useState(true);   // Loading state
-  const [error, setError] = useState(null);       // Error state for handling errors
+  const [questions, setQuestions] = useState([]); 
+  const [loading, setLoading] = useState(true);   
+  const [error, setError] = useState(null);      
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -33,6 +34,27 @@ const SelectQuestionPage = () => {
     fetchQuestions();
   }, [subject]);
 
+  // const handleGenerateClick = (questionId) => {
+  //   navigate(`/questions/${subject}/${questionId}`);
+  // };
+  const handleGenerateClick = async (questionId) => {
+    alert("Please wait for few seconds while the questions are being generated...");
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/generate-questions`,
+        { originalQuestionId: questionId, subject: subject } // Add subject here
+      );
+      if (response.data) {
+        navigate(`/questions/${subject}/${questionId}`, { state: { generatedQuestions: response.data.generatedQuestions } });
+      } else {
+        console.error('No data returned from generate questions API');
+      }
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      setError("Failed to generate questions. Please try again.");
+    }
+  };
+  
   return (
     <div className="select-question-container mt-5">
       <h1 className="select-question-heading text-center mb-4 text-primary">Questions for {subject}</h1>
@@ -70,7 +92,7 @@ const SelectQuestionPage = () => {
                       <td>{question.question ? question.question.slice(0, 80) : "No question text available"}...</td>
                       <td>{question.type || "N/A"}</td>
                       <td className="text-center">
-                        <button className="btn btn-success btn-sm">
+                        <button className="btn btn-success btn-sm" onClick={() => handleGenerateClick(question.id)}>
                           Generate
                         </button>
                       </td>

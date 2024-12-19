@@ -1,0 +1,96 @@
+.generate-container {
+    max-width: 1200px;
+    margin: auto;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card {
+    width: 100%;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: #0056b3; /* Deeper blue */
+    color: white;
+    font-size: 20px;
+    padding: 15px 20px;
+}
+
+.card-body {
+    background: white;
+    padding: 20px;
+    font-size: 18px;
+    line-height: 1.8;
+    color: #333;
+}
+
+.card-body p {
+    margin-bottom: 12px;
+}
+
+.card-body .correct-answer {
+    color: #28a745; /* Green color for correct answers */
+    font-weight: bold;
+}
+
+.card-body h5 {
+    margin-top: 20px;
+    margin-bottom: 12px;
+    color: #0056b3; /* Echoing header color */
+}
+
+.img-fluid {
+    max-width: 80%;
+    height: auto;
+    display: block;
+    margin: 20px auto; /* Centering the image */
+    border-radius: 5px;
+}
+
+.loader {
+    display: flex;
+    justify-content: center;
+    padding: 50px;
+}
+
+.alert {
+    font-size: 16px;
+    width: 80%;
+    margin: 20px auto;
+    text-align: center;
+}
+
+.generated-questions-section {
+    margin-top: 30px;
+  }
+
+.generated-questions-container {
+    width: 1300px;
+    max-width: 1200px;
+    max-height: 400px; /* Adjust height as needed */
+    overflow-y: auto; /* Makes the section scrollable */
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 25px;
+  }
+  
+  .generated-questions-container .card {
+    margin-bottom: 15px;
+  }
+
+@media (max-width: 767.98px) {
+    .generate-container {
+        padding: 10px;
+    }
+    .card-body {
+        padding: 15px;
+    }
+}

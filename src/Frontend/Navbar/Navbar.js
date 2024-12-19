@@ -39,7 +39,7 @@ function Navbar() {
                     <Link className="nav-link" to="">Pricing</Link>
                 </li>
                 <li className="nav-item">
-                    <Link className="nav-link" to="">Free Assessment</Link>
+                    <Link className="nav-link" to="/free-assessment">Free Assessment</Link>
                 </li>
                 {/* Other Services dropdown for desktop */}
                 {/* <li className="nav-item dropdown" onMouseEnter={toggleDropdown} onMouseLeave={toggleDropdown}>
@@ -57,7 +57,7 @@ function Navbar() {
                 </li>
                 {/* Add Login Button */}
                 <li className="nav-item login-item">
-                    <Link className="nav-link login-btn" to="/login">Login</Link>
+                    <Link className="nav-link login-btn" to="/login">Login / Signup</Link>
                 </li>
             </ul>
 
