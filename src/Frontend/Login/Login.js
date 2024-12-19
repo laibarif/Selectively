@@ -29,7 +29,6 @@ const Login = () => {
     setLoading(true);
     setError(null);
     setSuccessMessage('');
-
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/login`, {
         email_or_username: formData.usernameOrEmail,

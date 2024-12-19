@@ -26,7 +26,7 @@ router.get('/check-username', async (req, res) => {
   }
 
   try {
-    const [results] = await db.promise().query('SELECT * FROM users WHERE username = ?', [username]);
+    const [results] = await db.promise().query('SELECT * FROM children WHERE username = ?', [username]);
 
     if (results.length > 0) {
       return res.status(200).json({ available: false, message: 'Username is already taken.' });
@@ -50,9 +50,7 @@ router.post('/signup', async (req, res) => {
     !parent.firstName ||
     !parent.lastName ||
     !parent.phone ||
-    !parent.email ||
-    !parent.username ||
-    !parent.password
+    !parent.email
   ) {
     return res.status(400).json({ message: 'Please provide all required parent details.' });
   }
@@ -61,7 +59,7 @@ router.post('/signup', async (req, res) => {
 
   try {
     // Check if username is already taken
-    const [existingUsers] = await connection.query('SELECT * FROM users WHERE username = ?', [parent.username]);
+    const [existingUsers] = await connection.query('SELECT * FROM children WHERE username = ?', [children.username]);
     if (existingUsers.length > 0) {
       return res.status(400).json({ message: 'Username already taken.' });
     }
@@ -69,33 +67,35 @@ router.post('/signup', async (req, res) => {
     // Start transaction
     await connection.beginTransaction();
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(parent.password, 10);
+  
 
     // Insert parent into the database
     const [parentResult] = await connection.query(
-      'INSERT INTO users (first_name, last_name, phone, email, username, password) VALUES (?, ?, ?, ?, ?, ?)',
-      [parent.firstName, parent.lastName, parent.phone, parent.email, parent.username, hashedPassword]
+      'INSERT INTO users (first_name, last_name, phone, email) VALUES (?, ?, ?, ?)',
+      [parent.firstName, parent.lastName, parent.phone, parent.email]
     );
 
     const parentId = parentResult.insertId;
 
     // Insert children details
     for (const child of children) {
-      if (!child.firstName || !child.lastName || !child.grade) {
+      if (!child.firstName || !child.lastName || !child.grade || !child.username || !child.password) {
         throw new Error('Child details are incomplete.');
       }
-      console.log('Children:', children);
+      
+      // Hash child's password
+      const childHashedPassword = await bcrypt.hash(child.password, 10);
+
       try {
         await connection.query(
-            'INSERT INTO children (parent_id, first_name, last_name, grade, school) VALUES (?, ?, ?, ?, ?)',
-            [parentId, child.firstName, child.lastName, child.grade, child.school || null]
+          'INSERT INTO children (parent_id, first_name, last_name, grade, school, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [parentId, child.firstName, child.lastName, child.grade, child.school || null, child.username, childHashedPassword]
         );
-        console.log('Children added:', children);
-    } catch (childError) {
+        console.log('Children added:', child);
+      } catch (childError) {
         console.error('Error inserting child:', childError);
         throw new Error('Child data insertion failed');
-    }
+      }
     }
 
     // Generate 2FA secret
@@ -151,19 +151,20 @@ router.post('/signup', async (req, res) => {
   }
 });
 
+
 // Route to verify OTP
 router.post('/verify-otp', async (req, res) => {
-  const { username, otp } = req.body;
+  const { emailforverifyotp, otp } = req.body;
 
-  if (!username || !otp) {
+  if (!emailforverifyotp || !otp) {
     return res.status(400).json({ message: 'Username and OTP are required.' });
   }
 
   try {
     // Fetch user by username
-    const [users] = await db.promise().query('SELECT * FROM users WHERE username = ?', [username]);
+    const [users] = await db.promise().query('SELECT * FROM users WHERE email = ?', [emailforverifyotp]);
     if (users.length === 0) {
-      return res.status(400).json({ message: 'Invalid username or OTP.' });
+      return res.status(400).json({ message: 'Invalid firstName or OTP.' });
     }
 
     const user = users[0];
@@ -265,50 +266,52 @@ router.post('/login', async (req, res) => {
   const connection = db.promise(); // Use promise-based queries
 
   try {
-      const [users] = await connection.query(
-          'SELECT * FROM users WHERE username = ? OR email = ?',
-          [email_or_username, email_or_username]
+      const [children] = await connection.query(
+          'SELECT * FROM children WHERE username = ?',
+          [email_or_username]  // Only check for username
       );
 
-      if (users.length === 0) {
-          return res.status(400).json({ message: 'Invalid credentials.' });
+      // Check if user is found
+      if (children.length === 0) {
+          return res.status(400).json({ message: 'Invalid credentials' });
       }
 
-      const user = users[0];
+      // Access the first child record
+      const child = children[0];
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+       // Access the password field
+
+      // Compare the provided password with the stored hashed password
+      const isPasswordValid = await bcrypt.compare(password, child.password);
+    
+
       if (!isPasswordValid) {
-          return res.status(400).json({ message: 'Invalid credentials.' });
+          return res.status(400).json({ message: 'Invalid password.' });
       }
 
-      if (user.two_fa_verified === 0) {
-          return res.status(400).json({
-              message: 'Two-factor authentication is not verified. Please verify your OTP first.'
-          });
-      }
-
+      // Generate access token and refresh token
       const accessToken = jwt.sign(
-          { userId: user.id, username: user.username, role: user.role }, // Add role here
+          { childrenId: child.id, username: child.username },
           process.env.JWT_SECRET,
           { expiresIn: '1h' }
       );
 
       const refreshToken = jwt.sign(
-          { userId: user.id, username: user.username, role: user.role },
+          { childrenId: child.id, children: child.username },
           process.env.JWT_SECRET,
           { expiresIn: '7d' }
       );
 
+      // Return the response with tokens and user data
       res.status(200).json({
           access: accessToken,
           refresh: refreshToken,
           user: {
-              id: user.id,
-              username: user.username,
-              firstName: user.first_name,
-              lastName: user.last_name,
-              email: user.email,
-              role: user.role  // Return the role
+              id: child.id,
+              username: child.username,
+              firstName: child.first_name,
+              lastName: child.last_name,
+              role: child.role || 'student'
           }
       });
 
@@ -317,5 +320,6 @@ router.post('/login', async (req, res) => {
       res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
+
 
 module.exports = router;
