@@ -1,32 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import './Signup.css';
-
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 const Signup = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    parent: {
-      firstName: '',
-      lastName: '',
-      phone: '',
-      email: '',
-      username: '',
-      password: '',
-    },
+    parent: { firstName: '', lastName: '', phone: '', email: '' },
     children: [],
-    currentChild: {
-      firstName: '',
-      lastName: '',
-      grade: '',
-      school: '',
-    },
+    currentChild: { firstName: '', lastName: '', grade: '', school: '', username: '', password: '' },
     terms: false,
   });
+  
 
   const [usernameAvailable, setUsernameAvailable] = useState(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [is2FASent, setIs2FASent] = useState(false);
   const [otp, setOtp] = useState('');
   const [childCount, setChildCount] = useState(1);
-  const [usernameForOTP, setUsernameForOTP] = useState('');
+  const [emailforverifyotp, setUserEmailForOTP] = useState('');
 
   // Function to debounce username check
   const useDebounce = (value, delay) => {
@@ -45,7 +36,7 @@ const Signup = () => {
     return debouncedValue;
   };
 
-  const debouncedUsername = useDebounce(formData.parent.username, 500);
+  const debouncedUsername = useDebounce(formData.currentChild.username, 500);
 
   // Function to check username availability
   const checkUsername = async (username) => {
@@ -73,64 +64,67 @@ const Signup = () => {
     checkUsername(debouncedUsername);
   }, [debouncedUsername]);
 
-  // Handle input changes for parent and current child
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+ 
+ 
+// Handle input changes for parent and current child
+const handleChange = (e) => {
+  const { name, value, type, checked } = e.target;
 
-    if (type === 'checkbox') {
-      // Handle checkbox input (for terms and conditions)
-      if (name === 'terms') {
-        setFormData((prevData) => ({
-          ...prevData,
-          terms: checked,  // Update terms with the checked status
-        }));
-      }
-    } else {
-      // Handle text and other fields
-      if (name.startsWith('parent_')) {
-        const parentField = name.replace('parent_', '');
-        const updatedFormData = setFormData((prevData) => ({
-          ...prevData,
-          parent: { ...prevData.parent, [parentField]: value },
-        }));
-        console.log('Updated form data:', updatedFormData);
-      }
-      else if (name.startsWith('child_')) {
-        const childField = name.replace('child_', '');
-        setFormData((prevData) => ({
-          ...prevData,
-          currentChild: { ...prevData.currentChild, [childField]: value },
-        }));
-      }
+  if (type === 'checkbox') {
+    // Handle checkbox input (for terms and conditions)
+    if (name === 'terms') {
+      setFormData((prevData) => ({
+        ...prevData,
+        terms: checked,  // Update terms with the checked status
+      }));
     }
-  };
+  } else {
+    // Handle text and other fields
+    if (name.startsWith('parent_')) {
+      const parentField = name.replace('parent_', '');
+      setFormData((prevData) => ({
+        ...prevData,
+        parent: { ...prevData.parent, [parentField]: value },
+      }));
+    }
+    else if (name.startsWith('child_')) {
+      const childField = name.replace('child_', '');
+      setFormData((prevData) => ({
+        ...prevData,
+        currentChild: { ...prevData.currentChild, [childField]: value },
+      }));
+    }
+  }
+};
 
 
-  // Add current child to children array
+ 
+
   const handleAddChild = () => {
-    const { firstName, lastName, grade, school } = formData.currentChild;
-
-    // Ensure all required fields are filled
-    if (!firstName || !lastName || !grade) {
-      alert('Please fill in all required child fields (First Name, Last Name, Grade).');
+    const { firstName, lastName, grade, school, username, password } = formData.currentChild;
+  
+    // Ensure all required fields are filled, including username and password
+    if (!firstName || !lastName || !grade || !username || !password) {
+      alert('Please fill in all required child fields (First Name, Last Name, Grade, Username, and Password).');
       return;
     }
-
+  
     // Add new child to the formData state
     setFormData((prevData) => {
-      const newChild = { firstName, lastName, grade, school };
-
+      const newChild = { firstName, lastName, grade, school, username, password };
+  
       // Update the children state by adding the new child
       const updatedChildren = [...prevData.children, newChild];
-
+  
       // Reset the currentChild state for next entry
       return {
         ...prevData,
         children: updatedChildren,
-        currentChild: { firstName: '', lastName: '', grade: '', school: '' }, // Reset for next child
+        currentChild: { firstName: '', lastName: '', grade: '', school: '', username: '', password: '' }, // Reset for next child
       };
     });
   };
+  
 
   // Remove a child by index
   const handleRemoveChild = (index) => {
@@ -145,58 +139,55 @@ const Signup = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted');
-    console.log("Username:", usernameForOTP);
-    console.log("OTP:", otp);
-
-
+  
     // Ensure at least one child is added
     if (formData.children.length === 0) {
       alert('Please add at least one child.');
       return;
     }
-
+  
     // Validate terms acceptance
     if (!formData.terms) {
       alert('Please agree to the terms of service.');
       return;
     }
-
+  
     // Validate parent fields
-    const { firstName, lastName, phone, email, username, password } = formData.parent;
-    if (!firstName || !lastName || !phone || !email || !username || !password) {
+    const { firstName, lastName, phone, email } = formData.parent;
+    if (!firstName || !lastName || !phone || !email) {
       alert('Please fill in all required parent fields.');
       return;
     }
-
+  
     // Check if username is available
     if (usernameAvailable === false) {
       alert('Username is already taken. Please choose another one.');
       return;
     }
-
+  
     // Prepare data for backend
     const payload = {
       parent: formData.parent,
-      children: formData.children,  // This should now correctly contain the children data
+      children: formData.children,  // This now includes username and password for each child
       terms: formData.terms,
     };
-
+  
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         alert('Signup successful! Please check your email for the 2FA OTP code.');
         setIs2FASent(true);
+        setUserEmailForOTP(formData.parent.email);
         console.log("2FA Sent", setIs2FASent);
         setFormData({
-          parent: { firstName: '', lastName: '', phone: '', email: '', username: '', password: '' },
+          parent: { firstName: '', lastName: '', phone: '', email: '' },
           children: [],
           currentChild: { firstName: '', lastName: '', grade: '', school: '' },
           terms: false,
@@ -209,13 +200,13 @@ const Signup = () => {
       alert('An error occurred while signing up. Please try again.');
     }
   };
-
+ 
   // Send the 2FA code (Resend OTP)
   const handleSend2FA = async () => {
     console.log('Sending OTP request...');
-    const { email, username } = formData.parent;
-    console.log('Parent Username:', username);
-    if (!email || !username) {
+    const { email} = formData.parent;
+    console.log('Parent email:', email);
+    if (!email) {
       alert('Please enter your email before requesting 2FA code.');
       return;
     }
@@ -232,9 +223,9 @@ const Signup = () => {
         console.log('OTP sent successfully');
         alert('2FA OTP sent to your email.');
         setIs2FASent(true);
-        setUsernameForOTP(username);  // Ensure this is updating the state correctly
-        console.log('Username for OTP:', usernameForOTP);  // Log here to confirm
-        console.log('Parent username:', formData.parent.username);
+          // Ensure this is updating the state correctly
+        console.log('email for OTP:', emailforverifyotp);  // Log here to confirm
+        console.log('Parent email:', formData.parent.email);
       } else {
         alert(data.message || 'Error sending 2FA OTP.');
       }
@@ -244,26 +235,23 @@ const Signup = () => {
     }
   };
   
-  useEffect(() => {
-    console.log('usernameForOTP:', usernameForOTP);
-    console.log('otp:', otp);
-  }, [usernameForOTP, otp]);
+
   
 
   const handleVerifyOTP = async () => {
+
     console.log('Verifying OTP');
-    console.log('Username:', usernameForOTP);
+    console.log('emailforverifyotp:', emailforverifyotp);
     console.log('OTP:', otp);
-    if (!usernameForOTP || !otp) {
-      alert('Username and OTP are required.');
+    if (!emailforverifyotp || !otp) {
+      alert('email and OTP are required.');
       return;
     }
-
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: usernameForOTP, otp }),
+        body: JSON.stringify({ emailforverifyotp: emailforverifyotp, otp }),
       });
 
       const data = await response.json();
@@ -271,8 +259,9 @@ const Signup = () => {
 
       if (response.ok) {
         alert('OTP verified successfully! Your account is now active.');
-        setUsernameForOTP('');  // Clear after successful verification
+        setUserEmailForOTP('');  // Clear after successful verification
         setOtp('');  // Reset OTP field
+        navigate('/login')
       } else {
         alert(data.message || 'OTP verification failed. Please try again.');
       }
@@ -281,6 +270,9 @@ const Signup = () => {
       alert('An error occurred while verifying OTP. Please try again.');
     }
   };
+  const [shown, setShown] = useState(false);
+  // create a derived state for the input type
+  const type = shown ? "text" : "password";
 
   return (
     <div className="signup-container">
@@ -330,34 +322,47 @@ const Signup = () => {
             required
           />
 
-          <div className="input-group">
-            <div className="username-wrapper">
-              <input
-                type="text"
-                name="parent_username"
-                placeholder="Username"
-                className="input-field"
-                value={formData.parent.username}
-                onChange={handleChange}
-                required
-              />
-              {checkingUsername && <span className="username-status">Checking...</span>}
-              {usernameAvailable === true && <span className="username-status available">✓ Available</span>}
-              {usernameAvailable === false && <span className="username-status taken">✗ Taken</span>}
-            </div>
-            <input
-              type="password"
-              name="parent_password"
-              placeholder="Password"
-              className="input-field"
-              value={formData.parent.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
+         
 
           {/* Current Child Details */}
-          <h3>Child {childCount}</h3>
+    {/* Current Child Details */}
+<h3>Child {childCount}</h3>
+<div className="input-group">
+  <div className="username-wrapper">
+    <input
+      type="text"
+      name="child_username" 
+      placeholder="Username"
+      className="input-field"
+      value={formData.currentChild.username}
+      onChange={handleChange}
+     
+    />
+    {checkingUsername && <span className="username-status">Checking...</span>}
+    {usernameAvailable === true && <span className="username-status available">✓ Available</span>}
+    {usernameAvailable === false && <span className="username-status taken">✗ Taken</span>}
+  </div>
+  <div className="custom-password-wrapper">
+    <input
+      type={shown ? 'text' : 'password'}
+      name="child_password" // Corrected name to match currentChild
+      placeholder="Password"
+      className="input-field password-field"
+      value={formData.currentChild.password}
+      onChange={handleChange}
+     
+    />
+    <span
+      onClick={() => setShown(!shown)}
+      className="custom-password-toggle-icon"
+    >
+      {shown ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+    </span>
+  </div>
+</div>
+
+
+          
           <div className="input-group">
             <input
               type="text"
@@ -366,7 +371,7 @@ const Signup = () => {
               className="input-field"
               value={formData.currentChild.firstName}
               onChange={handleChange}
-              required
+            
             />
             <input
               type="text"
@@ -375,7 +380,7 @@ const Signup = () => {
               className="input-field"
               value={formData.currentChild.lastName}
               onChange={handleChange}
-              required
+              
             />
           </div>
           <input
@@ -385,7 +390,7 @@ const Signup = () => {
             className="input-field"
             value={formData.currentChild.grade}
             onChange={handleChange}
-            required
+         
           />
           <input
             type="text"

@@ -29,7 +29,6 @@ const Login = () => {
     setLoading(true);
     setError(null);
     setSuccessMessage('');
-
     try {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/login`, {
         email_or_username: formData.usernameOrEmail,
@@ -94,7 +93,7 @@ const Login = () => {
           </div>
 
           <button className="login-btn" type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Log In'}
+            {loading ? 'Logging in...' : 'Log In/Sign up'}
           </button>
         </form>
 

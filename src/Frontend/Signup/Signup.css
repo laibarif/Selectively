@@ -97,3 +97,28 @@
 .otp-verification p {
   margin-bottom: 15px;
 }
+
+.custom-password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+
+
+.custom-password-field {
+  padding-right: 40px;
+}
+
+.custom-password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+  font-size: 20px;
+}
+
+.custom-password-toggle-icon:hover {
+  color: #555;
+}
