@@ -39,7 +39,7 @@ function Navbar() {
                     <Link className="nav-link" to="">Pricing</Link>
                 </li>
                 <li className="nav-item">
-                    <Link className="nav-link" to="">Free Assessment</Link>
+                    <Link className="nav-link" to="freeassesment">Free Assessment</Link>
                 </li>
                 {/* Other Services dropdown for desktop */}
                 {/* <li className="nav-item dropdown" onMouseEnter={toggleDropdown} onMouseLeave={toggleDropdown}>

@@ -7,6 +7,9 @@ import Login from './Frontend/Login/Login';
 import Signup from './Frontend/Signup/Signup';
 import AdminDashboard from './Frontend/AdminDashboard/AdminDashboard';
 import SelectQuestionPage from './Frontend/SelectQuestion/SelectQuestionPage';
+import FreeAssesment from './Frontend/FreeAssesment/FreeAssesment';
+import TestAssesmentBooks from './Frontend/FreeAssesment/TestAssesmentBooks';
+import QuestionPage from './Frontend/FreeAssesment/QuestionPage';
 
 function App() {
   const location = useLocation();
@@ -19,6 +22,9 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/select_question/:subject" element={<SelectQuestionPage/>} />
+        <Route path='/freeassesment' element={<FreeAssesment/>}/>
+        <Route path='/test-assesment-books' element={<TestAssesmentBooks/>}/>
+        <Route path="/questions-page/:category" element={<QuestionPage />} />
       </Routes>
     </>
   );
