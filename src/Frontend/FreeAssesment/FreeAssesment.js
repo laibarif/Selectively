@@ -97,7 +97,7 @@ const navigate = useNavigate()
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 mt-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full py-3 mt-4 text-black bg-yellow-400  font-semibold rounded-lg hover:bg-yellow-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             Submit
           </button>

@@ -57,7 +57,7 @@ login-form-heading{
 
 /* Styling for the login button */
 .login-btn {
-    background-color: #2593b4;
+    background-color: orange;
     color: #ffffff;
     font-size: 1rem;
     font-weight: bold;
@@ -71,7 +71,8 @@ login-form-heading{
 }
 
 .login-btn:hover {
-    background-color: #075c76;
+    background-color: yellow;
+    color: #333333;
     transform: scale(1.05); /* Slightly enlarge the button on hover */
 }
 
