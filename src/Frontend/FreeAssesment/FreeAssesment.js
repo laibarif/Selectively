@@ -1,52 +1,50 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const FreeAssesment = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
-const navigate = useNavigate()
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Clear previous messages
-      setMessage('');
+      setMessage("");
       setIsError(false);
 
-      // Send data to the API
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/userdetailforassesment`,
-        { username ,email}
+        { username, email }
       );
 
-      // On success
-      setMessage(response.data.message || 'Submission successful!');
-      localStorage.setItem('userEmail', email);
-      navigate('/test-assesment-books');
+      setMessage(response.data.message || "Submission successful!");
+      localStorage.setItem("userEmail", email);
+      navigate("/test-assesment-books");
     } catch (error) {
-      // On error
       setIsError(true);
       setMessage(
-        error.response?.data?.message || 'Something went wrong. Please try again.'
+        error.response?.data?.message ||
+          "Something went wrong. Please try again."
       );
     }
   };
 
   return (
-    <div className="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div className=" flex items-center justify-center mt-16">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 underline underline-offset-4">
           Student Information
         </h2>
 
-        {/* Display messages */}
         {message && (
           <div
             className={`p-3 mb-4 text-sm rounded-lg ${
-              isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+              isError
+                ? "bg-red-100 text-red-700"
+                : "bg-green-100 text-green-700"
             }`}
           >
             {message}
@@ -54,7 +52,6 @@ const navigate = useNavigate()
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Username Field */}
           <div className="mb-4">
             <label
               htmlFor="username"
@@ -74,7 +71,6 @@ const navigate = useNavigate()
             />
           </div>
 
-          {/* Email Field */}
           <div className="mb-4">
             <label
               htmlFor="email"
@@ -94,7 +90,6 @@ const navigate = useNavigate()
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="w-full py-3 mt-4 text-black bg-yellow-400  font-semibold rounded-lg hover:bg-yellow-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"

@@ -57,7 +57,7 @@ function Navbar() {
                 </li>
                 {/* Add Login Button */}
                 <li className="nav-item login-item">
-                    <Link className="nav-link login-btn" to="/login">Login</Link>
+                    <Link className="nav-link login-btn" to="/login">Log In/Sign up</Link>
                 </li>
             </ul>
 

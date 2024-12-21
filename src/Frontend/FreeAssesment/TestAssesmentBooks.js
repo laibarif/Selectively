@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import English from "../../assets/english.jpg";
 import Math from "../../assets/math.jpg";
 import ThinkingSkill from "../../assets/thinkingskill.jpg";
 import { MdArrowForward } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 function TestAssesmentBooks() {
+ 
+const navigate = useNavigate()
+
   const SubmitResult = async () => {
     try {
       const email = localStorage.getItem('userEmail');
@@ -22,7 +25,6 @@ function TestAssesmentBooks() {
   
       alert(response.data.message);
   
-      // Remove email from localStorage
       localStorage.removeItem('userEmail');
     } catch (error) {
       alert(
@@ -30,10 +32,86 @@ function TestAssesmentBooks() {
       );
     }
   };
+  const handleCheckReadingQuestions = async (path) => {
+    try {
+      const email = localStorage.getItem("userEmail");
+
+      if (!email) {
+        alert("No email found in localStorage.");
+        return;
+      }
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/checkReadingTestAlreadyConduct`,
+        { email }
+      );
+      if (response.data.navigate) {
+        navigate(path);
+      } else {
+        alert(response.data.message || "This test is already completed.");
+      }
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "An error occurred. Please try again."
+      );
+    }
+  };
+
+  const handleCheckMathsQuestions = async (path) => {
+    try {
+      const email = localStorage.getItem("userEmail");
+
+      if (!email) {
+        alert("No email found in localStorage.");
+        return;
+      }
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/checkMathTestAlreadyConduct`,
+        { email }
+      );
+
+      if (response.data.navigate) {
+        navigate(path);
+      } else {
+        alert(response.data.message || "This test is already completed.");
+      }
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "An error occurred. Please try again."
+      );
+    }
+  };
+
+  const handleCheckThinkingSkillQuestions = async (path) => {
+    try {
+      const email = localStorage.getItem("userEmail");
+
+      if (!email) {
+        alert("No email found in localStorage.");
+        return;
+      }
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/checkThinkingSkillsTestAlreadyConduct`,
+        { email }
+      );
+
+      if (response.data.navigate) {
+        navigate(path);
+      } else {
+        alert(response.data.message || "This test is already completed.");
+      }
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "An error occurred. Please try again."
+      );
+    }
+  };
+  
   return (
     <div>
       <div class="max-w-2xl mx-auto mt-4 space-y-4">
-        {/* English Card */}
         <div class="flex gap-3 bg-white border border-gray-300 rounded-xl overflow-hidden items-center justify-start hover:bg-gray-100">
           <div class="relative w-40 h-40 flex-shrink-0">
             <img
@@ -52,15 +130,14 @@ function TestAssesmentBooks() {
               <strong>Time:</strong> 13 minutes
             </p>
             <span class="w-full flex items-center justify-end text-gray-500 pr-2">
-            <Link to={'/questions-page/randomReadingQuestions'}>
-           
-              <MdArrowForward className="w-8 h-8 text-lg text-black hover:bg-black hover:text-white rounded-full" />
-              </Link>
+              <MdArrowForward
+              onClick={() => handleCheckReadingQuestions('/questions-page/randomReadingQuestions')}
+              className="w-8 h-8 text-lg text-black hover:bg-black hover:text-white rounded-full" />
+             
             </span>
           </div>
         </div>
 
-        {/* Math Card */}
         <div class="flex gap-3 bg-white border border-gray-300 rounded-xl overflow-hidden items-center justify-start hover:bg-gray-100">
           <div class="relative w-40 h-40 flex-shrink-0">
             <img
@@ -81,14 +158,15 @@ function TestAssesmentBooks() {
               <strong>Time:</strong> 20 minutes
             </p>
             <span class="w-full flex items-center justify-end text-gray-500 pr-2">
-            <Link to={'/questions-page/randomMathsQuestions'}>
-              <MdArrowForward className="w-8 h-8 text-lg text-black hover:bg-black hover:text-white rounded-full" />
-              </Link>
+            
+              <MdArrowForward
+              onClick={() => handleCheckMathsQuestions('/questions-page/randomMathsQuestions')}
+              className="w-8 h-8 text-lg text-black hover:bg-black hover:text-white rounded-full" />
+              
             </span>
           </div>
         </div>
 
-        {/* Thinking Skills Card */}
         <div class="flex gap-3 bg-white border border-gray-300 rounded-xl overflow-hidden items-center justify-start hover:bg-gray-100">
           <div class="relative w-40 h-40 flex-shrink-0">
             <img
@@ -109,9 +187,11 @@ function TestAssesmentBooks() {
               <strong>Time:</strong> 15 minutes
             </p>
             <span class="w-full flex items-center justify-end text-gray-500 pr-2">
-              <Link to={'/questions-page/randomThinkingskillQuestions'}>
-              <MdArrowForward className="w-8 h-8 text-lg text-black hover:bg-black hover:text-white rounded-full" />
-              </Link>
+             
+              <MdArrowForward 
+             onClick={() => handleCheckThinkingSkillQuestions('/questions-page/randomThinkingskillQuestions')} 
+              className="w-8 h-8 text-lg text-black hover:bg-black hover:text-white rounded-full" />
+              
             </span>
           </div>
         </div>

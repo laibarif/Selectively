@@ -56,25 +56,8 @@ login-form-heading{
 
 
 /* Styling for the login button */
-.login-btn {
-    background-color: orange;
-    color: #ffffff;
-    font-size: 1rem;
-    font-weight: bold;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 30px; /* Rounded corners */
-    cursor: pointer;
-    width: 100%;
-    margin-top: 1.5rem;
-    transition: all 0.3s ease-in-out; /* Smooth hover transition */
-}
 
-.login-btn:hover {
-    background-color: yellow;
-    color: #333333;
-    transform: scale(1.05); /* Slightly enlarge the button on hover */
-}
+
 
 /* Styling for the forgot password link */
 .forgot-password {

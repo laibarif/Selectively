@@ -2,7 +2,6 @@ const db = require('../config/db');
 const express = require('express');
 const router = express.Router();
 
-// API route to fetch questions based on the subject
 router.get('/:subject', (req, res) => {
   const { subject } = req.params;
 
