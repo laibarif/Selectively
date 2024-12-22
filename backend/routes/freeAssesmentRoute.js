@@ -2,7 +2,7 @@ const express = require("express");
 const db = require("../config/db.js");
 const nodemailer = require('nodemailer');
 const router = express.Router();
-
+const path = require('path');
 router.post("/userdetailforassesment", async (req, res) => {
   const { username, email } = req.body;
 
@@ -44,14 +44,12 @@ router.post("/userdetailforassesment", async (req, res) => {
 
     res.status(201).json({ message: "User details added for assessment." });
   } catch (error) {
-    console.error("Error adding user details:", error);
     res.status(500).json({ message: "Server error." });
   }
 });
 
 router.get("/randomMathsQuestions", async (req, res) => {
   try {
-    // Execute the query with self-join to fetch image_data and image_description
     const [questions] = await db
       .promise()
       .query(
@@ -74,22 +72,24 @@ router.get("/randomMathsQuestions", async (req, res) => {
       return res.status(404).json({ message: "No questions found." });
     }
 
-    // Convert the image_data to base64 and add the 'data:image/png;base64,' prefix
-    const processedQuestions = questions.map(question => {
+    // Process the questions to convert image_data to base64
+    const processedQuestions = questions.map((question) => {
       if (question.image_data) {
-        // Convert binary data to base64 string and prefix with data:image/png;base64,
-        const base64Image = `data:image/png;base64,${question.image_data.toString('base64')}`;
-        question.image_data = base64Image;
+        // Convert binary data to base64 string
+        question.image_data = `data:image/png;base64,${Buffer.from(
+          question.image_data
+        ).toString("base64")}`;
       }
       return question;
     });
 
     res.status(200).json({ questions: processedQuestions });
   } catch (error) {
-    console.error("Error retrieving random maths questions:", error);
+    console.error(error); // Log the error for debugging
     res.status(500).json({ message: "Server error." });
   }
 });
+
 
 
 
@@ -103,7 +103,6 @@ router.get("/randomThinkingskillQuestions", async (req, res) => {
 
     res.status(200).json({ questions });
   } catch (error) {
-    console.error("Error retrieving random thinkingskill questions:", error);
     res.status(500).json({ message: "Server error." });
   }
 });
@@ -118,7 +117,6 @@ router.get("/randomReadingQuestions", async (req, res) => {
 
     res.status(200).json({ questions });
   } catch (error) {
-    console.error("Error retrieving random reading questions:", error);
     res.status(500).json({ message: "Server error." });
   }
 });
@@ -144,7 +142,6 @@ router.post("/submitMathsAssessment", async (req, res) => {
       .status(200)
       .json({ message: "Maths assessment score and question status updated successfully." });
   } catch (error) {
-    console.error("Error updating maths score and question status:", error);
     res.status(500).json({ message: "Server error." });
   }
 });
@@ -204,7 +201,6 @@ async function checkTestScore(email, scoreColumn) {
     const query = `SELECT ${scoreColumn} FROM selectiveexam.userdetailforassesment WHERE email = ?`;
     const [result] = await db.promise().query(query, [email]);
     if (result.length === 0) {
-      console.error(`No user found with email: ${email}`);
       return { error: "User not found." };
     }
     const score = result[0][scoreColumn];
@@ -236,9 +232,7 @@ router.post('/checkReadingTestAlreadyConduct', async (req, res) => {
     `;
 
     const [result] = await db.promise().query(query, [email]);
-console.log(result)
     if (!result) {
-      console.error(`No record found for email: ${email}`);
       return res.status(400).json({ message: "User not found." });
     }
 
@@ -247,7 +241,7 @@ console.log(result)
     if (reading_score !== null) {
       return res.status(400).json({
         message: "Test has already been conducted before.",
-        navigate: false,  // Custom key to indicate navigation should not happen
+        navigate: false,  
       });
     }
     return res.status(200).json({
@@ -256,7 +250,6 @@ console.log(result)
     });
 
   } catch (error) {
-    console.error(`Error checking reading_score for email ${email}:`, error);
     res.status(500).json({ message: 'Server error.' });
   }
 });
@@ -282,7 +275,6 @@ router.post('/checkMathTestAlreadyConduct', async (req, res) => {
    
 
     if (!result || result.length === 0) {
-      console.error(`No record found for email: ${email}`);
       return res.status(400).json({ message: "User not found." });
     }
 
@@ -290,7 +282,7 @@ router.post('/checkMathTestAlreadyConduct', async (req, res) => {
     if (maths_score !== null) {
       return res.status(400).json({
         message: "Test has already been conducted before.",
-        navigate: false,  // Custom key to indicate navigation should not happen
+        navigate: false, 
       });
     }
     return res.status(200).json({
@@ -298,7 +290,6 @@ router.post('/checkMathTestAlreadyConduct', async (req, res) => {
       navigate: true,
     });
   } catch (error) {
-    console.error(`Error checking reading_score for email ${email}:`, error);
     res.status(500).json({ message: 'Server error.' });
   }
 });
@@ -323,12 +314,11 @@ router.post('/checkThinkingSkillsTestAlreadyConduct', async (req, res) => {
    
 
     if (!result || result.length === 0) {
-      console.error(`No record found for email: ${email}`);
       return res.status(400).json({ message: "User not found." });
     }
 
     const { thinking_skills_score } = result[0];
-    if (maths_score !== null) {
+    if (thinking_skills_score !== null) {
       return res.status(400).json({
         message: "Test has already been conducted before.",
         navigate: false,  // Custom key to indicate navigation should not happen
@@ -339,7 +329,6 @@ router.post('/checkThinkingSkillsTestAlreadyConduct', async (req, res) => {
       navigate: true,
     });
   } catch (error) {
-    console.error(`Error checking thinking_skills_score for email ${email}:`, error);
     res.status(500).json({ message: 'Server error.' });
   }
 });
@@ -410,7 +399,7 @@ router.post('/send-user-details', async (req, res) => {
             
             <!-- Logo Section -->
             <div style="text-align: center; margin-bottom: 20px;">
-              <img src="https://yourdomain.com/logo.png" alt="School Logo" style="width: 150px;">
+              <img src="cid:logo@unique.id" alt="School Logo" style="width: 150px;">
             </div>
     
             <!-- Heading Section -->
@@ -490,6 +479,13 @@ router.post('/send-user-details', async (req, res) => {
       to: email,
       subject: 'Your Assessment Result Card',
       html: emailContent,  
+      attachments: [
+        {
+          filename: 'logo.png',
+          path: path.join(__dirname, '../assests/Logo_White-Complete.jpg'), 
+          cid: 'logo@unique.id' 
+        }
+      ],
     };
 
     // Send email

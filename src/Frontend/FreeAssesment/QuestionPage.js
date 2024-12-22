@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import mathImage from "../../assets/math.jpg";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "./loader.css";
 function QuestionPage() {
   const { category } = useParams();
   const [questions, setQuestions] = useState([]);
@@ -20,7 +22,6 @@ function QuestionPage() {
         const response = await axios.get(
           `http://localhost:5000/api/freeassesment/${category}`
         );
-        console.log("ddd",response.data)
         setQuestions(response.data.questions);
         setAnswers(new Array(response.data.questions.length).fill(null));
         setLoading(false);
@@ -87,7 +88,13 @@ function QuestionPage() {
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
-        Loading...
+        <div class="loadingspinner">
+          <div id="square1"></div>
+          <div id="square2"></div>
+          <div id="square3"></div>
+          <div id="square4"></div>
+          <div id="square5"></div>
+        </div>
       </div>
     );
   }
@@ -184,17 +191,17 @@ function QuestionPage() {
 
       navigate("/test-assesment-books");
     } catch (error) {
-      console.error("Error submitting assessment:", error);
+      toast.error("Error submitting assessment:", error);
     }
   };
- console.log(currentQuestion)
+ 
   return (
-    <div className=" h-screen  bg-white ">
+    <div className="h-auto  bg-white ">
       <div className="absolute top-28 right-6 bg-black text-white py-1 px-3 rounded-md">
         <p className="font-bold">{formatTime(timer)} Time remaining !</p>
       </div>
       <div className="md:h-4/5 flex-grow flex">
-        <div className="w-full flex flex-col md:flex-row border shadow-lg rounded-md overflow-hidden">
+        <div className="w-full flex flex-col md:flex-row rounded-md overflow-hidden">
           <div className="w-full md:w-1/2 bg-gray-50 p-6">
             <p className="w-10/12 py-4 text-lg font-medium text-gray-600 mb-4 text-justify">
               <span className="font-bold text-xl text-black">
@@ -202,16 +209,17 @@ function QuestionPage() {
               </span>
               {currentQuestion?.question || "Question not available"}
             </p>
-            
+
             <div>
-      {currentQuestion.image_data && (
-        <img
-        src={currentQuestion.image_data} 
-          alt="Question Image"
-          className="w-40 h-40" 
-        />
-      )}
-    </div>
+              {currentQuestion.image_data && (
+                <img
+                  src={currentQuestion.image_data}
+                  loading="lazy"
+                  alt="Question Image"
+                  className="w-40 h-40"
+                />
+              )}
+            </div>
             {currentQuestion?.image_description && (
               <p className="text-gray-600 italic mt-2">
                 {currentQuestion.image_description}
@@ -235,14 +243,16 @@ function QuestionPage() {
                     onChange={() =>
                       handleSelectAnswer(option.value, option.label)
                     }
-                    checked={answers[currentIndex]?.includes(option.label)}
+                    checked={
+                      answers[currentIndex]?.startsWith(option.label) || false
+                    }
                   />
                   <span className="text-gray-700 text-sm">{`${option.label}: ${option.value}`}</span>
                 </label>
               ))}
             </div>
 
-            <div className="h-auto p-3 flex items-start space-x-2 bg-gray-300 mt-3">
+            <div className="h-auto p-3 flex items-start space-x-2 bg-gray-300 mt-3 mb-10">
               <div className="text-yellow-500 text-xl p-4">💡</div>
               <p className="text-gray-600 text-sm pt-4">
                 <strong>Hint:</strong> <br />
@@ -253,7 +263,7 @@ function QuestionPage() {
         </div>
       </div>
 
-      <div className="bg-red-600 text-white py-3 flex justify-between">
+      <div className=" md:fixed md:bottom-0 md:left-0 md:right-0  bg-red-600 text-white py-3 flex justify-between">
         <button
           onClick={handlePrevious}
           className={`hover:bg-red-600 p-2 rounded-md flex justify-start pl-6 font-semibold ${
@@ -279,7 +289,7 @@ function QuestionPage() {
       </div>
 
       {(currentIndex === questions.length - 1 || timerEnded) && (
-        <div className="absolute bottom-6 md:bottom-14 right-4">
+        <div className="fixed bottom-6  right-0  md:bottom-16">
           <button
             onClick={handleSubmit}
             className="bg-green-500 text-white py-2 px-4 rounded-md"
@@ -290,6 +300,7 @@ function QuestionPage() {
           </button>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 }

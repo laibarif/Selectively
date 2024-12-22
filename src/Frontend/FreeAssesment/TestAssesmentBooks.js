@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import English from "../../assets/english.jpg";
 import Math from "../../assets/math.jpg";
 import ThinkingSkill from "../../assets/thinkingskill.jpg";
@@ -14,7 +16,7 @@ const navigate = useNavigate()
       const email = localStorage.getItem('userEmail');
   
       if (!email) {
-        alert('No email found in localStorage.');
+        toast.error('No email found in localStorage.');
         return;
       }
   
@@ -23,11 +25,12 @@ const navigate = useNavigate()
         { email }
       );
   
-      alert(response.data.message);
+      toast.info(response.data.message);
   
       localStorage.removeItem('userEmail');
+      navigate('/freeassesment')
     } catch (error) {
-      alert(
+      toast.error(
         error.response?.data?.message || 'An error occurred. Please try again.'
       );
     }
@@ -37,7 +40,7 @@ const navigate = useNavigate()
       const email = localStorage.getItem("userEmail");
 
       if (!email) {
-        alert("No email found in localStorage.");
+        toast.error("No email found in localStorage.");
         return;
       }
 
@@ -48,10 +51,10 @@ const navigate = useNavigate()
       if (response.data.navigate) {
         navigate(path);
       } else {
-        alert(response.data.message || "This test is already completed.");
+        toast.warning(response.data.message || "This test is already completed.");
       }
     } catch (error) {
-      alert(
+      toast.error(
         error.response?.data?.message || "An error occurred. Please try again."
       );
     }
@@ -62,7 +65,7 @@ const navigate = useNavigate()
       const email = localStorage.getItem("userEmail");
 
       if (!email) {
-        alert("No email found in localStorage.");
+        toast.error("No email found in localStorage.");
         return;
       }
 
@@ -74,10 +77,10 @@ const navigate = useNavigate()
       if (response.data.navigate) {
         navigate(path);
       } else {
-        alert(response.data.message || "This test is already completed.");
+        toast.warning(response.data.message || "This test is already completed.");
       }
     } catch (error) {
-      alert(
+      toast.error(
         error.response?.data?.message || "An error occurred. Please try again."
       );
     }
@@ -88,7 +91,7 @@ const navigate = useNavigate()
       const email = localStorage.getItem("userEmail");
 
       if (!email) {
-        alert("No email found in localStorage.");
+        toast.error("No email found in localStorage.");
         return;
       }
 
@@ -100,10 +103,10 @@ const navigate = useNavigate()
       if (response.data.navigate) {
         navigate(path);
       } else {
-        alert(response.data.message || "This test is already completed.");
+        toast.warning(response.data.message || "This test is already completed.");
       }
     } catch (error) {
-      alert(
+      toast.error(
         error.response?.data?.message || "An error occurred. Please try again."
       );
     }
@@ -204,6 +207,7 @@ const navigate = useNavigate()
           Submit Result
         </button>
       </div>
+      <ToastContainer />
     </div>
   );
 }
