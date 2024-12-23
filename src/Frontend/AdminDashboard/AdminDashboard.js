@@ -16,16 +16,16 @@ const AdminDashboard = () => {
           <div className="card-body">
             <p className="card-text">Click on a subject to generate new questions:</p>
             <div className="button-group">
-              <Link to="/select_question/Maths" className="btn custom-btn primary-btn">
+              <Link to="/questions/Maths" className="btn custom-btn primary-btn">
                 Maths
               </Link>
-              <Link to="/select_question/ThinkingSkills" className="btn custom-btn primary-btn">
+              <Link to="/questions/ThinkingSkills" className="btn custom-btn primary-btn">
                 Thinking Skills
               </Link>
-              <Link to="/select_question/Writing" className="btn custom-btn primary-btn">
+              <Link to="/questions/Writing" className="btn custom-btn primary-btn">
                 Writing
               </Link>
-              <Link to="/select_question/Reading" className="btn custom-btn primary-btn">
+              <Link to="/questions/Reading" className="btn custom-btn primary-btn">
                 Reading
               </Link>
             </div>

@@ -4,6 +4,8 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const freeAssesmentRoutes = require('./routes/freeAssesmentRoute');
+const cors = require('cors'); 
+const { generateRelatedQuestions } = require('./routes/generateQuestions');
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +19,25 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
+
+app.post('/api/generate-questions', async (req, res) => {
+  console.log('Request Body:', req.body);
+
+  const { originalQuestionId, subject } = req.body;
+
+  if (!originalQuestionId || !subject) {
+    return res.status(400).send('originalQuestionId and subject are required');
+  }
+  console.log('Request Body:', req.body);
+
+
+  try {
+    const generatedQuestions = await generateRelatedQuestions(originalQuestionId, subject);
+    res.json({ success: true, questions: generatedQuestions });
+  } catch (error) {
+    res.status(500).send('Failed to generate questions');
+  }
+});
 
 // Register routes
 app.use('/api/auth', authRoutes);

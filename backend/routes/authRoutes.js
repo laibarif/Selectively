@@ -26,7 +26,7 @@ router.get('/check-username', async (req, res) => {
   }
 
   try {
-    const [results] = await db.promise().query('SELECT * FROM children WHERE username = ?', [username]);
+    const [results] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
 
     if (results.length > 0) {
       return res.status(200).json({ available: false, message: 'Username is already taken.' });
@@ -55,7 +55,7 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ message: 'Please provide all required parent details.' });
   }
 
-  const connection = db.promise(); // Use promise-based queries
+  const connection = db; // Use promise-based queries
 
   try {
     // Check if username is already taken
@@ -162,7 +162,7 @@ router.post('/verify-otp', async (req, res) => {
 
   try {
     // Fetch user by username
-    const [users] = await db.promise().query('SELECT * FROM users WHERE email = ?', [emailforverifyotp]);
+    const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
     if (users.length === 0) {
       return res.status(400).json({ message: 'Invalid firstName or OTP.' });
     }
@@ -176,7 +176,7 @@ router.post('/verify-otp', async (req, res) => {
     ) {
       // OTP is valid
       // Mark 2FA as verified and clear OTP fields
-      await db.promise().query(
+      await db.query(
         'UPDATE users SET two_fa_verified = 1, two_fa_otp = NULL, two_fa_otp_expiry = NULL WHERE id = ?',
         [user.id]
       );
@@ -201,7 +201,7 @@ router.post('/send-otp', async (req, res) => {
 
   try {
     // Fetch user by email
-    const [users] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (users.length === 0) {
       return res.status(400).json({ message: 'No user found with this email.' });
     }
@@ -216,7 +216,7 @@ router.post('/send-otp', async (req, res) => {
     });
     try{
     // Update OTP and expiry
-    await db.promise().query(
+    await db.query(
       'UPDATE users SET two_fa_otp = ?, two_fa_otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?',
       [otpCode, user.id]
     );
@@ -262,7 +262,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Username/Email and Password are required.' });
   }
 
-  const connection = db.promise(); // Use promise-based queries
+  const connection = db; // Use promise-based queries
 
   try {
       const [children] = await connection.query(
