@@ -2,8 +2,6 @@ const db = require('../config/db');
 const express = require('express');
 const router = express.Router();
 
-// Assuming 'db' is your database connection object
-
 // Route to fetch all questions for a subject
 router.get('/:subject', async (req, res) => {
   const { subject } = req.params;

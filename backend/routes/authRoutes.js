@@ -258,7 +258,6 @@ router.post('/send-otp', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { email_or_username, password } = req.body;
-
   if (!email_or_username || !password) {
       return res.status(400).json({ message: 'Username/Email and Password are required.' });
   }
@@ -283,7 +282,7 @@ router.post('/login', async (req, res) => {
 
       // Compare the provided password with the stored hashed password
       const isPasswordValid = await bcrypt.compare(password, child.password);
-    
+    console.log(isPasswordValid)    
 
       if (!isPasswordValid) {
           return res.status(400).json({ message: 'Invalid password.' });

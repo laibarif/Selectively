@@ -30,28 +30,8 @@
   .child-section {
     margin-bottom: 20px;
   }
-  
-  button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 5px;
-    border: none;
-    background-color: #007bff;
-    color: #fff;
-    font-size: 16px;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
-  .add-child-btn {
-    background-color: #28a745;
-  }
-  
-  .remove-child-btn {
-    background-color: #dc3545;
-  }
+
+
   
   .terms {
     font-size: 14px;
@@ -63,7 +43,7 @@
   .send-2fa-btn {
     margin-top: 10px;
     margin-bottom: 10px;
-    background-color: #ffc107;
+    background-color: orange;
   }
   
   .terms input[type="checkbox"] {
