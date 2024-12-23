@@ -266,7 +266,7 @@ router.post('/login', async (req, res) => {
 
   try {
       const [children] = await connection.query(
-          'SELECT * FROM children WHERE username = ?',
+          'SELECT * FROM users WHERE username = ?',
           [email_or_username]  // Only check for username
       );
 
