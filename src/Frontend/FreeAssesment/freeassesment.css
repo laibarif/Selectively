@@ -1,0 +1,32 @@
+/* Add this to your `loader.css` or a new CSS file */
+.resizable-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .resizable-left,
+  .resizable-right {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 20px;
+    border: 2px solid #ddd; /* Border for both sections */
+  }
+  
+  .resizable-left {
+    border-right: none; /* Remove right border for the left section */
+  }
+  
+  .resizable-right {
+    border-left: none; /* Remove left border for the right section */
+  }
+  
+  .resizable-divider {
+    cursor: ew-resize;
+    background-color: #ddd;
+    width: 5px;
+    height: 100%;
+    cursor: ew-resize;
+    z-index: 10;
+  }
+  

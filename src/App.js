@@ -1,5 +1,5 @@
-import { Route, Routes,useLocation } from 'react-router-dom';
-import React, { useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import React from 'react';
 import Navbar from './Frontend/Navbar/Navbar'; 
 import Home from './Frontend/Home/Home'; 
 import './App.css';
@@ -13,27 +13,43 @@ import QuestionPage from './Frontend/FreeAssesment/QuestionPage';
 import GenerateQuestionPage from './Frontend/GenerateQuestion/GenerateQuestionPage';
 import FreeAssessment from './Frontend/FreeAssessment/FreeAssessment';
 import ProtectedRoute from './Frontend/Context/ProtectedRoute';
+import ViewQuestionsPage from './Frontend/view/ViewQuestionsPage';
+import LandingPage from './Frontend/LandingPage/LandingPage';
 
 function App() {
   const location = useLocation();
+
+  // List of routes where Navbar should not be displayed
+  const noNavbarRoutes = ["/questions-page/:category"];
+
+  // Determine if the current route matches any in the list
+  const isNavbarHidden = noNavbarRoutes.some((route) => 
+    location.pathname.startsWith(route.split(":")[0]) // Match static parts of dynamic routes
+  );
+
   return (
     <>
-      <Navbar />
+    
+      {!isNavbarHidden && <Navbar />}
       <Routes>
-        <Route index element={<Home/>} />
+        <Route index element={<LandingPage />} />
+        
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/select_question/:subject" element={<SelectQuestionPage/>} />
-        <Route path='/freeassesment' element={<FreeAssesment/>}/>
-        <Route path='/test-assesment-books' element={<TestAssesmentBooks/>}/>
+        <Route path="/select_question/:subject" element={<SelectQuestionPage />} />
+        <Route path="/freeassesment" element={<FreeAssesment />} />
+        <Route path="/test-assesment-books" element={<TestAssesmentBooks />} />
         <Route path="/questions-page/:category" element={<QuestionPage />} />
-        <Route path="/questions/:subject" element={<SelectQuestionPage/>} />
+        <Route path="/questions/:subject" element={<SelectQuestionPage />} />
+        <Route path="/view-questions/:subject" element={<ViewQuestionsPage />} />
         <Route path="/questions/:subject/:id" element={<GenerateQuestionPage />} />
-        <Route path="/free-assessment" element={ <ProtectedRoute> <FreeAssessment /> </ProtectedRoute>} />
+        <Route path="/landing" element={<LandingPage/>}/>
+        <Route path="/free-assessment" element={<ProtectedRoute><FreeAssessment /></ProtectedRoute>} />
+        
       </Routes>
     </>
   );
 }
 
-export default App
+export default App;

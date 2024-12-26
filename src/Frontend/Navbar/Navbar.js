@@ -33,7 +33,7 @@ function Navbar() {
             {/* Desktop Navigation */}
             <ul className="navbar-nav">
                 <li className="nav-item">
-                    <Link className="nav-link" to="/">Home</Link>
+                    <Link className="nav-link" to="/landing">Home</Link>
                 </li>
                 <li className="nav-item">
                     <Link className="nav-link" to="">Pricing</Link>

@@ -4,6 +4,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./loader.css";
+import logo from "../../assets/Logo_White - Complete.svg";
 function QuestionPage() {
   const { category } = useParams();
   const [questions, setQuestions] = useState([]);
@@ -13,8 +14,53 @@ function QuestionPage() {
   const [timer, setTimer] = useState(timerRef.current);
   const [timerEnded, setTimerEnded] = useState(false);
   const [answers, setAnswers] = useState([]);
-  const [image, setImage] = useState(null);
   const navigate = useNavigate();
+
+  const [leftWidth, setLeftWidth] = useState(50);
+  const [rightWidth, setRightWidth] = useState(50);
+  const isResizing = useRef(false);
+  const startX = useRef(0);
+  const [isLaptop, setIsLaptop] = useState(false);
+  const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
+
+  const handleButtonClick = () => {
+    setShowPopup(true); // Show the confirmation popup
+  };
+
+  const handleCancel = () => {
+    setShowPopup(false); // Close the popup without doing anything
+  };
+
+  const handleConfirm = () => {
+    setShowPopup(false); // Close the popup
+    handleSubmit(); // Call the submit function
+  };
+  useEffect(() => {
+    const preventBackNavigation = () => {
+      window.history.pushState(null, null, window.location.pathname);
+      alert("Back navigation is disabled during the test.");
+    };
+
+    window.history.pushState(null, null, window.location.pathname);
+    window.addEventListener("popstate", preventBackNavigation);
+
+    return () => {
+      window.removeEventListener("popstate", preventBackNavigation);
+    };
+  }, []);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLaptop(window.innerWidth >= 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => {
+      window.removeEventListener("resize", checkScreenSize);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -46,6 +92,49 @@ function QuestionPage() {
 
     return () => clearInterval(countdown);
   }, [category]);
+
+  useEffect(() => {
+    if (timerEnded) {
+      handleSubmit();
+    }
+  }, [timerEnded]);
+
+  const handleMouseDown = (e) => {
+    isResizing.current = true;
+    startX.current = e.clientX;
+    document.body.style.cursor = "col-resize";
+  };
+
+  const handleMouseMove = (e) => {
+    if (isResizing.current) {
+      const diff = e.clientX - startX.current;
+      const newLeftWidth = Math.max(
+        20,
+        Math.min(80, leftWidth + (diff / window.innerWidth) * 100)
+      );
+      const newRightWidth = 100 - newLeftWidth;
+
+      setLeftWidth(newLeftWidth);
+      setRightWidth(newRightWidth);
+      startX.current = e.clientX;
+    }
+  };
+
+  const handleMouseUp = () => {
+    isResizing.current = false;
+    document.body.style.cursor = "default";
+  };
+  useEffect(() => {
+    if (isLaptop) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isLaptop, leftWidth]);
 
   const handleSelectAnswer = (value, label) => {
     const updatedAnswers = [...answers];
@@ -114,7 +203,6 @@ function QuestionPage() {
   const options = parseOptions(currentQuestion.mcq_options);
 
   const handleSubmit = async () => {
-    // Calculate the score and prepare question status
     const questionStatus = questions.map((question, index) => {
       const selectedAnswer = answers[index];
       const correctAnswer = question.correct_answer;
@@ -135,12 +223,11 @@ function QuestionPage() {
       }
 
       return {
-        questionNumber: index + 1, // Generate question number dynamically
+        questionNumber: index + 1,
         status: selectedAnswer ? "attempted" : "unattempted"
       };
     });
 
-    // Calculate the score
     const score = questionStatus.reduce((acc, item, index) => {
       const selectedAnswer = answers[index];
       const correctAnswer = questions[index].correct_answer;
@@ -163,7 +250,6 @@ function QuestionPage() {
       return isCorrect ? acc + 1 : acc;
     }, 0);
 
-    // Map subject to endpoints
     const endpointMap = {
       maths: "submitMathsAssessment",
       "thinking skills": "submitThinkingSkillsAssessment",
@@ -194,79 +280,103 @@ function QuestionPage() {
       toast.error("Error submitting assessment:", error);
     }
   };
- 
+
   return (
-    <div className="h-auto  bg-white ">
-      <div className="absolute top-28 right-6 bg-black text-white py-1 px-3 rounded-md">
-        <p className="font-bold">{formatTime(timer)} Time remaining !</p>
+    <div className="h-screen bg-white flex flex-col">
+      <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">
+        <img src={logo} alt="img-logo" className="h-24 w-32" />
+        <p className="font-bold text-white my-auto bg-black px-4 py-2 rounded-md">
+          {formatTime(timer)} Time remaining!
+        </p>
       </div>
-      <div className="md:h-4/5 flex-grow flex">
-        <div className="w-full flex flex-col md:flex-row rounded-md overflow-hidden">
-          <div className="w-full md:w-1/2 bg-gray-50 p-6">
-            <p className="w-10/12 py-4 text-lg font-medium text-gray-600 mb-4 text-justify">
-              <span className="font-bold text-xl text-black">
-                Question {currentIndex + 1}:{" "}
-              </span>
-              {currentQuestion?.question || "Question not available"}
+
+      {/* Main Content Section */}
+      <div className="flex-grow flex flex-col md:flex-row pt-20 overflow-auto">
+        {/* Left Panel */}
+        <div
+          className="w-full md:w-1/2 bg-white p-6 pt-10 "
+          style={
+            window.innerWidth >= 768
+              ? { width: `${leftWidth}%`, minHeight: "calc(100vh - 80px)" }
+              : {}
+          }
+        >
+          <p className="w-10/12 py-4 text-2xl font-bold space-y-10 text-gray-800 mb-4 text-justify">
+            <span className="font-bold text-2xl text-black">
+              Question {currentIndex + 1}:{" "}
+            </span>
+            {currentQuestion?.question || "Question not available"}
+          </p>
+
+          {currentQuestion?.image_data && (
+            <img
+              src={`data:image/png;base64,${currentQuestion.image_data}`}
+              loading="lazy"
+              alt="Question Image"
+              className="w-40 h-40 mb-4"
+            />
+          )}
+
+          {currentQuestion?.image_description && (
+            <p className="text-black  mt-2 text-bold">
+              {currentQuestion.image_description}
             </p>
+          )}
+        </div>
 
-            <div>
-              {currentQuestion.image_data && (
-                <img
-                  src={currentQuestion.image_data}
-                  loading="lazy"
-                  alt="Question Image"
-                  className="w-40 h-40"
+        <div
+          className="resize-handle hidden md:block"
+          onMouseDown={handleMouseDown}
+          style={{
+            cursor: "col-resize",
+            backgroundColor: "gray",
+            width: "2px",
+            height: "100%"
+          }}
+        ></div>
+
+        {/* Right Panel */}
+        <div
+          className="w-full md:w-1/2 bg-white pb-32 md:p-6 md:pt-10 "
+          style={
+            window.innerWidth >= 768
+              ? { width: `${rightWidth}%`, minHeight: "calc(100vh - 80px)" }
+              : {}
+          }
+        >
+          <div className="space-y-6">
+            {options?.map((option, index) => (
+              <label
+                key={index}
+                className="flex items-center space-x-2 py-4 px-2 bg-gray-200  border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
+              >
+                <input
+                  type="radio"
+                  name={`question-${currentIndex}`}
+                  value={option.value}
+                  className="peer h-8 w-8 focus:ring-yellow-600  border-gray-300 "
+                  disabled={timerEnded}
+                  onChange={() =>
+                    handleSelectAnswer(option.value, option.label)
+                  }
+                  checked={
+                    answers[currentIndex]?.startsWith(option.label) || false
+                  }
                 />
-              )}
-            </div>
-            {currentQuestion?.image_description && (
-              <p className="text-gray-600 italic mt-2">
-                {currentQuestion.image_description}
-              </p>
-            )}
-          </div>
-
-          <div className="w-full md:w-1/2 bg-gray-100 p-6 border-l">
-            <div className="space-y-6">
-              {options?.map((option, index) => (
-                <label
-                  key={index}
-                  className="flex items-center space-x-2 py-4 px-2 hover:bg-gray-300"
-                >
-                  <input
-                    type="radio"
-                    name={`question-${currentIndex}`}
-                    value={option.value}
-                    className="peer h-5 w-5 text-red-600 border-gray-300 focus:ring-red-500"
-                    disabled={timerEnded}
-                    onChange={() =>
-                      handleSelectAnswer(option.value, option.label)
-                    }
-                    checked={
-                      answers[currentIndex]?.startsWith(option.label) || false
-                    }
-                  />
-                  <span className="text-gray-700 text-sm">{`${option.label}: ${option.value}`}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="h-auto p-3 flex items-start space-x-2 bg-gray-300 mt-3 mb-10">
-              <div className="text-yellow-500 text-xl p-4">💡</div>
-              <p className="text-gray-600 text-sm pt-4">
-                <strong>Hint:</strong> <br />
-                {currentQuestion?.explanation || "No hint available"}
-              </p>
-            </div>
+                <span className="text-black text-lg font-semibold">
+                  {`${option.value}`}
+                </span>
+              </label>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className=" md:fixed md:bottom-0 md:left-0 md:right-0  bg-red-600 text-white py-3 flex justify-between">
+      {/* Footer Section */}
+      <div className="fixed bottom-0 left-0 right-0 bg-red-600 text-white py-3 flex justify-between z-30">
         <button
           onClick={handlePrevious}
-          className={`hover:bg-red-600 p-2 rounded-md flex justify-start pl-6 font-semibold ${
+          className={`hover:bg-red-600 p-2 rounded-md font-semibold ${
             currentIndex === 0 || timerEnded
               ? "opacity-50 cursor-not-allowed"
               : ""
@@ -277,7 +387,7 @@ function QuestionPage() {
         </button>
         <button
           onClick={handleNext}
-          className={`hover:bg-red-600 p-2 rounded-md flex justify-end pr-6 font-semibold ${
+          className={`hover:bg-red-600 p-2 rounded-md font-semibold ${
             currentIndex === questions.length - 1 || timerEnded
               ? "opacity-50 cursor-not-allowed"
               : ""
@@ -288,18 +398,111 @@ function QuestionPage() {
         </button>
       </div>
 
-      {(currentIndex === questions.length - 1 || timerEnded) && (
-        <div className="fixed bottom-6  right-0  md:bottom-16">
-          <button
-            onClick={handleSubmit}
-            className="bg-green-500 text-white py-2 px-4 rounded-md"
+      {/* Submit Button */}
+      <div>
+        {(currentIndex === questions.length - 1 || timerEnded) &&
+          !timerEnded && (
+            <div className="absolute bottom-20 right-6">
+              <button
+                onClick={handleButtonClick}
+                className="bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-600 text-white font-bold py-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+              >
+                Finish Question! Go to Test Assessment Books
+              </button>
+            </div>
+          )}
+
+        {/* Popup for confirmation */}
+        {showPopup && (
+  <div id="YOUR_ID" className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div
+      className="relative bg-white rounded-lg shadow-lg overflow-hidden transform transition-all w-full max-w-md sm:mx-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-headline"
+    >
+      {/* Close Button */}
+      <button
+        onClick={handleCancel}
+        type="button"
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+        aria-label="Close"
+      >
+        <svg
+          className="w-5 h-5"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+
+      {/* Modal Content */}
+      <div className="px-6 py-8">
+        {/* Icon and Header */}
+        <div className="flex items-center space-x-4">
+          <div className="flex-shrink-0">
+            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+              <svg
+                className="h-6 w-6 text-green-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+          </div>
+          <h3
+            className="text-lg font-semibold text-gray-900"
+            id="modal-headline"
           >
-            {timerEnded
-              ? "Time's up! Go to Test Assessment Books"
-              : "Finish Question! Go to Test Assessment Books"}
+            Confirm Submission
+          </h3>
+        </div>
+
+        {/* Message */}
+        <div className="mt-4 text-gray-700">
+          Are you sure you want to submit the result? Please confirm your action below.
+        </div>
+
+        {/* Buttons */}
+        <div className="mt-6 flex justify-end space-x-3">
+          <button
+            onClick={handleCancel}
+            type="button"
+            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirm}
+            type="button"
+            className="px-4 py-2 text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Confirm
           </button>
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
+
+      </div>
+
       <ToastContainer />
     </div>
   );

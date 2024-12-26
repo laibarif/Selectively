@@ -34,7 +34,7 @@ const Login = () => {
         email_or_username: formData.usernameOrEmail,
         password: formData.password,
       });
-
+console.log(response)
       const { access, refresh, user } = response.data;
 
       // Store the tokens and user data in localStorage
@@ -56,7 +56,7 @@ const Login = () => {
       } else {
         setError('An error occurred while logging in. Please try again later.');
       }
-      console.error('Login Error:', err.response?.data || err.message);
+      console.error('Login Error:');
     } finally {
       setLoading(false);
     }

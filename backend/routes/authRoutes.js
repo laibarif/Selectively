@@ -256,69 +256,86 @@ router.post('/send-otp', async (req, res) => {
   }
 });
 
+
 router.post('/login', async (req, res) => {
   const { email_or_username, password } = req.body;
   if (!email_or_username || !password) {
-      return res.status(400).json({ message: 'Username/Email and Password are required.' });
+    return res.status(400).json({ message: 'Username/Email and Password are required.' });
   }
 
   const connection = db; // Use promise-based queries
 
   try {
-      const [children] = await connection.query(
-          'SELECT * FROM users WHERE username = ?',
-          [email_or_username]  // Only check for username
-      );
+    let user = null;
+    let role = null;
 
-      // Check if user is found
-      if (children.length === 0) {
-          return res.status(400).json({ message: 'Invalid credentials' });
-      }
+    // Check in the admin table
+    const [admins] = await connection.query(
+      'SELECT * FROM admin WHERE username = ? OR email = ?',
+      [email_or_username, email_or_username]
+    );
+    
 
-      // Access the first child record
-      const child = children[0];
+    // Check in the children table
+    const [children] = await connection.query(
+      'SELECT * FROM children WHERE username = ? ',
+      [email_or_username, email_or_username]
+    );
+   
 
-       // Access the password field
+    // Determine the role and user
+    if (admins.length > 0) {
+      user = admins[0];
+      role = 'admin';
+      console.log('Role assigned: admin');
+    } else if (children.length > 0) {
+      user = children[0];
+      role = 'student';
+      console.log('Role assigned: student');
+    }
 
-      // Compare the provided password with the stored hashed password
-      const isPasswordValid = await bcrypt.compare(password, child.password);
-    console.log(isPasswordValid)    
+    if (!user || !user.password) {
+      return res.status(400).json({ message: 'Invalid username/email or password.' });
+    }
 
-      if (!isPasswordValid) {
-          return res.status(400).json({ message: 'Invalid password.' });
-      }
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid username/email or password.' });
+    }
 
-      // Generate access token and refresh token
-      const accessToken = jwt.sign(
-          { childrenId: child.id, username: child.username },
-          process.env.JWT_SECRET,
-          { expiresIn: '1h' }
-      );
+   // Generate access token and refresh token
+   const accessToken = jwt.sign(
+    { childrenId: user.id, username: user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+);
 
-      const refreshToken = jwt.sign(
-          { childrenId: child.id, children: child.username },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-      );
+const refreshToken = jwt.sign(
+    { childrenId: user.id, children: user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+);
 
-      // Return the response with tokens and user data
-      res.status(200).json({
-          access: accessToken,
-          refresh: refreshToken,
-          user: {
-              id: child.id,
-              username: child.username,
-              firstName: child.first_name,
-              lastName: child.last_name,
-              role: child.role || 'student'
-          }
-      });
+    res.status(200).json({
+      message: 'Login successful',
+      access: accessToken,
+      refresh: refreshToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: role,
+        email: user.email || null,
+      },
+    });
 
+    
   } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ message: 'Server error. Please try again later.' });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Internal server error.' });
   }
 });
-
 
 module.exports = router;

@@ -42,16 +42,16 @@ const AdminDashboard = () => {
           <div className="card-body">
             <p className="card-text">Click on a subject to view all questions:</p>
             <div className="button-group">
-              <Link to="/view_questions/Maths" className="btn custom-btn success-btn">
+              <Link to="/view-questions/Maths" className="btn custom-btn success-btn">
                 Maths
               </Link>
-              <Link to="/view_questions/ThinkingSkills" className="btn custom-btn success-btn">
+              <Link to="/view-questions/ThinkingSkills" className="btn custom-btn success-btn">
                 Thinking Skills
               </Link>
-              <Link to="/view_questions/Writing" className="btn custom-btn success-btn">
+              <Link to="/view-questions/Writing" className="btn custom-btn success-btn">
                 Writing
               </Link>
-              <Link to="/view_questions/Reading" className="btn custom-btn success-btn">
+              <Link to="/view-questions/Reading" className="btn custom-btn success-btn">
                 Reading
               </Link>
             </div>

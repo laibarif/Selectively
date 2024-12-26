@@ -33,7 +33,9 @@
     font-size: 6pt;
     color: black;
   }
-  
+
+
+
   .loadingspinner #square1 {
     left: calc( 0 * var(--offset) );
     top: calc( 0 * var(--offset) );
