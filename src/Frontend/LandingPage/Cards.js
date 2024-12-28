@@ -6,7 +6,7 @@ import teach from '../../assets/pana1.jpg'
 function Cards() {
   return (
     <>
-      <div className="bg-gray-50 py-24">
+      <div className="py-24 bg-yellow-50">
         <h2 className="text-4xl font-sans font-semibold text-center mb-8 text-yellow-500">
           Online practice tests to help achieve academic success
         </h2>

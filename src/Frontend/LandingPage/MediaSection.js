@@ -2,7 +2,7 @@ import React from "react";
 
 function MediaSection() {
   return (
-    <section className="py-24 ">
+    <section className="py-24 bg-yellow-50">
       <div className="text-center">
         <h2 className="text-4xl font-semibold sm:text-4xl text-orange-500">
           Australia's leading online exam practice test platform

@@ -109,8 +109,8 @@
 
 /* View Button */
 .btn-view {
-  background-color: aqua;
-  color: black;
+  background-color: #EFA00B;
+  color: white;
   font-size: 0.9rem;
   font-weight: bold;
   padding: 8px 15px;
@@ -121,7 +121,7 @@
 }
 
 .btn-view:hover {
-  background-color: #00ced1; /* Darker aqua */
+  background-color: #CC5803; /* Darker aqua */
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
   cursor: pointer;
@@ -129,7 +129,7 @@
 
 /* Edit Button */
 .btn-edit {
-  background-color: blue;
+  background-color: #EDD051;
   color: white;
   font-size: 0.9rem;
   font-weight: bold;
@@ -141,7 +141,7 @@
 }
 
 .btn-edit:hover {
-  background-color: #0000cd; /* Darker blue */
+  background-color: #FFDB58; /* Darker blue */
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
   cursor: pointer;
@@ -186,6 +186,254 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
   cursor: pointer;
 }
+
+
+
+/* From Uiverse.io by KhaledMatalkah */ 
+.loader {
+  width: 100px;
+  height: 100px;
+  border: 8px solid #ffcc00;
+  border-radius: 50%;
+  border-top-color: transparent;
+  position: relative;
+  animation: loaderAnimation 1.5s linear infinite;
+}
+
+.loader::before,
+.loader::after {
+  content: '';
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 50%;
+  top: 50%;
+  background-color: #ffcc00;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.loader::before {
+  animation: loaderAnimationBefore 1s linear infinite;
+}
+
+.loader::after {
+  animation: loaderAnimationAfter 1s linear infinite;
+}
+
+/* ViewQuestionPage.css */
+
+/* Message Styling */
+.alert {
+  margin-top: 10px;
+  position: relative;
+  z-index: 1000;
+  width: auto;
+  max-width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Popup Styling */
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 999; /* Make sure popup is behind the message */
+}
+
+/* General popup styling */
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.popup-content h2 {
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.popup-content p {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+/* Buttons in the popup */
+.popup-content button {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.popup-content .btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.popup-content .btn-danger:hover {
+  background-color: #c82333;
+}
+
+.popup-content .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.popup-content .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.popup-content form div {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+/* Form labels */
+.popup-content form label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+/* Textarea styling */
+.popup-content textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  resize: none;
+}
+
+/* Dropdown styling */
+.popup-content select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Submit and cancel buttons */
+.popup-content form button[type="submit"] {
+  background-color: #007bff;
+  color: white;
+}
+
+.popup-content form button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.popup-content form button[type="button"] {
+  background-color: #6c757d;
+  color: white;
+}
+
+.popup-content form button[type="button"]:hover {
+  background-color: #5a6268;
+}
+
+/* Loader animation */
+.spinner-border {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border 0.75s linear infinite;
+}
+
+
+
+
+
+@keyframes loaderAnimation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loaderAnimationBefore {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes loaderAnimationAfter {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   
   /* Responsive Adjustments */

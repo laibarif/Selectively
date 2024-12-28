@@ -587,7 +587,7 @@ const parseJsonSafe = (data) => {
 
 router.get("/userAssessmentDetails", async (req, res) => {
   const { email } = req.query;
-  console.log(email);
+ 
 
   if (!email) {
     return res.status(400).json({ message: "Email is required." });

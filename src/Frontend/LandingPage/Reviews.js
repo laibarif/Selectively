@@ -3,7 +3,7 @@ import star from '../../assets/stars.png'
 import plant from '../../assets/Plant.jpg'
 const Reviews = () => {
   return (
-    <div className="relative py-28"> 
+    <div className="relative py-28 bg-yellow-50"> 
     <img src={plant} alt="Plant" className="absolute hidden sm:block  sm:top-48 left-40    w-24 h-28" /> 
     <img src={star} alt="Stars" className="absolute top-56 right-16 sm:top-56 sm:right-48 w-28 h-36" />
     <div className=" py-12">

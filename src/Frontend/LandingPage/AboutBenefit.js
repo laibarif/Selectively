@@ -3,7 +3,7 @@ import subscription from '../../assets/subscription.jpg';
 
 const AboutBenefit = () => {
   return (
-    <div className="bg-white py-16">
+    <div className="py-16 bg-yellow-50">
       <div className="container mx-auto px-6 lg:px-12 py-12">
         <div className="flex flex-col lg:flex-row lg:justify-around items-center  mx-auto">
           {/* Left Section */}
