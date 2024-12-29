@@ -12,27 +12,23 @@ function MediaSection() {
       </div>
       <div className="w-full mt-10">
         <div className="w-8/12 mx-auto ">
-        <div className="w-full ">
-              {/* YouTube iframe */}
-              <iframe
-                className="w-full h-[300px] sm:h-[400px] lg:h-[500px]"
-                src="https://www.youtube.com/embed/VIDEO_ID" // Replace VIDEO_ID with your YouTube video ID
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
+          <div className="w-full ">
+            {/* YouTube iframe */}
+            <iframe
+              className="w-full h-[300px] sm:h-[400px] lg:h-[500px]"
+              src="https://www.youtube.com/embed/VIDEO_ID" // Replace VIDEO_ID with your YouTube video ID
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
 
-              {/* Overlay Play Button */}
-              
-            </div>
+            {/* Overlay Play Button */}
+          </div>
         </div>
       </div>
     </section>
   );
 }
-
-
-
 
 export default MediaSection;

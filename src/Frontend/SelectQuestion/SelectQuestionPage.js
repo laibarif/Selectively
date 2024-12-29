@@ -55,6 +55,26 @@ const SelectQuestionPage = () => {
     }
   };
   
+  const handleGenerateExtractClick = async (questionId) => {
+    alert("Please wait for few seconds while the extract questions are being generated...");
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/extract-generate-questions`,
+        { extractId: questionId, subject: subject } // Add subject here
+      );
+      if (response.data) {
+        navigate(`/questions/${subject}/${questionId}`, { state: { generatedQuestions: response.data.generatedQuestions, extractId: questionId } });
+      } else {
+        console.error('No data returned from generate extract questions API');
+      }
+    } catch (error) {
+      console.error('Error generating extract questions:', error);
+      setError("Failed to generate extract questions. Please try again.");
+    }
+  };
+
+
+
   return (
     <div className="select-question-container mt-5">
       <h1 className="select-question-heading text-center mb-4 text-primary">Questions for {subject}</h1>
@@ -76,8 +96,8 @@ const SelectQuestionPage = () => {
         <>
           {questions.length > 0 ? (
             <div className="table-responsive">
-              <table className="table table-bordered table-hover shadow-sm">
-                <thead className="thead-dark">
+              <table className="table table-bordered table-hover shadow-sm ">
+                <thead className="thead-dark bg-black">
                   <tr>
                     <th>#</th>
                     <th>Question</th>
@@ -96,6 +116,13 @@ const SelectQuestionPage = () => {
                           Generate
                         </button>
                       </td>
+                      { subject==='Reading'&&
+                         <td className="text-center">
+                         <button className="text-sm bg-[#ffa500] rounded-md text-white" onClick={() => handleGenerateExtractClick(question.id)}>
+                           Generate Extact + Questions
+                         </button>
+                       </td>
+                      }
                     </tr>
                   ))}
                 </tbody>

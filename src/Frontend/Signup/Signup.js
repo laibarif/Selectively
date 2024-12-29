@@ -425,7 +425,7 @@ const Signup = () => {
 
           <button
             type="button"
-            className="bg-orange-800 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-yellow-700 hover:text-black"
+            className="bg-orange-500 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-orange-600"
             onClick={handleAddChild}
           >
             + Add Another Child
@@ -444,7 +444,7 @@ const Signup = () => {
                     - Grade: {child.grade}, School: {child.school || "N/A"}
                     <button
                       type="button"
-                      className="bg-orange-800 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-yellow-700 hover:text-black"
+                      className="bg-orange-500 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-orange-600"
                       onClick={() => handleRemoveChild(index)}
                     >
                       Remove
@@ -474,7 +474,7 @@ const Signup = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="bg-orange-800 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-yellow-700 hover:text-black"
+            className="bg-yellow-500 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-yellow-600"
             disabled={checkingUsername}
           >
             Sign Up
@@ -500,14 +500,14 @@ const Signup = () => {
             />
             <button
               type="button"
-              className="bg-orange-800 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-yellow-700 hover:text-black"
+              className="bg-yellow-500 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1  hover:bg-yellow-600"
               onClick={handleVerifyOTP}
             >
               Verify OTP
             </button>
             <button
               type="button"
-              className="bg-orange-800 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-yellow-700 hover:text-black"
+              className="bg-orange-500 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-yellow-600"
               onClick={handleSend2FA}
             >
               Resend OTP

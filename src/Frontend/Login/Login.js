@@ -63,7 +63,7 @@ console.log(response)
   };
 
   return (
-    <div className="login-container">
+    <div className="h-screen login-container ">
       <div className="login-form">
         <h2 className='login-form-heading'>Log in to your account</h2>
         <form onSubmit={handleSubmit}>
@@ -92,7 +92,7 @@ console.log(response)
             />
           </div>
 
-          <button className="bg-orange-500 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-orange-300 hover:text-black" type="submit" disabled={loading}>
+          <button className="bg-orange-600 text-white text-md font-bold p-3 border-none rounded-md w-full mt-1 hover:bg-orange-500" type="submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>

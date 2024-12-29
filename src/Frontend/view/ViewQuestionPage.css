@@ -129,7 +129,7 @@
 
 /* Edit Button */
 .btn-edit {
-  background-color: #EDD051;
+  background-color: #CCAD46;
   color: white;
   font-size: 0.9rem;
   font-weight: bold;
@@ -141,7 +141,7 @@
 }
 
 .btn-edit:hover {
-  background-color: #FFDB58; /* Darker blue */
+  background-color: #FFDB58;
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
   cursor: pointer;
@@ -234,9 +234,20 @@
   margin-right: auto;
 }
 
+.popup-delete {
+  position: fixed;
+  width: 30%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 999; /* Make sure popup is behind the message */
+}
 /* Popup Styling */
 .popup {
   position: fixed;
+  width: 90%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -245,6 +256,15 @@
   z-index: 999; /* Make sure popup is behind the message */
 }
 
+.popup-content-delete {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  width: 90%; /* Set the exact width */
+  max-width: none;
+  text-align: center;
+}
 /* General popup styling */
 .popup {
   position: fixed;
@@ -264,8 +284,8 @@
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  max-width: 500px;
-  width: 90%;
+  width: 90%; /* Set the exact width */
+  max-width: none;
   text-align: center;
 }
 

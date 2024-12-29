@@ -22,7 +22,7 @@ const ViewQuestionsPage = () => {
       const response = await axios.get(
         `http://localhost:5000/api/questions/views-questions/${subject}`
       );
-     
+
       setQuestions(response.data.questions);
     } catch (error) {
       setError("Failed to fetch questions");
@@ -81,7 +81,7 @@ const ViewQuestionsPage = () => {
         `http://localhost:5000/api/questions/get-question/${id}`,
         { params: { subject } }
       );
-     
+
       setQuestionText(response.data);
       setType(response.data.type);
       setSelectedQuestion(id);
@@ -93,18 +93,18 @@ const ViewQuestionsPage = () => {
   // Handle the form submission for updating the question
   const handleUpdate = async (event) => {
     event.preventDefault(); // Prevent default form submission
-  
+
     const formData = new FormData();
     formData.append("question", questionText.question);
     formData.append("mcq_options", questionText.mcq_options);
     formData.append("correct_answer", questionText.correct_answer);
     formData.append("explanation", questionText.explanation || "");
     formData.append("image_description", questionText.image_description || "");
-  
+
     if (questionText.image_data) {
       formData.append("image_data", questionText.image_data); // Changed to match backend
     }
-  
+
     setLoading(true);
     try {
       for (let pair of formData.entries()) {
@@ -118,6 +118,7 @@ const ViewQuestionsPage = () => {
       setMessage("Question updated successfully");
       setTimeout(() => setMessage(null), 3000);
       fetchQuestions();
+      setSelectedQuestion(null)
     } catch (error) {
       setError("Error updating question");
       setTimeout(() => setError(null), 3000);
@@ -125,7 +126,7 @@ const ViewQuestionsPage = () => {
       setLoading(false);
     }
   };
-  
+
   const handleView = async (id) => {
     try {
       const response = await axios.get(
@@ -137,7 +138,7 @@ const ViewQuestionsPage = () => {
       setError("Error fetching question details");
     }
   };
-  console.log(viewQuestion)
+ console.log(questions)
   return (
     <div className="select-question-container">
       {showHeading && (
@@ -148,9 +149,7 @@ const ViewQuestionsPage = () => {
 
       {loading ? (
         <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
+            <div class="loader"></div>
         </div>
       ) : error ? (
         <div className="alert alert-danger text-center" role="alert">
@@ -158,7 +157,9 @@ const ViewQuestionsPage = () => {
         </div>
       ) : (
         <>
-          {message && <div className="text-2xl text-red-600 font-semibold">{message}</div>}
+          {message && (
+            <div className="text-2xl text-red-600 font-semibold">{message}</div>
+          )}
           <div className="table-responsive">
             <table className="table table-bordered table-hover shadow-sm">
               <thead className="thead-dark">
@@ -176,9 +177,12 @@ const ViewQuestionsPage = () => {
                     <td>{question.question.slice(0, 80)}...</td>
                     <td>{question.type || "N/A"}</td>
                     <td className="text-center flex justify-between gap-2">
-                      <button className="btn btn-sm btn-view"
-                      onClick={() => handleView(question.id)}
-                      >View</button>
+                      <button
+                        className="btn btn-sm btn-view"
+                        onClick={() => handleView(question.id)}
+                      >
+                        View
+                      </button>
                       <button
                         className="btn btn-sm btn-edit"
                         onClick={() => handleEdit(question.id)}
@@ -206,161 +210,213 @@ const ViewQuestionsPage = () => {
         </>
       )}
 
-      {deleteConfirm && (
-        <div className="popup">
-          <div className="popup-content">
-            <p>Are you sure you want to delete this question?</p>
-            <button
-              className="btn btn-danger"
-              onClick={() => handleDeleteQuestion(deleteConfirm)}
-            >
-              Yes
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => setDeleteConfirm(null)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {selectedQuestion && questionText && type && (
-        <div className="popup">
-          <div className="popup-content">
-            <h2>Edit Question</h2>
-            <form onSubmit={handleUpdate}>
-              <div>
-                <label className="text-3xl font-bold">Question:</label>
-                <textarea
-                  rows="3"
-                  placeholder="Enter question text"
-                  value={questionText.question || ""}
-                  onChange={(e) =>
-                    setQuestionText((prev) => ({ ...prev, question: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-3xl font-bold">Options:</label>
-                <input
-                  value={questionText.mcq_options || ""}
-                  onChange={(e) =>
-                    setQuestionText((prev) => ({ ...prev, mcq_options: e.target.value }))
-                  }
-                  placeholder="Enter options separated by commas"
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-3xl font-bold">Correct Answer:</label>
-                <input
-                  value={questionText.correct_answer || ""}
-                  onChange={(e) =>
-                    setQuestionText((prev) => ({ ...prev, correct_answer: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-3xl font-bold">Explanation:</label>
-                <textarea
-                  value={questionText.explanation || ""}
-                  onChange={(e) =>
-                    setQuestionText((prev) => ({ ...prev, explanation: e.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-3xl font-bold">Image Description:</label>
-                <input
-                  value={questionText.image_description || ""}
-                  onChange={(e) =>
-                    setQuestionText((prev) => ({
-                      ...prev,
-                      image_description: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-3xl font-bold">Image:</label>
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setQuestionText((prev) => ({ ...prev, image_data: e.target.files[0] }))
-                  }
-                />
-              </div>
-              <button type="submit" className="btn btn-primary mt-2">
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedQuestion(null)}
-                className="btn btn-secondary mt-2"
-              >
-                Cancel
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-       {viewQuestion && (
-        <div className="popup">
-          <div className="popup-content max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-           
-           {/* Conditionally render the Image Description */}
-{viewQuestion.image_description && (
-  <p className="text-sm text-gray-600 mb-4">
-    <strong>Image Description:</strong> {viewQuestion.image_description}
-  </p>
-)}
-
-{/* Conditionally render the Image */}
-{viewQuestion.image_data && (
-  <div>
-    <img 
-      src={viewQuestion.image_data} 
-      alt="image-desc" 
-      className="h-32 w-32" 
-    />
+{deleteConfirm && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+      <p className="text-lg font-semibold text-gray-800 mb-4">
+        Are you sure you want to delete this question?
+      </p>
+      <div className="flex justify-end space-x-4">
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={() => handleDeleteQuestion(deleteConfirm)}
+        >
+          Yes
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+          onClick={() => setDeleteConfirm(null)}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
   </div>
 )}
 
 
-            <div className="mb-4">
-              <p className="text-lg font-semibold">Question: {viewQuestion.question}</p>
-            </div>
+{selectedQuestion && questionText && type && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-4xl">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Edit Question</h2>
+      <form onSubmit={handleUpdate} className="space-y-4">
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-1">Question:</label>
+          <textarea
+            rows="3"
+            placeholder="Enter question text"
+            value={questionText.question || ""}
+            onChange={(e) =>
+              setQuestionText((prev) => ({
+                ...prev,
+                question: e.target.value,
+              }))
+            }
+            required
+            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-1">Options:</label>
+          <input
+            value={questionText.mcq_options || ""}
+            onChange={(e) =>
+              setQuestionText((prev) => ({
+                ...prev,
+                mcq_options: e.target.value,
+              }))
+            }
+            placeholder="Enter options separated by commas"
+            required
+            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-1">Correct Answer:</label>
+          <input
+            value={questionText.correct_answer || ""}
+            onChange={(e) =>
+              setQuestionText((prev) => ({
+                ...prev,
+                correct_answer: e.target.value,
+              }))
+            }
+            required
+            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-1">Explanation:</label>
+          <textarea
+            value={questionText.explanation || ""}
+            onChange={(e) =>
+              setQuestionText((prev) => ({
+                ...prev,
+                explanation: e.target.value,
+              }))
+            }
+            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-1">Image Description:</label>
+          <input
+            value={questionText.image_description || ""}
+            onChange={(e) =>
+              setQuestionText((prev) => ({
+                ...prev,
+                image_description: e.target.value,
+              }))
+            }
+            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-1">Image:</label>
+          <input
+            type="file"
+            onChange={(e) =>
+              setQuestionText((prev) => ({
+                ...prev,
+                image_data: e.target.files[0],
+              }))
+            }
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+          />
+        </div>
+        <div className="flex space-x-4">
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedQuestion(null)}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md shadow hover:bg-gray-400 focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
 
-            <ul className="space-y-2">
-              {viewQuestion.mcq_options && viewQuestion.mcq_options.split(',').map((option, index) => (
-                <li key={index}>
-                  <span>{option}</span>
-                </li>
-              ))}
-            </ul>
 
-            <div className="mt-6">
-              <p className="text-sm text-gray-600">
-                <strong>Correct Answer:</strong> <span className="text-blue-500 font-semibold">{viewQuestion.correct_answer}</span>
-              </p>
-            </div>
+{viewQuestion && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-4xl">
+      
 
-            <div className="mt-4">
-              <button
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                onClick={() => setViewQuestion(null)}
-              >
-                Back to Questions
-              </button>
-            </div>
-          </div>
+      {/* Conditionally render the Image Description */}
+      {viewQuestion.image_description && (
+        <div className="mb-4">
+          <p className="text-lg font-semibold text-gray-700">
+            <strong className="mr-2">Image Description:</strong>
+           <span className=""> {viewQuestion.image_description}</span>
+          </p>
         </div>
       )}
 
+      {/* Conditionally render the Image */}
+      {viewQuestion.image_data && (
+        <div className="mb-4 flex justify-center">
+          <img
+            src={viewQuestion.image_data}
+            alt="image-desc"
+            className="h-40 w-40 object-cover border border-gray-300 rounded-md"
+          />
+        </div>
+      )}
+
+      <div className="mb-4">
+        <p className="text-lg font-semibold text-black">
+          Question:
+          <span className="text-gray-500 ml-2">{viewQuestion.question}</span>
+        </p>
+      </div>
+
+      <div className="mb-4">
+        <p className="text-lg font-semibold text-black">
+          Status:
+          <span className="text-gray-500 ml-2">{viewQuestion.type}</span>
+        </p>
+      </div>
+
+      <ul className="space-y-2 mb-4">
+        {viewQuestion.mcq_options &&
+          viewQuestion.mcq_options.split(",").map((option, index) => (
+            <li key={index} className="text-gray-700">
+              <span>{option}</span>
+            </li>
+          ))}
+      </ul>
+
+      <div className="mb-6">
+        <p className="text-sm text-gray-600">
+          <strong>Correct Answer:</strong>{" "}
+          <span className="text-blue-500 font-semibold">
+            {viewQuestion.correct_answer}
+          </span>
+        </p>
+      </div>
+
+      <div className="mt-6 flex justify-end">
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+          onClick={() => setViewQuestion(null)}
+        >
+          Back to Questions
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+ 
     </div>
   );
 };

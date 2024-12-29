@@ -74,7 +74,7 @@ router.get('/question/:id', async (req, res) => {
 router.get('/generated/:originalQuestionId', async (req, res) => {
   const { originalQuestionId } = req.params;
   const { subject } = req.query;
-
+console.log(subject,originalQuestionId)
   if (!originalQuestionId || !subject) {
     return res.status(400).json({ error: 'Original question ID and subject are required' });
   }
@@ -97,6 +97,8 @@ router.get('/generated/:originalQuestionId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch generated questions' });
   }
 });
+
+
 
   //  Show subjects detail on generated table to change its types
 

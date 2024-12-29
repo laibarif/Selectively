@@ -47,7 +47,7 @@ table {
 
 .table th {
   background-color: #007bff;
-  color: #ffffff;
+  color: red;
   font-size: 1.2rem;
   font-weight: bold;
   text-align: center;
@@ -83,7 +83,7 @@ table {
 
 /* Action Button Styling */
 .btn-success {
-  background-color: #28a745;
+  background-color: #ffa500;
   color: #ffffff;
   font-size: 0.9rem;
   font-weight: bold;
@@ -95,7 +95,7 @@ table {
 }
 
 .btn-success:hover {
-  background-color: #218838;
+  background-color: #ffb733;
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
   cursor: pointer;

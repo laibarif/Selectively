@@ -9,8 +9,8 @@ const AdminDashboard = () => {
 
       {/* Generate Questions Section */}
       <div className="section">
-        <div className="card generate-questions-card">
-          <div className="card-header generate-questions-header">
+        <div className="card generate-questions-card ">
+          <div className="card-header generate-questions-header bg-yellow-600">
             <h5>Generate Questions</h5>
           </div>
           <div className="card-body">

@@ -4,7 +4,7 @@ const authRoutes = require('./routes/authRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const freeAssesmentRoutes = require('./routes/freeAssesmentRoute');
 const cors = require('cors'); 
-const { generateRelatedQuestions } = require('./routes/generateQuestions');
+const { generateRelatedQuestions ,extractAndGenerateQuestions} = require('./routes/generateQuestions');
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +37,28 @@ app.post('/api/generate-questions', async (req, res) => {
     res.status(500).send('Failed to generate questions');
   }
 });
+
+
+
+// Route for generating questions based on extraction from the database
+app.post('/api/extract-generate-questions', async (req, res) => {
+  console.log('Request Body:', req.body);
+
+  const { extractId, subject } = req.body;
+
+  if (!extractId || !subject) {
+    return res.status(400).send('extractId and subject are required');
+  }
+
+  try {
+    const generatedQuestions = await extractAndGenerateQuestions(extractId, subject);
+    res.json({ success: true, questions: generatedQuestions });
+  } catch (error) {
+    res.status(500).send('Failed to extract and generate questions');
+  }
+});
+
+
 
 // Register routes
 app.use('/api/auth', authRoutes);

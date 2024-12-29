@@ -22,7 +22,7 @@ const GenerateQuestionPage = () => {
       try {
         const originalQuestionUrl = `${process.env.REACT_APP_BACKEND_URL}/api/questions/question/${id}?subject=${subject}`;
         const generatedQuestionsUrl = `${process.env.REACT_APP_BACKEND_URL}/api/questions/generated/${id}?subject=${subject}`;
-
+   console.log(generatedQuestions)
         // Fetch original question and generated questions concurrently
         const [originalResponse, generatedResponse] = await Promise.all([
           axios.get(originalQuestionUrl),
@@ -57,7 +57,8 @@ const GenerateQuestionPage = () => {
         {error}
       </div>
     );
-
+  
+console.log("dd",generatedQuestions)
   return (
     <div className="generate-container">
       <h1 className="mb-4 text-center">Question Details for {subject}</h1>

@@ -221,6 +221,158 @@ async function generateRelatedQuestions(originalQuestionId, subject) {
   }
 }
 
+async function extractAndGenerateQuestions(extractId,subject) {
+  let tableName;
+
+  console.log('Subject:', subject);
+  console.log('Extract ID:', extractId);
+
+  // Determine table name based on the subject
+  switch (subject) {
+    case 'Reading':
+      tableName = 'selectively_readingquestion';
+      break;
+    default:
+      console.log('Invalid subject:', subject);
+      return res.status(400).send('Invalid subject for question generation');
+  }
+
+  try {
+    // Fetch data from both tables
+    const [rows] = await db.query(
+      `SELECT e.*, r.*
+       FROM selectively_extract e
+       LEFT JOIN selectively_readingquestion r ON e.id = r.extract_id
+       WHERE e.id = ?`,
+      [extractId]
+    );
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(404).send('Extract data not found in the database');
+    }
+
+    const extractedData = rows[0];
+    console.log('Extracted Data:', extractedData);
+
+    // Create the prompt for GPT
+    const prompt = `
+      Based on the following data, generate new content:
+      
+      1. Text: ${extractedData.text}
+      2. Question: ${extractedData.question || ''}
+      3. Options: ${extractedData.mcq_options || ''}
+      4. Correct Answer: ${extractedData.correct_answer || ''}
+      5. Explanation: ${extractedData.explanation || ''}
+
+      Requirements:
+      - Generate 1 new paragraph of text related to the subject.
+      - Generate exactly 5 unique multiple-choice questions (MCQs).
+      - Each MCQ must have:
+        - Question text
+        - Four options (A, B, C, D)
+        - Correct Answer
+        - Explanation
+
+      Separate questions with '---'.
+    `;
+
+    console.log('Prompt Sent to GPT:', prompt);
+
+    // Call GPT API
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: "gpt-4",
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.5,
+        max_tokens: 1500,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        },
+      }
+    );
+
+    const assistantResponse = response?.data?.choices?.[0]?.message?.content;
+    if (!assistantResponse) {
+      throw new Error('GPT API returned invalid content');
+    }
+
+    console.log('GPT Response:', assistantResponse);
+
+    // Parse the generated content
+    const [newText, ...questionBlocks] = assistantResponse.split('---');
+
+    // Insert the new text into the `selectively_extract` table
+    const [insertTextResult] = await db.execute(
+      'INSERT INTO selectively_extract (text, subject, type) VALUES (?, ?, ?)',
+      [newText.trim(), subject, 'Generated']
+    );
+    
+    const newExtractId = insertTextResult.insertId;
+
+    console.log('New Text Inserted:', newText);
+
+    // Parse and insert generated questions into the `selectively_readingquestion` table
+  
+
+    // Parse and insert generated questions into the `selectively_readingquestion` table
+    const generatedQuestions = questionBlocks.map((block) => {
+      const questionMatch = block.match(/Question [0-9]+:\s*(.+)/); // Adjusted regex for better match
+      const optionsMatch = block.match(/Options:\s*([\s\S]+?)Correct Answer:/); // Capture multiline options
+      const correctAnswerMatch = block.match(/Correct Answer:\s*(.+)/);
+      const explanationMatch = block.match(/Explanation:\s*(.+)/);
+      if (questionMatch && optionsMatch && correctAnswerMatch) {
+        return {
+          question: questionMatch[1].trim(),
+          mcq_options: optionsMatch[1].trim(),
+          correct_answer: correctAnswerMatch[1].trim(),
+          explanation: explanationMatch ? explanationMatch[1].trim() : '',
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    
+
+    // Save questions in the database
+    const savePromises = generatedQuestions.map((q) => {
+      return db.execute(
+        `INSERT INTO ${tableName} 
+         (question, mcq_options, correct_answer, explanation, type, extract_id, subject)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          q.question,
+          q.mcq_options,
+          q.correct_answer,
+          q.explanation,
+          'Generated',
+          newExtractId,
+          subject,
+        ]
+      );
+    });
+
+    await Promise.all(savePromises);
+
+    console.log('Generated Questions Inserted:', generatedQuestions);
+
+    return res.status(201).json({
+      message: 'New text and questions generated successfully',
+      newText,
+      questions: generatedQuestions,
+    });
+  } catch (error) {
+    console.error('Error generating text and questions:', error.message);
+    return res.status(500).send('An error occurred while generating content');
+  }
+}
+
+
+
+
 module.exports = {
-  generateRelatedQuestions,
+  generateRelatedQuestions,extractAndGenerateQuestions
 };

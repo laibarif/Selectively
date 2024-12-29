@@ -4,9 +4,10 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 100%;
+    height: 637px;
     padding: 20px; 
     box-sizing: border-box;
+    
 }
 
 /* Styling for the login form */
@@ -145,5 +146,11 @@ login-form-heading{
     .forgot-password,
     .signup-link {
         font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        height: 100%;
     }
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import "./landing.css";
-import hero from "../../assets/herosection.jpg";
+import hero from "../../assets/herosection.png";
+import { Link } from "react-router-dom";
 function HeroSection() {
   return (
     <>
@@ -17,12 +18,12 @@ function HeroSection() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4 text-center">
-            <a
-              href="#"
-              className="block w-full rounded bg-yellow-600 px-12 py-3 text-sm font-medium text-white shadow hover:bg-yellow-500 focus:outline-none focus:ring active:bg-rose-500 sm:w-auto"
+            <Link
+              to=''
+              className="block w-full rounded bg-yellow-600 px-12 py-3 text-sm font-medium text-white shadow hover:bg-yellow-500 focus:outline-none focus:ring active:bg-yellow-300 sm:w-auto"
             >
               Get Today
-            </a>
+            </Link>
           </div>
         </div>
         <div className=" inset-0 ltr:sm:bg-gradient-to-r rtl:sm:bg-gradient-to-l">
