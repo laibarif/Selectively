@@ -1,9 +1,19 @@
 const axios = require('axios');
 const db = require('../config/db');
+const router = require('./questionRoutes');
 require('dotenv').config();
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-async function generateRelatedQuestions(originalQuestionId, subject) {
+
+const generateRelatedQuestions = async (req, res) => {
+  console.log('Request Body:', req.body);
+
+  const { originalQuestionId, subject } = req.body;
+
+  if (!originalQuestionId || !subject) {
+    return res.status(400).send('originalQuestionId and subject are required');
+  }
+
   let tableName;
 
   console.log('originalQuestionId:', originalQuestionId);
@@ -25,7 +35,7 @@ async function generateRelatedQuestions(originalQuestionId, subject) {
       break;
     default:
       console.log('Invalid subject:', subject);
-      throw new Error('Invalid subject for question generation');
+      return res.status(400).send('Invalid subject for question generation');
   }
 
   try {
@@ -42,7 +52,7 @@ async function generateRelatedQuestions(originalQuestionId, subject) {
 
     if (!Array.isArray(rows) || rows.length === 0) {
       console.error('No data found for the given question ID.');
-      throw new Error('Parent question not found in the database.');
+      return res.status(404).send('Parent question not found in the database.');
     }
 
     const parentQuestion = rows[0];
@@ -92,7 +102,7 @@ async function generateRelatedQuestions(originalQuestionId, subject) {
 
     if (!assistantResponse || typeof assistantResponse !== 'string') {
       console.error('Invalid GPT Response:', assistantResponse);
-      throw new Error('GPT API returned invalid or empty content.');
+      return res.status(500).send('GPT API returned invalid or empty content.');
     }
 
     // Step 6: Split content and verify
@@ -105,7 +115,7 @@ async function generateRelatedQuestions(originalQuestionId, subject) {
       console.log('Split Question Blocks:', questionBlocks);
     } catch (splitError) {
       console.error('Error splitting GPT response:', splitError.message);
-      throw new Error('Failed to split GPT response.');
+      return res.status(500).send('Failed to split GPT response.');
     }
 
     // Step 7: Parse the blocks into questions
@@ -149,7 +159,7 @@ async function generateRelatedQuestions(originalQuestionId, subject) {
       .filter(Boolean); // Remove null values (invalid blocks)
 
     if (!generatedQuestions || generatedQuestions.length === 0) {
-      throw new Error('No valid questions parsed from GPT response.');
+      return res.status(500).send('No valid questions parsed from GPT response.');
     }
 
     // Step 8: Save questions to database
@@ -213,162 +223,176 @@ async function generateRelatedQuestions(originalQuestionId, subject) {
     await Promise.all(savePromises);
 
     console.log('Generated Questions Saved Successfully.');
-    return generatedQuestions;
-
+    res.json({ success: true, questions: generatedQuestions });
   } catch (error) {
     console.error('Error generating related questions:', error.message);
-    throw error;
+    res.status(500).send('Failed to generate questions');
   }
-}
+};
 
-async function extractAndGenerateQuestions(extractId,subject) {
+
+const extractAndGenerateQuestions = async (req, res) => {
   let tableName;
-
+  const { subject, extractId } = req.body;
   console.log('Subject:', subject);
   console.log('Extract ID:', extractId);
 
-  // Determine table name based on the subject
-  switch (subject) {
-    case 'Reading':
-      tableName = 'selectively_readingquestion';
-      break;
-    default:
-      console.log('Invalid subject:', subject);
-      return res.status(400).send('Invalid subject for question generation');
+
+  // Fetch data from the database
+  const [rows] = await db.query(
+    `SELECT e.*, r.*
+     FROM selectively_extract e
+     LEFT JOIN selectively_readingquestion r ON e.id = r.extract_id
+     WHERE e.id = ?`,
+    [extractId]
+  );
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error('Extract data not found in the database');
   }
 
-  try {
-    // Fetch data from both tables
-    const [rows] = await db.query(
-      `SELECT e.*, r.*
-       FROM selectively_extract e
-       LEFT JOIN selectively_readingquestion r ON e.id = r.extract_id
-       WHERE e.id = ?`,
-      [extractId]
-    );
+  const extractedData = rows[0];
+  console.log('Extracted Data:', extractedData);
 
-    if (!Array.isArray(rows) || rows.length === 0) {
-      return res.status(404).send('Extract data not found in the database');
-    }
-
-    const extractedData = rows[0];
-    console.log('Extracted Data:', extractedData);
-
-    // Create the prompt for GPT
-    const prompt = `
-      Based on the following data, generate new content:
-      
-      1. Text: ${extractedData.text}
-      2. Question: ${extractedData.question || ''}
-      3. Options: ${extractedData.mcq_options || ''}
-      4. Correct Answer: ${extractedData.correct_answer || ''}
-      5. Explanation: ${extractedData.explanation || ''}
-
-      Requirements:
-      - Generate 1 new paragraph of text related to the subject.
-      - Generate exactly 5 unique multiple-choice questions (MCQs).
-      - Each MCQ must have:
-        - Question text
-        - Four options (A, B, C, D)
-        - Correct Answer
-        - Explanation
-
-      Separate questions with '---'.
-    `;
-
-    console.log('Prompt Sent to GPT:', prompt);
-
-    // Call GPT API
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: "gpt-4",
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.5,
-        max_tokens: 1500,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        },
-      }
-    );
-
-    const assistantResponse = response?.data?.choices?.[0]?.message?.content;
-    if (!assistantResponse) {
-      throw new Error('GPT API returned invalid content');
-    }
-
-    console.log('GPT Response:', assistantResponse);
-
-    // Parse the generated content
-    const [newText, ...questionBlocks] = assistantResponse.split('---');
-
-    // Insert the new text into the `selectively_extract` table
-    const [insertTextResult] = await db.execute(
-      'INSERT INTO selectively_extract (text, subject, type) VALUES (?, ?, ?)',
-      [newText.trim(), subject, 'Generated']
-    );
+//   // Create the prompt for GPT
+  const prompt = `
+    Based on the following data, generate new content:
     
-    const newExtractId = insertTextResult.insertId;
+    1. Text: ${extractedData.text}
+    2. Question: ${extractedData.question || ''}
+    3. Options: ${extractedData.mcq_options || ''}
+    4. Correct Answer: ${extractedData.correct_answer || ''}
+    5. Explanation: ${extractedData.explanation || ''}
 
-    console.log('New Text Inserted:', newText);
+    Requirements:
+    - Generate 1 new paragraph of text related to the subject.
+    - Generate exactly 5 unique multiple-choice questions (MCQs).
+    - Each MCQ must have:
+      - Question text
+      - Four options (A, B, C, D)
+      - Correct Answer
+      - Explanation
 
-    // Parse and insert generated questions into the `selectively_readingquestion` table
+    Separate questions with '---'.
+  `;
+
+//   console.log('Prompt Sent to GPT:', prompt);
+
+//   // Call GPT API
+  const response = await axios.post(
+    'https://api.openai.com/v1/chat/completions',
+    {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.5,
+      max_tokens: 1500,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  const assistantResponse = response?.data?.choices?.[0]?.message?.content;
+ 
+  if (!assistantResponse) {
+    throw new Error('GPT API returned invalid content');
+  }
+
+  
   
 
-    // Parse and insert generated questions into the `selectively_readingquestion` table
-    const generatedQuestions = questionBlocks.map((block) => {
-      const questionMatch = block.match(/Question [0-9]+:\s*(.+)/); // Adjusted regex for better match
-      const optionsMatch = block.match(/Options:\s*([\s\S]+?)Correct Answer:/); // Capture multiline options
-      const correctAnswerMatch = block.match(/Correct Answer:\s*(.+)/);
-      const explanationMatch = block.match(/Explanation:\s*(.+)/);
-      if (questionMatch && optionsMatch && correctAnswerMatch) {
+   const cleanedAssistantResponse = assistantResponse.split('\n')
+  .map(line => line.replace(/^New Paragraph:\s*/, ''))
+  .filter(line => line.trim() !== '')  // Remove empty lines
+  .join('\n');
+    
+   
+//   // Parse the generated content
+   const [newText, ...questionBlocks] = cleanedAssistantResponse .split('---');
+
+  // Insert the new text into the `selectively_extract` table
+  const [insertTextResult] = await db.execute(
+    'INSERT INTO selectively_extract (text, subject, type) VALUES (?, ?, ?)',
+    [newText.trim(), subject, 'Generated']
+  );
+
+  const newExtractId = insertTextResult.insertId;
+console.log(newExtractId)
+  console.log('New Text Inserted:', newText);
+   console.log("question blocks before processing: ", questionBlocks);
+  
+  
+   const generatedQuestions = questionBlocks.map((block, index) => {
+    try {
+      // Trim block and normalize line breaks
+      block = block.trim().replace(/\r\n/g, '\n');
+  
+      const questionMatch = block.match(/Question.*?:\s*(.+?)\n/);
+      const optionsMatch = block.match(/Options.*?:\s*([\s\S]*?)\n(Correct Answer)/); // Capture until Correct Answer/Explanation
+      const correctAnswerMatch = block.match(/Correct Answer.*?:\s*(.+?)\n/);
+      const explanationMatch = block.match(/Explanation.*?:\s*([\s\S]*)/);
+  
+      if (
+        questionMatch &&
+        optionsMatch &&
+        correctAnswerMatch &&
+        explanationMatch
+      ) {
         return {
           question: questionMatch[1].trim(),
           mcq_options: optionsMatch[1].trim(),
           correct_answer: correctAnswerMatch[1].trim(),
-          explanation: explanationMatch ? explanationMatch[1].trim() : '',
+          explanation: explanationMatch[1].trim(),
         };
+      } else {
+        console.warn(`Block ${index + 1} has invalid format.`);
+        return null;
       }
+    } catch (error) {
+      console.error(`Error processing block ${index + 1}:`, error.message);
       return null;
-    }).filter(Boolean);
+    }
+  }).filter(Boolean);
+  
+  console.log('Generated Questions:', generatedQuestions);
 
-    
-
-    // Save questions in the database
-    const savePromises = generatedQuestions.map((q) => {
-      return db.execute(
-        `INSERT INTO ${tableName} 
-         (question, mcq_options, correct_answer, explanation, type, extract_id, subject)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          q.question,
-          q.mcq_options,
-          q.correct_answer,
-          q.explanation,
-          'Generated',
-          newExtractId,
-          subject,
-        ]
-      );
-    });
-
-    await Promise.all(savePromises);
-
-    console.log('Generated Questions Inserted:', generatedQuestions);
-
-    return res.status(201).json({
-      message: 'New text and questions generated successfully',
-      newText,
-      questions: generatedQuestions,
-    });
-  } catch (error) {
-    console.error('Error generating text and questions:', error.message);
-    return res.status(500).send('An error occurred while generating content');
+  if (!generatedQuestions || generatedQuestions.length === 0) {
+    return res.status(500).send('No valid questions parsed from GPT response.');
   }
-}
+
+  // Save questions in the database
+  const savePromises = generatedQuestions.map((q) => {
+    return db.execute(
+      `INSERT INTO selectively_readingquestion 
+       (question, mcq_options, correct_answer, explanation, type, extract_id, subject)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        q.question,
+        q.mcq_options,
+        q.correct_answer,
+        q.explanation,
+        'Generated',
+        newExtractId,
+        subject,
+      ]
+    );
+  });
+
+  await Promise.all(savePromises);
+
+  console.log('Generated Questions Inserted:', generatedQuestions);
+
+  res.json({
+    success: true,
+    message: 'New text and questions generated successfully',
+    newText,
+    questions: generatedQuestions,
+  });
+};
+
 
 
 

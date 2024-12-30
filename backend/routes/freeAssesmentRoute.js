@@ -108,7 +108,7 @@ router.get("/randomThinkingskillQuestions", async (req, res) => {
 router.get("/randomReadingQuestions", async (req, res) => {
   try {
     const [questions] = await db.query(
-      'SELECT * FROM selectiveexam.selectively_readingquestion WHERE type = "finalized" ORDER BY RAND() LIMIT 10'
+       'SELECT * FROM selectiveexam.selectively_readingquestion WHERE type = "finalized" ORDER BY RAND() LIMIT 10'
     );
 
    

@@ -15,6 +15,7 @@ import FreeAssessment from './Frontend/FreeAssessment/FreeAssessment';
 import ProtectedRoute from './Frontend/Context/ProtectedRoute';
 import ViewQuestionsPage from './Frontend/view/ViewQuestionsPage';
 import LandingPage from './Frontend/LandingPage/LandingPage';
+import ReadingGenerateQuestions from './Frontend/GenerateQuestion/ReadingGenerateQuestions';
 
 function App() {
   const location = useLocation();
@@ -44,6 +45,7 @@ function App() {
         <Route path="/questions/:subject" element={<SelectQuestionPage />} />
         <Route path="/view-questions/:subject" element={<ViewQuestionsPage />} />
         <Route path="/questions/:subject/:id" element={<GenerateQuestionPage />} />
+        <Route path="/readingQuestion/:subject/:id" element={<ReadingGenerateQuestions/>}/>
         <Route path="/landing" element={<LandingPage/>}/>
         <Route path="/free-assessment" element={<ProtectedRoute><FreeAssessment /></ProtectedRoute>} />
         

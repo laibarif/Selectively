@@ -44,6 +44,7 @@ const SelectQuestionPage = () => {
         `${process.env.REACT_APP_BACKEND_URL}/api/generate-questions`,
         { originalQuestionId: questionId, subject: subject } // Add subject here
       );
+    
       if (response.data) {
         navigate(`/questions/${subject}/${questionId}`, { state: { generatedQuestions: response.data.generatedQuestions } });
       } else {
@@ -62,8 +63,9 @@ const SelectQuestionPage = () => {
         `${process.env.REACT_APP_BACKEND_URL}/api/extract-generate-questions`,
         { extractId: questionId, subject: subject } // Add subject here
       );
+      
       if (response.data) {
-        navigate(`/questions/${subject}/${questionId}`, { state: { generatedQuestions: response.data.generatedQuestions, extractId: questionId } });
+        navigate(`/readingQuestion/${subject}/${questionId}`, { state: { extractGeneratedQuestions: response.data.extractGeneratedQuestions } });
       } else {
         console.error('No data returned from generate extract questions API');
       }
@@ -97,7 +99,7 @@ const SelectQuestionPage = () => {
           {questions.length > 0 ? (
             <div className="table-responsive">
               <table className="table table-bordered table-hover shadow-sm ">
-                <thead className="thead-dark bg-black">
+                <thead className="thead-dark bg-black w-full">
                   <tr>
                     <th>#</th>
                     <th>Question</th>
@@ -111,18 +113,19 @@ const SelectQuestionPage = () => {
                       <td>{index + 1}</td>
                       <td>{question.question ? question.question.slice(0, 80) : "No question text available"}...</td>
                       <td>{question.type || "N/A"}</td>
-                      <td className="text-center">
+                      <td className="flex gap-x-5 text-center ">
                         <button className="btn btn-success btn-sm" onClick={() => handleGenerateClick(question.id)}>
                           Generate
                         </button>
-                      </td>
-                      { subject==='Reading'&&
-                         <td className="text-center">
-                         <button className="text-sm bg-[#ffa500] rounded-md text-white" onClick={() => handleGenerateExtractClick(question.id)}>
+                        { subject==='Reading'&&
+                         
+                         <button className="btn btn-success btn-sm" onClick={() => handleGenerateExtractClick(question.id)}>
                            Generate Extact + Questions
                          </button>
-                       </td>
+                      
                       }
+                      </td>
+                     
                     </tr>
                   ))}
                 </tbody>

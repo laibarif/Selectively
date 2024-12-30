@@ -280,7 +280,7 @@ function QuestionPage() {
       toast.error("Error submitting assessment:", error);
     }
   };
-
+console.log(questions)
   return (
     <div className="h-screen bg-white flex flex-col">
       <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">

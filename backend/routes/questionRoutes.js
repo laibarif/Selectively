@@ -74,18 +74,48 @@ router.get('/question/:id', async (req, res) => {
 router.get('/generated/:originalQuestionId', async (req, res) => {
   const { originalQuestionId } = req.params;
   const { subject } = req.query;
-console.log(subject,originalQuestionId)
+
+  console.log(subject, originalQuestionId);
+
   if (!originalQuestionId || !subject) {
     return res.status(400).json({ error: 'Original question ID and subject are required' });
   }
 
   try {
-    const query = `SELECT * 
-                   FROM selectively_${subject.toLowerCase()}question 
-                   WHERE parent_question_id = ? AND type = 'Generated'
-                   ORDER BY id DESC
-                   LIMIT 5`;
-    const [rows] = await db.query(query, [originalQuestionId]);
+    if (subject.toLowerCase() === 'reading') {
+      // Verify if the extract_id exists
+      const checkQuery = `SELECT id FROM selectively_extract WHERE id = ?`;
+      const [extractRows] = await db.query(checkQuery, [originalQuestionId]);
+
+      if (extractRows.length === 0) {
+        return res.status(400).json({ error: 'Invalid extract ID. No corresponding entry in selectively_extract.' });
+      }
+    }
+
+    let query;
+    let params;
+
+    if (subject.toLowerCase() === 'reading') {
+      query = `
+        SELECT * 
+        FROM selectively_readingquestion 
+        WHERE extract_id = ?
+        AND type = 'Generated'
+        ORDER BY id DESC
+        LIMIT 5`;
+      params = [originalQuestionId];
+    } else {
+      query = `
+        SELECT * 
+        FROM selectively_${subject.toLowerCase()}question 
+        WHERE parent_question_id = ? 
+        AND type = 'Generated'
+        ORDER BY id DESC
+        LIMIT 5`;
+      params = [originalQuestionId, originalQuestionId];
+    }
+
+    const [rows] = await db.query(query, params);
 
     if (rows.length === 0) {
       return res.json([]); // Return an empty array if no generated questions are found
@@ -97,6 +127,54 @@ console.log(subject,originalQuestionId)
     res.status(500).json({ error: 'Failed to fetch generated questions' });
   }
 });
+
+
+router.get('/generated_extract/:originalQuestionId', async (req, res) => {
+  const { originalQuestionId } = req.params;
+  const { subject } = req.query;
+
+  console.log(subject, originalQuestionId);
+
+  if (!originalQuestionId || !subject) {
+    return res.status(400).json({ error: 'Original question ID and subject are required' });
+  }
+
+  try {
+    if (subject.toLowerCase() === 'reading') {
+      // Verify if the extract_id exists
+      const checkQuery = `SELECT id FROM selectively_extract WHERE id = ?`;
+      const [extractRows] = await db.query(checkQuery, [originalQuestionId]);
+
+      if (extractRows.length === 0) {
+        return res.status(400).json({ error: 'Invalid extract ID. No corresponding entry in selectively_extract.' });
+      }
+    }
+
+    let query;
+    let params;
+      query = `
+        SELECT * 
+        FROM selectively_readingquestion 
+        WHERE extract_id = ?
+        AND type = 'Generated'
+        ORDER BY id DESC
+        LIMIT 5`;
+      params = [originalQuestionId];
+    
+
+    const [rows] = await db.query(query, params);
+
+    if (rows.length === 0) {
+      return res.json([]); // Return an empty array if no generated questions are found
+    }
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Failed to fetch generated questions' });
+  }
+});
+
 
 
 
@@ -282,36 +360,38 @@ router.get('/get-question/:id', async (req, res) => {
 
  // Default memory storage
 
-// Middleware to handle image data (for base64 or file)
-const uploadImageData = (imageData) => {
+ const uploadImageData = (imageData) => {
   if (imageData) {
     const buffer = Buffer.from(imageData, 'base64');
     return buffer;
   }
-  return null;  // Return null if no image is provided
+  return null; // Return null if no image is provided
 };
 
-router.put('/update-questions/:id', upload.none(), async (req, res) => {  // upload.none() to handle non-file fields
+router.put('/update-questions/:id', upload.none(), async (req, res) => {
   const { id } = req.params;
-  const { subject } = req.query;  // Get the subject from query
+  const { subject } = req.query; // Get the subject from query
 
-  const { question, mcq_options, correct_answer, explanation, image_description, parent_question_id, image_data } = req.body;  // Logging explanation
+  const { question, mcq_options, correct_answer, explanation, image_description, parent_question_id, image_data } = req.body;
+
   if (!subject) {
     return res.status(400).json({ error: 'Subject is required' });
   }
 
   // Map subject to corresponding table
   const tableMapping = {
-    Maths: 'selectively_mathsquestion',
-    ThinkingSkills: 'selectively_thinkingskillsquestion',
-    Writing: 'selectively_writingquestion',
-    Reading: 'selectively_readingquestion',
+    Maths: { table: 'selectively_mathsquestion', parentColumn: 'parent_question_id' },
+    ThinkingSkills: { table: 'selectively_thinkingskillsquestion', parentColumn: 'parent_question_id' },
+    Writing: { table: 'selectively_writingquestion', parentColumn: 'parent_question_id' },
+    Reading: { table: 'selectively_readingquestion', parentColumn: 'extract_id' },
   };
 
-  const table = tableMapping[subject];
-  if (!table) {
+  const tableInfo = tableMapping[subject];
+  if (!tableInfo) {
     return res.status(400).json({ error: 'Invalid subject' });
   }
+
+  const { table, parentColumn } = tableInfo;
 
   // Validate required fields
   if (!question || !mcq_options || !correct_answer) {
@@ -322,37 +402,38 @@ router.put('/update-questions/:id', upload.none(), async (req, res) => {  // upl
   const imageBuffer = uploadImageData(image_data);
 
   try {
-    // Prepare the update query
-    const updateQuery = `
+    // Dynamically build the update query
+    let updateQuery = `
       UPDATE ${table} 
-      SET question = ?, mcq_options = ?, correct_answer = ?, explanation = ?, image_description = ?, image_data = ?, parent_question_id = ?
-      WHERE id = ?
+      SET question = ?, mcq_options = ?, correct_answer = ?, explanation = ?
     `;
-  
-    // Execute the query to update the question
-    const [results] = await db.query(updateQuery, [
-      question, 
-      mcq_options, 
-      correct_answer, 
-      explanation || null,  // Set to null if empty
-      image_description || null, // Set to null if empty
-      imageBuffer, // Store image data as Buffer
-      parent_question_id || null, // Set to null if empty
-      id
-    ]);
-console.log(results)
+    const queryParams = [question, mcq_options, correct_answer, explanation || null];
+
+    // Add conditional columns for tables that support image and image_description
+    if (subject === 'Maths' || subject === 'ThinkingSkills') {
+      updateQuery += `, image_description = ?, image_data = ?`;
+      queryParams.push(image_description || null, imageBuffer || null);
+    }
+
+    // Finalize the query
+    updateQuery += ` WHERE id = ?`;
+    queryParams.push(id);
+
+    // Execute the query
+    const [results] = await db.query(updateQuery, queryParams);
+
     if (results.affectedRows > 0) {
-      // If the question was updated successfully, send a success response
       res.status(200).json({ message: 'Question updated successfully' });
     } else {
       res.status(404).json({ error: 'Question not found or no changes made' });
     }
-
   } catch (error) {
     console.error('Error updating question:', error);
     res.status(500).json({ error: 'Error updating question' });
   }
 });
+
+
 
 
 

@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './GenerateQuestionPage.css'; // Ensure this CSS is correctly linked
 
-const GenerateQuestionPage = () => {
+const ReadingGenerateQuestions = () => {
   const { id, subject } = useParams();
   const [questionDetails, setQuestionDetails] = useState(null);
   const [generatedQuestions, setGeneratedQuestions] = useState([]); // For generated questions
@@ -123,9 +123,7 @@ const GenerateQuestionPage = () => {
                 </div>
                 <div className="card-body">
                   <h5>{question.question}</h5>
-                  {
-                    question.mcq_options &&
-                    <p>
+                  <p>
                   <strong>Options:</strong>
                     <ul>
                       {question.mcq_options
@@ -135,19 +133,12 @@ const GenerateQuestionPage = () => {
                         : 'N/A'}
                     </ul>
                   </p>
-                  }
-                  {
-                    question.correct_answer && 
-                    <p className="correct-answer">
+                  <p className="correct-answer">
                     <strong>Correct Answer:</strong> {question.correct_answer || 'N/A'}
                   </p>
-                  }
-                  {
-                    question.explanation &&
-                    <p>
+                  <p>
                     <strong>Explanation:</strong> {question.explanation || 'N/A'}
                   </p>
-                  }
                 </div>
               </div>
             ))}
@@ -163,4 +154,4 @@ const GenerateQuestionPage = () => {
   );
 };
 
-export default GenerateQuestionPage;
+export default ReadingGenerateQuestions;
