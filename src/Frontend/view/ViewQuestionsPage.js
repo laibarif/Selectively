@@ -132,8 +132,9 @@ const ViewQuestionsPage = () => {
       );
       setMessage("Question updated successfully");
       setTimeout(() => setMessage(null), 3000);
-      fetchQuestions(); // Refresh the question list
       setSelectedQuestion(null); // Clear the selected question
+      fetchQuestions(); // Refresh the question list
+      
     } catch (error) {
       setError("Error updating question");
       setTimeout(() => setError(null), 3000);
@@ -176,7 +177,7 @@ const ViewQuestionsPage = () => {
         <select
           onChange={handleFilterChange}
           value={filter}
-          className="block mx-auto w-72 px-4 py-2  text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="block mx-auto w-72 px-4 py-2  text-gray-700 bg-white "
         >
           <option value="All">All</option>
           <option value="Generated">Generated</option>

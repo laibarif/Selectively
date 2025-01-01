@@ -5,9 +5,10 @@ function MediaSection() {
     <section className="py-24 bg-yellow-50">
       <div className="text-center">
         <h2 className="text-4xl font-semibold sm:text-4xl text-orange-500">
-          Australia's leading online exam practice test platform
+        Get your child`s exam preparation started with free practice tests.
+        
           <br />
-          for Year 2 to 7 students
+          Try a free test
         </h2>
       </div>
       <div className="w-full mt-10">

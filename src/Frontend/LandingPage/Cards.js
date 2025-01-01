@@ -8,7 +8,7 @@ function Cards() {
     <>
       <div className="py-24 bg-yellow-50">
         <h2 className="text-4xl font-sans font-semibold text-center mb-8 text-yellow-500">
-          Online practice tests to help achieve academic success
+          Online practice tests to achieve your selective goal
         </h2>
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-12">
           {/* FREE Practice Tests Card */}
@@ -21,20 +21,19 @@ function Cards() {
               />
             </div>
             <h3 className="text-xl font-semibold text-gray-800">
-              FREE practice tests
+              Free assessment
             </h3>
-            <p className="text-sm text-gray-600 font-medium">
+            {/* <p className="text-sm text-gray-600 font-medium">
               Get a sneak peek
-            </p>
+            </p> */}
             <p className="text-gray-600 mt-4">
-              The perfect way to become familiar with the RISE+ platform and
-              personalized reporting capabilities, while exploring the different
-              types of Math's and English practice questions available for your
-              child’s year level.
+              Take a free assessment in English, Mathematical Reasoning and
+              Thinking Skills. There will be 10 questions each and will give the
+              student a flavour of the exam.
             </p>
-            <button className="bg-orange-500 text-white font-bold py-2 px-6 rounded-full hover:bg-orange-600 mt-4">
+            {/* <button className="bg-orange-500 text-white font-bold py-2 px-6 rounded-full hover:bg-orange-600 mt-4">
               Start a FREE TRIAL
-            </button>
+            </button> */}
           </div>
 
           {/* NAPLAN Practice Tests Card */}
@@ -46,20 +45,18 @@ function Cards() {
                 className="w-40 h-40 mx-auto"
               />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800">
-              NAPLAN practice tests
-            </h3>
-            <p className="text-sm text-gray-600 font-medium">
+            <h3 className="text-xl font-semibold text-gray-800">Affordable</h3>
+            {/* <p className="text-sm text-gray-600 font-medium">
               For Years 2 to 7
-            </p>
+            </p> */}
             <p className="text-gray-600 mt-4">
-              Support your child's NAPLAN preparation with NAPLAN-style English
-              and Maths practice tests, and help them get familiar with the
-              NAPLAN online test format.
+              There are varied plans to choose from to ensure we cater for the
+              requirements of everyone. Extremely easy process to sign up for
+              your child.
             </p>
-            <button className="bg-yellow-500 text-white font-bold py-2 px-6 rounded-full hover:bg-yellow-600 mt-4">
+            {/* <button className="bg-yellow-500 text-white font-bold py-2 px-6 rounded-full hover:bg-yellow-600 mt-4">
               About NAPLAN practice tests
-            </button>
+            </button> */}
           </div>
 
           {/* ICAS Practice Tests Card */}
@@ -72,18 +69,20 @@ function Cards() {
               />
             </div>
             <h3 className="text-xl font-semibold text-gray-800">
-              ICAS practice tests
+              Online Practice Tests
             </h3>
-            <p className="text-sm text-gray-600 font-medium">
+            {/* <p className="text-sm text-gray-600 font-medium">
               For Years 2 to 7
-            </p>
+            </p> */}
             <p className="text-gray-600 mt-4">
-              Help your child achieve their ambitious ICAS goals with realistic
-              practice on the same test player as the ICAS competition.
+              And once you sign upyour child receives - mock tests of English,
+              Mathematical Reasoning, Thinking Skills and Creative Writing. If
+              your child is not ready yet and requires some warm up- there are
+              many practice questions too.
             </p>
-            <button className="bg-orange-500 text-white font-bold py-2 px-6 rounded-full hover:bg-orange-400 mt-4">
+            {/* <button className="bg-orange-500 text-white font-bold py-2 px-6 rounded-full hover:bg-orange-400 mt-4">
               About ICAS practice tests
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
