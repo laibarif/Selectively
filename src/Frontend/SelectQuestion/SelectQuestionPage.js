@@ -63,12 +63,12 @@ const SelectQuestionPage = () => {
         `${process.env.REACT_APP_BACKEND_URL}/api/extract-generate-questions`,
         { extractId: questionId, subject: subject } // Add subject here
       );
-      
-      if (response.data) {
-        navigate(`/readingQuestion/${subject}/${questionId}`, { state: { extractGeneratedQuestions: response.data.extractGeneratedQuestions } });
-      } else {
-        console.error('No data returned from generate extract questions API');
-      }
+      console.log("bhia ho jaa", response.data)
+      // if (response.data) {
+      //   navigate(`/readingQuestion/${subject}/${questionId}`, { state: { extractGeneratedQuestions: response.data.extractGeneratedQuestions } });
+      // } else {
+      //   console.error('No data returned from generate extract questions API');
+      // }
     } catch (error) {
       console.error('Error generating extract questions:', error);
       setError("Failed to generate extract questions. Please try again.");

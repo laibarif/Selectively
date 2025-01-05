@@ -74,7 +74,6 @@ router.get('/question/:id', async (req, res) => {
 router.get('/generated/:originalQuestionId', async (req, res) => {
   const { originalQuestionId } = req.params;
   const { subject } = req.query;
-
   console.log(subject, originalQuestionId);
 
   if (!originalQuestionId || !subject) {

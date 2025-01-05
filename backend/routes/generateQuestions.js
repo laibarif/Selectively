@@ -239,13 +239,15 @@ const extractAndGenerateQuestions = async (req, res) => {
 
 
   // Fetch data from the database
+
   const [rows] = await db.query(
     `SELECT e.*, r.*
      FROM selectively_extract e
-     LEFT JOIN selectively_readingquestion r ON e.id = r.extract_id
+     LEFT JOIN selectively_readingquestion r ON e.id = r.id
      WHERE e.id = ?`,
     [extractId]
   );
+ 
 
   if (!Array.isArray(rows) || rows.length === 0) {
     throw new Error('Extract data not found in the database');
@@ -265,18 +267,18 @@ const extractAndGenerateQuestions = async (req, res) => {
     5. Explanation: ${extractedData.explanation || ''}
 
     Requirements:
-    - Generate 1 new paragraph of text related to the subject.
-    - Generate exactly 5 unique multiple-choice questions (MCQs).
+    - Generate 1 new paragraph of Text based(extractedData.text) on the subject matter of the provided "Text" field.
+    - Generate exactly 5 unique multiple-choice questions (MCQs) directly based on the provided question(extractedData.quesiton), options(extractedData.options), correct answer(extractedData.correct_answer), and explanation(extractedData.explanation).
     - Each MCQ must have:
       - Question text
       - Four options (A, B, C, D)
       - Correct Answer
-      - Explanation
+      - Explanation 
 
     Separate questions with '---'.
   `;
 
-//   console.log('Prompt Sent to GPT:', prompt);
+  console.log('Prompt Sent to GPT:', prompt);
 
 //   // Call GPT API
   const response = await axios.post(

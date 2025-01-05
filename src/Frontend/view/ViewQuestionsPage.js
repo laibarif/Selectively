@@ -134,7 +134,6 @@ const ViewQuestionsPage = () => {
       setTimeout(() => setMessage(null), 3000);
       setSelectedQuestion(null); // Clear the selected question
       fetchQuestions(); // Refresh the question list
-      
     } catch (error) {
       setError("Error updating question");
       setTimeout(() => setError(null), 3000);
@@ -283,8 +282,8 @@ const ViewQuestionsPage = () => {
 
         {selectedQuestion && questionText && type && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-4xl">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-4xl mx-auto overflow-y-auto max-h-[90vh]">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
                 Edit Question
               </h2>
               <form onSubmit={handleUpdate} className="space-y-4">

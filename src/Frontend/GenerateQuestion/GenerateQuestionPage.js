@@ -81,6 +81,9 @@ const GenerateQuestionPage = () => {
             <p>
               <strong>Type:</strong> {questionDetails.type}
             </p>
+           {
+            questionDetails.mcq_options && questionDetails.mcq_options.trim() && (
+           
             <p>
               <strong>Options:</strong>
               <ul>
@@ -91,12 +94,24 @@ const GenerateQuestionPage = () => {
                   : 'N/A'}
               </ul>
             </p>
+            )
+            }
+            {
+              questionDetails.correct_answer && questionDetails.correct_answer.trim() && (
             <p className="correct-answer">
               <strong>Correct Answer:</strong> {questionDetails.correct_answer}
             </p>
+             )
+            }
+             {
+              questionDetails.explanation && questionDetails.explanation.trim() && (
             <p>
               <strong>Explanation:</strong> {questionDetails.explanation}
             </p>
+              )
+              }
+           
+
             {questionDetails.image_data && (
               <div className="text-center">
                 <h5>Image:</h5>

@@ -36,7 +36,7 @@ const FreeAssesment = () => {
 
   return (
     <div
-      className="flex flex-col items-center justify-center  bg-gray-200"
+      className="w-full flex flex-col items-center justify-center  bg-gray-200"
       
       style={{
         overflow: 'hidden',
@@ -48,7 +48,7 @@ const FreeAssesment = () => {
         backgroundPosition: 'center',
       }}
     >
-      <div className="bg-white py-10 px-8 rounded-lg w-72  md:w-full sm:max-w-2xl">
+      <div className="py-10 px-8 rounded-lg w-1/2">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 ">
           Student Information
         </h2>
