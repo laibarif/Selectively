@@ -19,6 +19,10 @@ app.use(cors({
   credentials: true,
 }));
 
+app.get("/", (req, res) => {
+  res.send("Hello World selectively");
+});
+
 // app.post('/api/generate-questions', async (req, res) => {
 //   console.log('Request Body:', req.body);
 
