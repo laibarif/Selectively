@@ -1,113 +1,158 @@
 const express = require("express");
 const db = require("../config/db.js");
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 const router = express.Router();
-const path = require('path');
+const path = require("path");
+const he = require("he");
+
+const WHITELISTED_EMAILS = ["awaisnaeem962@gmail.com", "kamini.soni.74@gmail.com","rsaini77@gmail.com","adeelnaeem2588@gmail.com"]; // Add emails that can perform multiple assessments
 
 router.post("/userdetailforassesment", async (req, res) => {
   const { email } = req.body;
 
-  if ( !email) {
-    return res
-      .status(400)
-      .json({ message: "email are required." });
+  if (!email) {
+    return res.status(400).json({ message: "Email is required." });
   }
 
   try {
-    const [rows] = await db.query("SELECT * FROM userdetailforassesment WHERE email = ?", [email]);
+    const [rows] = await db.query(
+      "SELECT * FROM userdetailforassesment WHERE email = ?",
+      [email]
+    );
 
     const existingUser = rows[0];
 
-    if (existingUser && existingUser.is_assessed === 1) {
-      return res
-        .status(400)
-        .json({ message: "Email already exists. Free trial used." });
+    // Check if the email is in the whitelist
+    const isWhitelisted = WHITELISTED_EMAILS.includes(email);
+
+    // If the email is not whitelisted, enforce the original conditions
+    if (!isWhitelisted) {
+      if (existingUser && existingUser.is_assessed === 1) {
+        return res
+          .status(400)
+          .json({ message: "Email already exists. Free trial used." });
+      }
+
+      if (existingUser && existingUser.is_assessed === 0) {
+        await db.query(
+          "UPDATE userdetailforassesment SET is_assessed = true WHERE email = ?",
+          [email]
+        );
+        return res
+          .status(200)
+          .json({ message: "User details updated for assessment." });
+      }
     }
 
-    if (existingUser && existingUser.is_assessed === 0) {
-      await db.query(
-        "UPDATE userdetailforassesment SET is_assessed = true WHERE email = ?",
-        [ email]
-      );
-      return res
-        .status(200)
-        .json({ message: "User details updated for assessment." });
-    }
-
+    // If the email is whitelisted or not previously existing, allow multiple assessments
     await db.query(
-      "INSERT INTO userdetailforassesment (email, is_assessed) VALUES (?, false)",
-      [ email]
+      "INSERT INTO userdetailforassesment (email, is_assessed) VALUES (?, false) ON DUPLICATE KEY UPDATE is_assessed = false",
+      [email]
     );
 
-    res.status(201).json({ message: "User details added for assessment." });
+    res.status(201).json({
+      message: isWhitelisted
+        ? "Assessment allowed for whitelisted email."
+        : "User details added for assessment.",
+    });
   } catch (error) {
-    console.error('Error in /userdetailforassesment route:', error);
+    console.error("Error in /userdetailforassesment route:", error);
     res.status(500).json({ message: "Server error." });
   }
-}); 
+});
+
 
 router.get("/randomMathsQuestions", async (req, res) => {
   try {
+    // Fetch all finalized questions, including those without images
     const [questions] = await db.query(
       `SELECT 
     q.*, 
-    p.image_data, 
-    p.image_description 
-FROM 
+    CASE 
+        WHEN q.parent_question_id IS NOT NULL THEN p.image_data
+        ELSE q.image_data 
+    END AS image_data,
+    CASE 
+        WHEN q.parent_question_id IS NOT NULL THEN p.image_description
+        ELSE q.image_description 
+    END AS image_description
+FROM  
     selectively_mathsquestion q
 LEFT JOIN 
     selectively_mathsquestion p ON q.parent_question_id = p.id
 WHERE 
-    q.type = "finalized" 
-    AND (p.image_data IS NULL AND p.image_description IS NULL)
+    q.type = "finalized"
 ORDER BY 
-    RAND() 
-LIMIT 10`
+    RAND()
+LIMIT 10;
+`
     );
 
     if (questions.length === 0) {
       return res.status(404).json({ message: "No questions found." });
     }
 
-    // Process each question to handle image data
-    const processedQuestions = questions.map((question) => {
-      if (question.image_data) {
-        // Convert image_data to base64
-        question.image_data = `data:image/png;base64,${Buffer.from(
-          question.image_data
-        ).toString("base64")}`;
-      }
-      return question;
+    questions.image_data = questions.image_data
+      ? Buffer.from(questions.image_data).toString("base64")
+      : null;
+
+    const removeSpecialCharsQuestion = (question) => {
+      return question
+        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    };
+
+    // Sanitize the extract_text field
+    questions.forEach((question) => {
+      question.question = removeSpecialCharsQuestion(question.question);
     });
-    res.status(200).json({ questions: processedQuestions });
+
+    const removeSpecialCharsDiscription = (image_description) => {
+      return image_description
+        ?.replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    };
+
+    // Sanitize the extract_text field
+    questions.forEach((question) => {
+      question.image_description = removeSpecialCharsDiscription(
+        question.image_description
+      );
+    });
+
+    // Send the questions to the frontend
+    res.status(200).json({ questions });
   } catch (error) {
     console.error("Error in /randomMathsQuestions route:", error);
     res.status(500).json({ message: "Server error." });
   }
 });
 
-
 router.get("/randomThinkingskillQuestions", async (req, res) => {
   try {
     const [questions] = await db.query(
-      'SELECT * FROM selectiveexam.selectively_thinkingskillsquestion WHERE type = "finalized" AND question IS NOT NULL AND question != "" AND mcq_options IS NOT NULL ORDER BY RAND() LIMIT 10'
+      'SELECT * FROM selectively_thinkingskillsquestion WHERE type = "finalized" AND question IS NOT NULL AND question != "" AND mcq_options IS NOT NULL ORDER BY RAND() LIMIT 10'
     );
-    
-
-    
 
     if (questions.length === 0) {
       return res.status(404).json({ message: "No questions found." });
     }
+    const removeSpecialCharsQuestion = (question) => {
+      return question
+        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    };
 
+    // Sanitize the extract_text field
+    questions.forEach((question) => {
+      question.question = removeSpecialCharsQuestion(question.question);
+    });
     res.status(200).json({ questions });
   } catch (error) {
     console.error("Error fetching thinking skills questions:", error);
     res.status(500).json({ message: "Server error." });
   }
 });
-
-
 
 router.get("/randomReadingQuestions", async (req, res) => {
   try {
@@ -123,9 +168,9 @@ router.get("/randomReadingQuestions", async (req, res) => {
          r.type, 
          e.text AS extract_text 
        FROM 
-         selectiveexam.selectively_readingquestion r
+         selectively_readingquestion r
        JOIN 
-         selectiveexam.selectively_extract e 
+         selectively_extract e 
        ON 
          r.extract_id = e.id
        WHERE 
@@ -142,7 +187,29 @@ router.get("/randomReadingQuestions", async (req, res) => {
     if (questions.length === 0) {
       return res.status(404).json({ message: "No questions found." });
     }
-    
+
+    // Function to remove special characters from the extract text
+    const removeSpecialChars = (text) => {
+      return text
+        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    };
+
+    // Sanitize the extract_text field
+    questions.forEach((question) => {
+      question.extract_text = removeSpecialChars(question.extract_text);
+    });
+
+    const removeSpecialCharsQuestion = (question) => {
+      return question
+        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    };
+
+    // Sanitize the extract_text field
+    questions.forEach((question) => {
+      question.question = removeSpecialCharsQuestion(question.question);
+    });
     // Send the fetched questions as a JSON response
     res.status(200).json({ questions });
   } catch (error) {
@@ -152,69 +219,89 @@ router.get("/randomReadingQuestions", async (req, res) => {
   }
 });
 
-
-
 router.post("/submitMathsAssessment", async (req, res) => {
   const { email, score, questionStatus } = req.body;
 
   // Ensure email, score, and questionStatus are provided
   if (!email || score === undefined || !questionStatus) {
-    return res.status(400).json({ message: "Email, score, and questionStatus are required." });
+    return res
+      .status(400)
+      .json({ message: "Email, score, and questionStatus are required." });
   }
 
   try {
     const query = `
-      UPDATE selectiveexam.userdetailforassesment
+      UPDATE userdetailforassesment
       SET maths_score = ?, maths_question_status = ?
       WHERE LOWER(email) = LOWER(?)
     `;
-    
+
     // Execute the query using db.query (no need for .promise())
-    const [result] = await db.query(query, [score, JSON.stringify(questionStatus), email]);
+    const [result] = await db.query(query, [
+      score,
+      JSON.stringify(questionStatus),
+      email
+    ]);
 
     // Check if the update was successful (affected rows should be > 0)
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found or no changes made." });
+      return res
+        .status(404)
+        .json({ message: "User not found or no changes made." });
     }
 
     // Respond with a success message
-    res.status(200).json({ message: "Maths assessment score and question status updated successfully." });
+    res
+      .status(200)
+      .json({
+        message:
+          "Maths assessment score and question status updated successfully."
+      });
   } catch (error) {
     console.error("Error updating maths assessment:", error);
     res.status(500).json({ message: "Server error." });
   }
 });
 
-
-
-
 router.post("/submitThinkingSkillsAssessment", async (req, res) => {
   const { email, score, questionStatus } = req.body;
 
   if (!email || score === undefined || !questionStatus) {
-    return res.status(400).json({ message: "Email, score, and questionStatus are required." });
+    return res
+      .status(400)
+      .json({ message: "Email, score, and questionStatus are required." });
   }
 
   try {
     const query = `
-      UPDATE selectiveexam.userdetailforassesment
+      UPDATE userdetailforassesment
       SET thinking_skills_score = ?, thinking_skills_question_status = ?
       WHERE LOWER(email) = LOWER(?)
     `;
-    
+
     // Execute the query using db.query (no need for .promise())
-    const [result] = await db.query(query, [score, JSON.stringify(questionStatus), email]);
+    const [result] = await db.query(query, [
+      score,
+      JSON.stringify(questionStatus),
+      email
+    ]);
 
     // Check if the update was successful (affected rows should be > 0)
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found or no changes made." });
+      return res
+        .status(404)
+        .json({ message: "User not found or no changes made." });
     }
 
     res.status(200).json({
-      message: "Thinking skills assessment score and question status updated successfully.",
+      message:
+        "Thinking skills assessment score and question status updated successfully."
     });
   } catch (error) {
-    console.error("Error updating thinking skills score and question status:", error);
+    console.error(
+      "Error updating thinking skills score and question status:",
+      error
+    );
     res.status(500).json({ message: "Server error." });
   }
 });
@@ -223,26 +310,35 @@ router.post("/randomReadingQuestions", async (req, res) => {
   const { email, score, questionStatus } = req.body;
 
   if (!email || score === undefined || !questionStatus) {
-    return res.status(400).json({ message: "Email, score, and questionStatus are required." });
+    return res
+      .status(400)
+      .json({ message: "Email, score, and questionStatus are required." });
   }
 
   try {
     const query = `
-      UPDATE selectiveexam.userdetailforassesment
+      UPDATE userdetailforassesment
       SET reading_score = ?, reading_question_status = ?
       WHERE LOWER(email) = LOWER(?)
     `;
-    
+
     // Execute the query using db.query (no need for .promise())
-    const [result] = await db.query(query, [score, JSON.stringify(questionStatus), email]);
+    const [result] = await db.query(query, [
+      score,
+      JSON.stringify(questionStatus),
+      email
+    ]);
 
     // Check if the update was successful (affected rows should be > 0)
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found or no changes made." });
+      return res
+        .status(404)
+        .json({ message: "User not found or no changes made." });
     }
 
     res.status(200).json({
-      message: "Reading assessment score and question status updated successfully.",
+      message:
+        "Reading assessment score and question status updated successfully."
     });
   } catch (error) {
     console.error("Error updating reading score and question status:", error);
@@ -250,11 +346,9 @@ router.post("/randomReadingQuestions", async (req, res) => {
   }
 });
 
-
-
 async function checkTestScore(email, scoreColumn) {
   try {
-    const query = `SELECT ${scoreColumn} FROM selectiveexam.userdetailforassesment WHERE email = ?`;
+    const query = `SELECT ${scoreColumn} FROM serdetailforassesment WHERE email = ?`;
     const [result] = await db.promise().query(query, [email]);
     if (result.length === 0) {
       return { error: "User not found." };
@@ -264,17 +358,19 @@ async function checkTestScore(email, scoreColumn) {
     return {
       incomplete: isIncomplete,
       message: isIncomplete
-        ? `The test for ${scoreColumn.replace('_', ' ')} is incomplete.`
-        : `The test for ${scoreColumn.replace('_', ' ')} is already completed.`,
+        ? `The test for ${scoreColumn.replace("_", " ")} is incomplete.`
+        : `The test for ${scoreColumn.replace("_", " ")} is already completed.`
     };
   } catch (error) {
-    console.error(`Error checking ${scoreColumn} score for email ${email}:`, error);
-    throw new Error('Database query failed.');
+    console.error(
+      `Error checking ${scoreColumn} score for email ${email}:`,
+      error
+    );
+    throw new Error("Database query failed.");
   }
 }
 
-
-router.post('/checkReadingTestAlreadyConduct', async (req, res) => {
+router.post("/checkReadingTestAlreadyConduct", async (req, res) => {
   const { email } = req.body;
   console.log(email);
 
@@ -285,7 +381,7 @@ router.post('/checkReadingTestAlreadyConduct', async (req, res) => {
   try {
     const query = `
       SELECT reading_score
-      FROM selectiveexam.userdetailforassesment 
+      FROM userdetailforassesment 
       WHERE LOWER(email) = LOWER(?)
     `;
 
@@ -303,26 +399,22 @@ router.post('/checkReadingTestAlreadyConduct', async (req, res) => {
     if (reading_score !== null) {
       return res.status(400).json({
         message: "Test has already been conducted before.",
-        navigate: false,
+        navigate: false
       });
     }
 
     return res.status(200).json({
       message: "Test is incomplete. Please proceed with the test.",
-      navigate: true,
+      navigate: true
     });
-
   } catch (error) {
-    console.error('Error in /checkReadingTestAlreadyConduct route:', error);
-    res.status(500).json({ message: 'Server error.' });
+    console.error("Error in /checkReadingTestAlreadyConduct route:", error);
+    res.status(500).json({ message: "Server error." });
   }
 });
 
-
-
-
 // Route to check math test
-router.post('/checkMathTestAlreadyConduct', async (req, res) => {
+router.post("/checkMathTestAlreadyConduct", async (req, res) => {
   const { email } = req.body;
 
   // Validate input parameters
@@ -333,7 +425,7 @@ router.post('/checkMathTestAlreadyConduct', async (req, res) => {
   try {
     const query = `
       SELECT maths_score
-      FROM selectiveexam.userdetailforassesment 
+      FROM userdetailforassesment 
       WHERE LOWER(email) = LOWER(?)
     `;
 
@@ -351,27 +443,24 @@ router.post('/checkMathTestAlreadyConduct', async (req, res) => {
     if (maths_score !== null) {
       return res.status(400).json({
         message: "Test has already been conducted before.",
-        navigate: false, 
+        navigate: false
       });
     }
 
     // If the test is incomplete, return a message to proceed with the test
     return res.status(200).json({
       message: "Test is incomplete. Please proceed with the test.",
-      navigate: true,
+      navigate: true
     });
-    
   } catch (error) {
     // Log the error for debugging purposes
-    console.error('Error checking math test:', error);
-    res.status(500).json({ message: 'Server error.' });
+    console.error("Error checking math test:", error);
+    res.status(500).json({ message: "Server error." });
   }
 });
 
-
-
 // Route to check thinking skills test
-router.post('/checkThinkingSkillsTestAlreadyConduct', async (req, res) => {
+router.post("/checkThinkingSkillsTestAlreadyConduct", async (req, res) => {
   const { email } = req.body;
 
   // Validate email input
@@ -382,7 +471,7 @@ router.post('/checkThinkingSkillsTestAlreadyConduct', async (req, res) => {
   try {
     const query = `
       SELECT thinking_skills_score
-      FROM selectiveexam.userdetailforassesment 
+      FROM userdetailforassesment 
       WHERE LOWER(email) = LOWER(?)
     `;
 
@@ -400,69 +489,65 @@ router.post('/checkThinkingSkillsTestAlreadyConduct', async (req, res) => {
     if (thinking_skills_score !== null) {
       return res.status(400).json({
         message: "Test has already been conducted before.",
-        navigate: false, // Custom key to indicate no navigation
+        navigate: false // Custom key to indicate no navigation
       });
     }
 
     // If the test is incomplete, prompt to proceed with the test
     return res.status(200).json({
       message: "Test is incomplete. Please proceed with the test.",
-      navigate: true, // Custom key to allow navigation
+      navigate: true // Custom key to allow navigation
     });
-    
   } catch (error) {
     // Log the error for debugging purposes
-    console.error('Error checking thinking skills test:', error);
-    res.status(500).json({ message: 'Server error.' });
+    console.error("Error checking thinking skills test:", error);
+    res.status(500).json({ message: "Server error." });
   }
 });
-
-
-
-
-
-
 
 // Function to check if it's a string and parse it
 const safeParse = (data) => {
   try {
     // Check if the data is a string and then parse it
-    return typeof data === 'string' ? JSON.parse(data) : data;
+    return typeof data === "string" ? JSON.parse(data) : data;
   } catch (error) {
-    console.error('Error parsing JSON:', error);
+    console.error("Error parsing JSON:", error);
     return []; // Return an empty array if parsing fails
   }
 };
 
-
 // Route to send user details via email
-router.post('/send-user-details', async (req, res) => {
+router.post("/send-user-details", async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ message: 'Email is required.' });
+    return res.status(400).json({ message: "Email is required." });
   }
 
   try {
     // Get a connection from the pool
     const connection = await db.getConnection();
-    
+
     // Query the database to find the user details by email
     const [results] = await connection.query(
-      'SELECT * FROM selectiveexam.userdetailforassesment WHERE email = ?',
+      "SELECT * FROM userdetailforassesment WHERE email = ?",
       [email]
     );
 
     if (results.length === 0) {
-      return res.status(404).json({ message: 'User not found in the table.' });
+      return res.status(404).json({ message: "User not found in the table." });
     }
 
     const userDetails = results[0];
 
     // Safely parse the JSON fields from the database (handle any malformed JSON)
     const mathsQuestionStatus = safeParse(userDetails.maths_question_status);
-    const thinkingSkillsQuestionStatus = safeParse(userDetails.thinking_skills_question_status);
-    const readingQuestionStatus = safeParse(userDetails.reading_question_status);
+    const thinkingSkillsQuestionStatus = safeParse(
+      userDetails.thinking_skills_question_status
+    );
+    const readingQuestionStatus = safeParse(
+      userDetails.reading_question_status
+    );
 
     if (
       !mathsQuestionStatus ||
@@ -473,14 +558,18 @@ router.post('/send-user-details', async (req, res) => {
       readingQuestionStatus.length === 0
     ) {
       return res.status(400).json({
-        message: 'Please complete 3 books tests before submitting.',
+        message: "Please complete 3 books tests before submitting."
       });
     }
 
     // Function to count attempted and unattempted questions
     const countAttempts = (questionStatus) => {
-      const attempted = questionStatus.filter(item => item.status === 'attempted').length;
-      const unattempted = questionStatus.filter(item => item.status !== 'attempted').length;
+      const attempted = questionStatus.filter(
+        (item) => item.status === "attempted"
+      ).length;
+      const unattempted = questionStatus.filter(
+        (item) => item.status !== "attempted"
+      ).length;
       return { attempted, unattempted };
     };
 
@@ -569,15 +658,14 @@ router.post('/send-user-details', async (req, res) => {
       </html>
     `;
 
-
     const transporter = nodemailer.createTransport({
-      host: 'smtp.hostinger.com', 
-      port: 465,                 
-      secure: true,         
+      host: "smtp.hostinger.com",
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,  // Your Hostinger email password
-      },
+        pass: process.env.EMAIL_PASSWORD // Your Hostinger email password
+      }
     });
     // Configure the transporter for sending email
     // const transporter = nodemailer.createTransport({
@@ -592,23 +680,31 @@ router.post('/send-user-details', async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Your Assessment Result Card',
-      html: emailContent,  
+      subject: "Your Assessment Result Card",
+      html: emailContent,
       attachments: [
         {
-          filename: 'logo.png',
-          path: path.join(__dirname, '../assests/Logo_White-Complete.jpg'), 
-          cid: 'logo@unique.id' 
+          filename: "logo.png",
+          path: path.join(__dirname, "../assests/Logo_White-Complete.jpg"),
+          cid: "logo@unique.id"
         }
-      ],
+      ]
     };
 
     // Send email
     await transporter.sendMail(mailOptions);
 
-    // Update the 'is_assessed' field to 1 after sending the email
     await connection.query(
-      'UPDATE selectiveexam.userdetailforassesment SET is_assessed = 1 WHERE email = ?',
+      `UPDATE userdetailforassesment 
+       SET 
+         is_assessed = 1, 
+         maths_score = NULL, 
+         thinking_skills_score = NULL, 
+         reading_score = NULL, 
+         maths_question_status = NULL, 
+         thinking_skills_question_status = NULL, 
+         reading_question_status = NULL
+       WHERE email = ?`,
       [email]
     );
 
@@ -617,18 +713,21 @@ router.post('/send-user-details', async (req, res) => {
 
     // Send the success response
     res.status(200).json({
-      message: 'Assessment details sent successfully via email, and is_assessed updated to 1.',
+      message:
+        "Assessment details sent successfully via email, and is_assessed updated to 1."
     });
   } catch (error) {
-    console.error('Error occurred:', error);
-    res.status(500).json({ message: 'An error occurred while processing your request.' });
+    console.error("Error occurred:", error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while processing your request." });
   }
 });
 
 // Helper function to safely parse JSON
 const parseJsonSafe = (data) => {
   try {
-    return typeof data === 'string' ? JSON.parse(data) : data;
+    return typeof data === "string" ? JSON.parse(data) : data;
   } catch (error) {
     console.error("JSON parsing error:", error);
     return []; // Return an empty array or appropriate default value
@@ -637,14 +736,16 @@ const parseJsonSafe = (data) => {
 
 router.get("/userAssessmentDetails", async (req, res) => {
   const { email } = req.query;
- 
 
   if (!email) {
     return res.status(400).json({ message: "Email is required." });
   }
 
   try {
-    const [rows] = await db.query("SELECT * FROM selectiveexam.userdetailforassesment WHERE email = ?", [email]);
+    const [rows] = await db.query(
+      "SELECT * FROM userdetailforassesment WHERE email = ?",
+      [email]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "User not found." });
@@ -681,14 +782,20 @@ router.get("/userAssessmentDetails", async (req, res) => {
         totalUnattempted,
         totalAttempted, // Including correct and wrong in attempted count
         totalCorrect,
-        totalWrong,
+        totalWrong
       };
     };
 
     // Safely parse and calculate statistics for each section
-    const mathsStats = calculateQuestionStats(parseJsonSafe(user.maths_question_status));
-    const thinkingSkillsStats = calculateQuestionStats(parseJsonSafe(user.thinking_skills_question_status));
-    const readingStats = calculateQuestionStats(parseJsonSafe(user.reading_question_status));
+    const mathsStats = calculateQuestionStats(
+      parseJsonSafe(user.maths_question_status)
+    );
+    const thinkingSkillsStats = calculateQuestionStats(
+      parseJsonSafe(user.thinking_skills_question_status)
+    );
+    const readingStats = calculateQuestionStats(
+      parseJsonSafe(user.reading_question_status)
+    );
 
     // Send response with calculated statistics
     res.status(200).json({
@@ -697,11 +804,11 @@ router.get("/userAssessmentDetails", async (req, res) => {
         email: user.email,
         maths_score: user.maths_score,
         thinking_skills_score: user.thinking_skills_score,
-        reading_score: user.reading_score,
+        reading_score: user.reading_score
       },
       mathsStats,
       thinkingSkillsStats,
-      readingStats,
+      readingStats
     });
   } catch (error) {
     console.error("Error in /userAssessmentDetails route:", error);
@@ -709,12 +816,4 @@ router.get("/userAssessmentDetails", async (req, res) => {
   }
 });
 
-
- 
-
-
-
 module.exports = router;
-
-
-

@@ -65,9 +65,14 @@ function QuestionPage() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`
-        );
+  const response = await axios.get(
+    `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`,
+    {
+      headers: {
+        "Accept": "application/json; charset=utf-8",
+      },
+    }
+  );
         setQuestions(response.data.questions);
         setAnswers(new Array(response.data.questions.length).fill(null));
         setLoading(false);
@@ -154,19 +159,42 @@ function QuestionPage() {
     }
   };
 
+  const parseExtracts = (extractText) => {
+    if (!extractText) return [];
+  
+    return extractText.split("\n\n").map((extract) => {
+      // Split the extract into title (e.g., "Extract A") and the rest
+      const [title, ...paragraphs] = extract.split("\n");
+      return {
+        title: title.trim(),
+        paragraphs: paragraphs.map((para) => para.trim()).filter(Boolean), // Remove empty lines
+      };
+    });
+  };
+
   const parseOptions = (optionsString) => {
+    
     if (!optionsString) return [];
+    
     return optionsString.split(",").map((option) => {
+      // Remove leading and trailing spaces
       const trimmedOption = option.trim();
-      const separatorIndex = trimmedOption.indexOf(" ");
+  
+      // Find the closing parenthesis `)`
+      const separatorIndex = trimmedOption.indexOf(")");
+  
       if (separatorIndex === -1) {
         return { label: trimmedOption, value: trimmedOption };
       }
-      const label = trimmedOption.substring(0, separatorIndex).trim();
-      const value = trimmedOption.substring(separatorIndex + 1).trim();
+  
+      // Get the label (the letter before the parenthesis) and the value (the text after it)
+      const label = trimmedOption.substring(0, separatorIndex).trim();  // "A", "B", etc.
+      const value = trimmedOption.substring(separatorIndex + 1).trim(); // "War and violence", etc.
+  
       return { label, value };
     });
   };
+  
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -200,6 +228,7 @@ function QuestionPage() {
     question: "Question not available",
     mcq_options: ""
   };
+  const extracts = parseExtracts(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
 
   const handleSubmit = async () => {
@@ -281,6 +310,8 @@ function QuestionPage() {
     }
   };
 
+
+console.log(currentQuestion)
   return (
     <div className="h-screen bg-white flex flex-col">
       <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">
@@ -293,6 +324,7 @@ function QuestionPage() {
       {/* Main Content Section */}
       <div className="flex-grow flex flex-col md:flex-row pt-20 overflow-auto">
         {/* Left Panel */}
+
         <div
           className="w-full md:w-1/2 bg-white p-6 pt-10  "
           style={
@@ -310,7 +342,7 @@ function QuestionPage() {
 
           {currentQuestion?.image_data && (
             <img
-              src={`data:image/png;base64,${currentQuestion.image_data}`}
+            src={`data:image/jpeg;base64,${currentQuestion.image_data}`}
               loading="lazy"
               alt="Question Image"
               className="w-40 h-40 mb-4"
@@ -323,12 +355,17 @@ function QuestionPage() {
             </p>
           )}
            {
-          currentQuestion?.extract_text && (
-            <p className="text-black  mt-2 text-bold">
-              {currentQuestion.extract_text}
-            </p>
-          )
-         }
+        extracts.map((extract, index) => (
+          <div key={index} className="w-10/12 mb-6">
+            <h1 className="text-2xl">{extract.title}</h1>
+            {extract.paragraphs.map((paragraph, idx) => (
+              <p key={idx} className="text-black mt-2">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        ))
+       }
         </div>
 
         <div
@@ -338,7 +375,7 @@ function QuestionPage() {
             cursor: "col-resize",
             backgroundColor: "gray",
             width: "2px",
-            height: "100%"
+            height:"100%"
           }}
         ></div>
 

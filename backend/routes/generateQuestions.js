@@ -250,7 +250,10 @@ const extractAndGenerateQuestions = async (req, res) => {
  
 
   if (!Array.isArray(rows) || rows.length === 0) {
-    throw new Error('Extract data not found in the database');
+    return res.status(404).json({
+      success: false,
+      message: 'No text found for this extractId in the selectively_extract table.',
+    });
   }
 
   const extractedData = rows[0];

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams,  useNavigate} from 'react-router-dom';
+import { useParams,  useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
 import './SelectQuestionPage.css'; // Add custom styles
 
@@ -37,25 +37,28 @@ const SelectQuestionPage = () => {
   // const handleGenerateClick = (questionId) => {
   //   navigate(`/questions/${subject}/${questionId}`);
   // };
-  const handleGenerateClick = async (questionId) => {
-    alert("Please wait for few seconds while the questions are being generated...");
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/generate-questions`,
-        { originalQuestionId: questionId, subject: subject } // Add subject here
-      );
+ const handleGenerateClick = async (questionId) => {
+  alert("Please wait for a few seconds while the questions are being generated...");
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_BACKEND_URL}/api/generate-questions`,
+      { originalQuestionId: questionId, subject: subject }
+    );
     
-     
-      if (response.data) {
-        navigate(`/questions/${subject}/${questionId}`, { state: { generatedQuestions: response.data.generatedQuestions } });
-      } else {
-        console.error('No data returned from generate questions API');
-      }
-    } catch (error) {
-      console.error('Error generating questions:', error);
-      setError("Failed to generate questions. Please try again.");
+    // Check if the response contains data
+    if (response.data && response.data.success) {
+      navigate(`/questions/${subject}/${questionId}`, { state: { generatedQuestions: response.data.generatedQuestions } });
+    } else {
+      // Handle error message returned from backend (in case of failure or no text found)
+      const errorMessage = response.data?.message || "Failed to generate extract questions. Please try again.";
+      setError(errorMessage);
     }
-  };
+  } catch (error) {
+    console.error('Error generating questions:', error);
+    setError("No text found for this extractId in the selectively_extract table. Please try again.");
+  }
+};
+
   
   const handleGenerateExtractClick = async (questionId) => {
     alert("Please wait for few seconds while the extract questions are being generated...");
@@ -92,7 +95,12 @@ const SelectQuestionPage = () => {
       ) : error ? (
         // Error State
         <div className="alert alert-danger text-center" role="alert">
-          {error}
+          <p>{error}</p>
+          <button className='text-xl bg-orange-600 px-3 py-2 mt-3 rounded-md text-white hover:bg-orange-500'>
+            <Link to="/admin-dashboard">
+            Go Back
+            </Link>
+            </button>
         </div>
       ) : (
         // Questions Table

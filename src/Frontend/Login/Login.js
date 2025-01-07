@@ -8,7 +8,8 @@ const Login = () => {
     usernameOrEmail: '',  // Single field for both username or email
     password: '',
   });
-
+  console.log("hello")
+console.log(process.env.REACT_APP_BACKEND_URL)
   const [error, setError] = useState(null);  // To hold error messages
   const [loading, setLoading] = useState(false);  // To manage loading state
   const [successMessage, setSuccessMessage] = useState('');  // To show success message

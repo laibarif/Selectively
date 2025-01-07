@@ -172,23 +172,24 @@ const ViewQuestionsPage = () => {
  
 
   return (
-    <>
-      <div className="w-4/12 ">
-        <label className="block mx-auto w-72 px-1 font-semibold py-1 mt-8 text-gray-700 bg-white ">
+    <div>
+      
+      <div className="w-4/12 shadow-none">
+        <label className="block mx-auto w-72 px-1 font-semibold py-1 mt-8 text-gray-700 ">
           Search Questions type
         </label>
         <select
           onChange={handleFilterChange}
           value={filter}
-          className="block mx-auto w-72 px-4 py-2  text-gray-700 bg-white "
+          className="block mx-auto w-72 px-4 py-2  text-gray-700 "
         >
           <option value="All">All</option>
           <option value="Generated">Generated</option>
           <option value="Original">Original</option>
         </select>
       </div>
-
       <div className="select-question-container">
+    
         {showHeading && (
           <h1 className="select-question-heading text-center mb-4 text-primary">
             View questions of {subject}
@@ -481,7 +482,7 @@ const ViewQuestionsPage = () => {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

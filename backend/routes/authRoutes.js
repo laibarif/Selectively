@@ -20,13 +20,13 @@ const query = (sql, values) => {
 // Route to check username availability
 router.get('/check-username', async (req, res) => {
   const { username } = req.query;
-
+console.log(username)
   if (!username) {
     return res.status(400).json({ message: 'Username is required.' });
   }
 
   try {
-    const [results] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+    const [results] = await db.query('SELECT * FROM users WHERE first_name = ?', [username]);
 
     if (results.length > 0) {
       return res.status(200).json({ available: false, message: 'Username is already taken.' });
@@ -42,6 +42,7 @@ router.get('/check-username', async (req, res) => {
 // Route to handle user registration (Signup)
 router.post('/signup', async (req, res) => {
   const { parent, children, terms } = req.body;
+
   console.log('Children Data:', children);
 
   // Basic validation
@@ -55,19 +56,21 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ message: 'Please provide all required parent details.' });
   }
 
-  const connection = db; // Use promise-based queries
+  let connection;
 
   try {
+    // Get a transaction-capable connection
+    connection = await db.getConnection();
+    await connection.beginTransaction();
+
     // Check if username is already taken
-    const [existingUsers] = await connection.query('SELECT * FROM children WHERE username = ?', [children.username]);
+    const [existingUsers] = await connection.query(
+      'SELECT * FROM children WHERE username = ?',
+      [children[0]?.username] // Access the first child's username
+    );
     if (existingUsers.length > 0) {
       return res.status(400).json({ message: 'Username already taken.' });
     }
-
-    // Start transaction
-    await connection.beginTransaction();
-
-  
 
     // Insert parent into the database
     const [parentResult] = await connection.query(
@@ -82,20 +85,16 @@ router.post('/signup', async (req, res) => {
       if (!child.firstName || !child.lastName || !child.grade || !child.username || !child.password) {
         throw new Error('Child details are incomplete.');
       }
-      
+
       // Hash child's password
       const childHashedPassword = await bcrypt.hash(child.password, 10);
 
-      try {
-        await connection.query(
-          'INSERT INTO children (parent_id, first_name, last_name, grade, school, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [parentId, child.firstName, child.lastName, child.grade, child.school || null, child.username, childHashedPassword]
-        );
-        console.log('Children added:', child);
-      } catch (childError) {
-        console.error('Error inserting child:', childError);
-        throw new Error('Child data insertion failed');
-      }
+      await connection.query(
+        'INSERT INTO children (parent_id, first_name, last_name, grade, school, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [parentId, child.firstName, child.lastName, child.grade, child.school || null, child.username, childHashedPassword]
+      );
+
+      console.log('Child added:', child);
     }
 
     // Generate 2FA secret
@@ -122,10 +121,12 @@ router.post('/signup', async (req, res) => {
 
     // Send OTP via email
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.hostinger.com',
+      port: 465,
+      secure: true,
       auth: {
-        user: process.env.EMAIL_USER, // Your Gmail address
-        pass: process.env.EMAIL_PASSWORD, // Your Gmail password or App Password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD, // Your Hostinger email password
       },
     });
 
@@ -145,24 +146,32 @@ router.post('/signup', async (req, res) => {
     });
   } catch (error) {
     // Rollback transaction in case of error
-    await connection.rollback();
+    if (connection) {
+      await connection.rollback();
+    }
     console.error('Error during signup:', error);
     res.status(500).json({ message: error.message || 'Signup failed. Please try again.' });
+  } finally {
+    // Release the connection back to the pool
+    if (connection) {
+      await connection.release();
+    }
   }
 });
+
 
 
 // Route to verify OTP
 router.post('/verify-otp', async (req, res) => {
   const { emailforverifyotp, otp } = req.body;
-
+console.log(emailforverifyotp,otp)
   if (!emailforverifyotp || !otp) {
     return res.status(400).json({ message: 'Username and OTP are required.' });
   }
 
   try {
     // Fetch user by username
-    const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [emailforverifyotp]);
     if (users.length === 0) {
       return res.status(400).json({ message: 'Invalid firstName or OTP.' });
     }
@@ -225,16 +234,16 @@ router.post('/send-otp', async (req, res) => {
     catch{
       console.log("Not Verified");
     }
+ const transporter = nodemailer.createTransport({
+       host: "smtp.hostinger.com",
+       port: 465,
+       secure: true,
+       auth: {
+         user: process.env.EMAIL_USER,
+         pass: process.env.EMAIL_PASSWORD // Your Hostinger email password
+       }
+     });
 
-
-    // Send OTP via email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, // Your Gmail address
-        pass: process.env.EMAIL_PASSWORD, // Your Gmail password or App Password
-      },
-    });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
