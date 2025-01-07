@@ -91,7 +91,11 @@ LIMIT 10;
 router.get("/randomThinkingskillQuestions", async (req, res) => {
   try {
     const [questions] = await db.query(
+<<<<<<< HEAD
       'SELECT * FROM selectiveexam.selectively_thinkingskillsquestion WHERE type = "finalized" AND question IS NOT NULL AND question != "" AND mcq_options IS NOT NULL ORDER BY RAND() LIMIT 10'
+=======
+      'SELECT * FROM selectively_thinkingskillsquestion WHERE type = "finalized" ORDER BY RAND() LIMIT 10'
+>>>>>>> ef248eed1783b8d3fb753fdee4e4028f499c33c6
     );
     
 
@@ -114,6 +118,7 @@ router.get("/randomReadingQuestions", async (req, res) => {
   try {
     // Execute the query to fetch random reading questions along with the corresponding text from the extract table
     const [questions] = await db.query(
+<<<<<<< HEAD
       `SELECT 
          r.id AS question_id, 
          r.question, 
@@ -137,6 +142,9 @@ router.get("/randomReadingQuestions", async (req, res) => {
        ORDER BY 
          RAND() 
        LIMIT 10`
+=======
+       'SELECT * FROM selectively_readingquestion WHERE type = "finalized" ORDER BY RAND() LIMIT 10'
+>>>>>>> ef248eed1783b8d3fb753fdee4e4028f499c33c6
     );
 
     // Check if no questions were found
@@ -165,7 +173,7 @@ router.post("/submitMathsAssessment", async (req, res) => {
 
   try {
     const query = `
-      UPDATE selectiveexam.userdetailforassesment
+      UPDATE userdetailforassesment
       SET maths_score = ?, maths_question_status = ?
       WHERE LOWER(email) = LOWER(?)
     `;
@@ -198,7 +206,7 @@ router.post("/submitThinkingSkillsAssessment", async (req, res) => {
 
   try {
     const query = `
-      UPDATE selectiveexam.userdetailforassesment
+      UPDATE userdetailforassesment
       SET thinking_skills_score = ?, thinking_skills_question_status = ?
       WHERE LOWER(email) = LOWER(?)
     `;
@@ -229,7 +237,7 @@ router.post("/randomReadingQuestions", async (req, res) => {
 
   try {
     const query = `
-      UPDATE selectiveexam.userdetailforassesment
+      UPDATE userdetailforassesment
       SET reading_score = ?, reading_question_status = ?
       WHERE LOWER(email) = LOWER(?)
     `;
@@ -255,7 +263,7 @@ router.post("/randomReadingQuestions", async (req, res) => {
 
 async function checkTestScore(email, scoreColumn) {
   try {
-    const query = `SELECT ${scoreColumn} FROM selectiveexam.userdetailforassesment WHERE email = ?`;
+    const query = `SELECT ${scoreColumn} FROM userdetailforassesment WHERE email = ?`;
     const [result] = await db.promise().query(query, [email]);
     if (result.length === 0) {
       return { error: "User not found." };
@@ -286,7 +294,7 @@ router.post('/checkReadingTestAlreadyConduct', async (req, res) => {
   try {
     const query = `
       SELECT reading_score
-      FROM selectiveexam.userdetailforassesment 
+      FROM userdetailforassesment 
       WHERE LOWER(email) = LOWER(?)
     `;
 
@@ -334,7 +342,7 @@ router.post('/checkMathTestAlreadyConduct', async (req, res) => {
   try {
     const query = `
       SELECT maths_score
-      FROM selectiveexam.userdetailforassesment 
+      FROM userdetailforassesment 
       WHERE LOWER(email) = LOWER(?)
     `;
 
@@ -383,7 +391,7 @@ router.post('/checkThinkingSkillsTestAlreadyConduct', async (req, res) => {
   try {
     const query = `
       SELECT thinking_skills_score
-      FROM selectiveexam.userdetailforassesment 
+      FROM userdetailforassesment 
       WHERE LOWER(email) = LOWER(?)
     `;
 
@@ -450,7 +458,7 @@ router.post('/send-user-details', async (req, res) => {
     
     // Query the database to find the user details by email
     const [results] = await connection.query(
-      'SELECT * FROM selectiveexam.userdetailforassesment WHERE email = ?',
+      'SELECT * FROM userdetailforassesment WHERE email = ?',
       [email]
     );
 
@@ -609,7 +617,7 @@ router.post('/send-user-details', async (req, res) => {
 
     // Update the 'is_assessed' field to 1 after sending the email
     await connection.query(
-      'UPDATE selectiveexam.userdetailforassesment SET is_assessed = 1 WHERE email = ?',
+      'UPDATE userdetailforassesment SET is_assessed = 1 WHERE email = ?',
       [email]
     );
 
@@ -645,7 +653,7 @@ router.get("/userAssessmentDetails", async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query("SELECT * FROM selectiveexam.userdetailforassesment WHERE email = ?", [email]);
+    const [rows] = await db.query("SELECT * FROM userdetailforassesment WHERE email = ?", [email]);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "User not found." });

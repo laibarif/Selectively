@@ -31,7 +31,7 @@ const ViewQuestionsPage = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:5000/api/questions/views-questions/${subject}`
+        `${process.env.REACT_APP_BACKEND_URL}/api/questions/views-questions/${subject}`
       );
 
       setQuestions(response.data.questions);
@@ -51,7 +51,7 @@ const ViewQuestionsPage = () => {
     setLoading(true);
     try {
       await axios.put(
-        `http://localhost:5000/api/questions/update-question/${id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/questions/update-question/${id}`,
         null,
         { params: { subject } }
       );
@@ -71,7 +71,7 @@ const ViewQuestionsPage = () => {
   const handleDeleteQuestion = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/questions/delete-question/${id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/questions/delete-question/${id}`,
         { params: { subject } }
       );
       setDeleteConfirm(null);
@@ -89,7 +89,7 @@ const ViewQuestionsPage = () => {
   const handleEdit = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/questions/get-question/${id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/questions/get-question/${id}`,
         { params: { subject } }
       );
 
@@ -126,7 +126,7 @@ const ViewQuestionsPage = () => {
         console.log(`${pair[0]}: ${pair[1]}`); // Debug: Log fields being sent
       }
       await axios.put(
-        `http://localhost:5000/api/questions/update-questions/${selectedQuestion}?subject=${subject}`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/questions/update-questions/${selectedQuestion}?subject=${subject}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -145,7 +145,7 @@ const ViewQuestionsPage = () => {
   const handleView = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/questions/get-question/${id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/questions/get-question/${id}`,
         { params: { subject } }
       );
       setViewQuestion(response.data); // Set the question details for viewing

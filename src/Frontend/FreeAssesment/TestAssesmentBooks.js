@@ -32,7 +32,7 @@ function TestAssesmentBooks() {
           return;
         }
         const response = await axios.get(
-          `http://localhost:5000/api/freeassesment/userAssessmentDetails?email=${email}`
+          `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/userAssessmentDetails?email=${email}`
         );
         setAssessmentDetails(response.data);
       } catch (error) {
