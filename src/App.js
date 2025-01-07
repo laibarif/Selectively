@@ -45,7 +45,7 @@ function App() {
         <Route path="/questions/:subject" element={<SelectQuestionPage />} />
         <Route path="/view-questions/:subject" element={<ViewQuestionsPage />} />
         <Route path="/questions/:subject/:id" element={<GenerateQuestionPage />} />
-        <Route path="/readingQuestion/:subject/:id" element={<ReadingGenerateQuestions/>}/>
+        <Route path="/readingQuestion/:subject/:questionId/:extractQuestionId" element={<ReadingGenerateQuestions/>}/>
         <Route path="/landing" element={<LandingPage/>}/>
         <Route path="/free-assessment" element={<ProtectedRoute><FreeAssessment /></ProtectedRoute>} />
         

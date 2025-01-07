@@ -390,6 +390,7 @@ console.log(newExtractId)
   res.json({
     success: true,
     message: 'New text and questions generated successfully',
+    extract_id:newExtractId,
     newText,
     questions: generatedQuestions,
   });

@@ -1,6 +1,7 @@
 import React from "react";
 import star from "../../assets/stars.png";
 import plant from "../../assets/Plant.jpg";
+import { Link } from "react-router-dom";
 const Reviews = () => {
   return (
     <div className="relative py-28 bg-yellow-50">
@@ -53,9 +54,11 @@ const Reviews = () => {
           <p className="text-3xl font-normal text-gray-800">
             Take your child's academic results to the next level
           </p>
-          <button className="bg-orange-800 text-white font-bold py-3 px-4 mt-4 md:mt-0 rounded-full hover:bg-orange-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-400">
+          <Link
+          to="/signup"
+          className="bg-orange-800 text-white font-bold py-3 px-4 mt-4 md:mt-0 rounded-full hover:bg-orange-700 transition duration-300 ease-in-out transform hover:-translate-y-1 ">
             Sign up today
-          </button>
+          </Link>
         </div>
       </div>
     </div>

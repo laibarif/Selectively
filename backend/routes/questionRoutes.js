@@ -9,6 +9,7 @@ const upload = multer();
 // Route to fetch all questions for a subject
 router.get('/:subject', async (req, res) => {
   const { subject } = req.params;
+ 
   console.log(subject)
   const tableMapping = {
     Maths: 'selectively_mathsquestion',
@@ -34,6 +35,7 @@ router.get('/:subject', async (req, res) => {
 // Route to fetch complete question details by ID
 router.get('/question/:id', async (req, res) => {
   const { id } = req.params;
+  
   const subject = req.query.subject; // Make sure 'subject' is required and being sent
 
   if (!id || !subject) {
@@ -74,7 +76,6 @@ router.get('/question/:id', async (req, res) => {
 router.get('/generated/:originalQuestionId', async (req, res) => {
   const { originalQuestionId } = req.params;
   const { subject } = req.query;
-  console.log(subject, originalQuestionId);
 
   if (!originalQuestionId || !subject) {
     return res.status(400).json({ error: 'Original question ID and subject are required' });
@@ -131,7 +132,7 @@ router.get('/generated/:originalQuestionId', async (req, res) => {
 router.get('/generated_extract/:originalQuestionId', async (req, res) => {
   const { originalQuestionId } = req.params;
   const { subject } = req.query;
-
+console.log("extract wala")
   console.log(subject, originalQuestionId);
 
   if (!originalQuestionId || !subject) {
@@ -139,16 +140,6 @@ router.get('/generated_extract/:originalQuestionId', async (req, res) => {
   }
 
   try {
-    if (subject.toLowerCase() === 'reading') {
-      // Verify if the extract_id exists
-      const checkQuery = `SELECT id FROM selectively_extract WHERE id = ?`;
-      const [extractRows] = await db.query(checkQuery, [originalQuestionId]);
-
-      if (extractRows.length === 0) {
-        return res.status(400).json({ error: 'Invalid extract ID. No corresponding entry in selectively_extract.' });
-      }
-    }
-
     let query;
     let params;
       query = `
@@ -162,7 +153,7 @@ router.get('/generated_extract/:originalQuestionId', async (req, res) => {
     
 
     const [rows] = await db.query(query, params);
-
+console.log("rows ", rows)
     if (rows.length === 0) {
       return res.json([]); // Return an empty array if no generated questions are found
     }
@@ -307,7 +298,7 @@ router.delete('/delete-question/:id', async (req, res) => {
 //question detail from db on the basis of id and subject
 router.get('/get-question/:id', async (req, res) => {
   const { id } = req.params;
-  const { subject } = req.query;  // Get the subject from the query
+  const { subject } = req.query; // Get the subject from the query
   if (!subject) {
     return res.status(400).json({ error: 'Subject is required' });
   }
@@ -335,14 +326,14 @@ router.get('/get-question/:id', async (req, res) => {
     if (results.length > 0) {
       const question = results[0];
 
-      // Check if image_data exists and is a Buffer
-      if (question.image_data && Buffer.isBuffer(question.image_data.data)) {
-        const buffer = Buffer.from(question.image_data.data);
-        const base64Image = buffer.toString('base64');
-        question.image_data_base64 = `data:image/jpeg;base64,${base64Image}`;  // Modify MIME type if needed
+      // Check if image_data exists and process it
+      if (question.image_data) {
+        // Convert BLOB to Base64
+        const buffer = Buffer.from(question.image_data); // Use the BLOB field directly
+        question.image_data = `data:image/jpeg;base64,${buffer.toString('base64')}`;
       }
 
-      res.status(200).json(question);  // Send the question details (with Base64 image) to the frontend
+      res.status(200).json(question);
     } else {
       res.status(404).json({ error: 'Question not found' });
     }
@@ -351,6 +342,8 @@ router.get('/get-question/:id', async (req, res) => {
     res.status(500).json({ error: 'Error fetching question' });
   }
 });
+
+
 
 
 

@@ -72,7 +72,7 @@ console.log(response)
             <input
               type="text"
               name="usernameOrEmail"
-              placeholder="Username or Email"
+              placeholder="Enter your username"
               className="input-field"
               value={formData.usernameOrEmail}
               onChange={handleChange}

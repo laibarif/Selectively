@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Banner = () => {
   return (
@@ -7,9 +8,11 @@ const Banner = () => {
         <p className="text-3xl font-normal text-gray-800">
           Get your child's exam preparation started with free practice tests
         </p>
-        <button className="bg-orange-800 text-white font-bold py-3 px-4 mt-4 md:mt-0 rounded-full hover:bg-orange-600 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-400">
+        <Link to="/freeassesment"
+        
+        className="bg-orange-800 text-white font-bold py-3 px-4 mt-4 md:mt-0 rounded-full hover:bg-orange-700 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg ">
           Try a FREE test
-        </button>
+        </Link>
       </div>
     </div>
   );

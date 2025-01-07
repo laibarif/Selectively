@@ -50,18 +50,20 @@ router.get("/randomMathsQuestions", async (req, res) => {
   try {
     const [questions] = await db.query(
       `SELECT 
-          q.*, 
-          p.image_data, 
-          p.image_description 
-       FROM 
-          selectively_mathsquestion q
-       LEFT JOIN 
-          selectively_mathsquestion p ON q.parent_question_id = p.id
-       WHERE 
-          q.type = "finalized"
-       ORDER BY 
-          RAND() 
-       LIMIT 10`
+    q.*, 
+    p.image_data, 
+    p.image_description 
+FROM 
+    selectively_mathsquestion q
+LEFT JOIN 
+    selectively_mathsquestion p ON q.parent_question_id = p.id
+WHERE 
+    q.type = "finalized" 
+    AND (p.image_data IS NULL AND p.image_description IS NULL)
+ORDER BY 
+    RAND() 
+LIMIT 10;
+`
     );
 
     if (questions.length === 0) {
@@ -89,8 +91,9 @@ router.get("/randomMathsQuestions", async (req, res) => {
 router.get("/randomThinkingskillQuestions", async (req, res) => {
   try {
     const [questions] = await db.query(
-      'SELECT * FROM selectiveexam.selectively_thinkingskillsquestion WHERE type = "finalized" ORDER BY RAND() LIMIT 10'
+      'SELECT * FROM selectiveexam.selectively_thinkingskillsquestion WHERE type = "finalized" AND question IS NOT NULL AND question != "" AND mcq_options IS NOT NULL ORDER BY RAND() LIMIT 10'
     );
+    
 
     
 
@@ -105,25 +108,50 @@ router.get("/randomThinkingskillQuestions", async (req, res) => {
   }
 });
 
+
+
 router.get("/randomReadingQuestions", async (req, res) => {
   try {
+    // Execute the query to fetch random reading questions along with the corresponding text from the extract table
     const [questions] = await db.query(
-       'SELECT * FROM selectiveexam.selectively_readingquestion WHERE type = "finalized" ORDER BY RAND() LIMIT 10'
+      `SELECT 
+         r.id AS question_id, 
+         r.question, 
+         r.mcq_options, 
+         r.correct_answer, 
+         r.explanation, 
+         r.subject, 
+         r.type, 
+         e.text AS extract_text 
+       FROM 
+         selectiveexam.selectively_readingquestion r
+       JOIN 
+         selectiveexam.selectively_extract e 
+       ON 
+         r.extract_id = e.id
+       WHERE 
+         r.type = "finalized" 
+         AND r.question IS NOT NULL 
+         AND r.question != "" 
+         AND r.mcq_options IS NOT NULL
+       ORDER BY 
+         RAND() 
+       LIMIT 10`
     );
 
-   
-
+    // Check if no questions were found
     if (questions.length === 0) {
       return res.status(404).json({ message: "No questions found." });
     }
-
+    
+    // Send the fetched questions as a JSON response
     res.status(200).json({ questions });
   } catch (error) {
+    // Log and handle any errors that occur
     console.error("Error fetching reading questions:", error);
     res.status(500).json({ message: "Server error." });
   }
 });
-
 
 
 
@@ -437,6 +465,19 @@ router.post('/send-user-details', async (req, res) => {
     const thinkingSkillsQuestionStatus = safeParse(userDetails.thinking_skills_question_status);
     const readingQuestionStatus = safeParse(userDetails.reading_question_status);
 
+    if (
+      !mathsQuestionStatus ||
+      mathsQuestionStatus.length === 0 ||
+      !thinkingSkillsQuestionStatus ||
+      thinkingSkillsQuestionStatus.length === 0 ||
+      !readingQuestionStatus ||
+      readingQuestionStatus.length === 0
+    ) {
+      return res.status(400).json({
+        message: 'Please complete 3 books tests before submitting.',
+      });
+    }
+
     // Function to count attempted and unattempted questions
     const countAttempts = (questionStatus) => {
       const attempted = questionStatus.filter(item => item.status === 'attempted').length;
@@ -529,14 +570,24 @@ router.post('/send-user-details', async (req, res) => {
       </html>
     `;
 
-    // Configure the transporter for sending email
+
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.hostinger.com', 
+      port: 465,                 
+      secure: true,         
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        pass: process.env.EMAIL_PASSWORD,  // Your Hostinger email password
       },
     });
+    // Configure the transporter for sending email
+    // const transporter = nodemailer.createTransport({
+    //   service: 'gmail',
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASSWORD,
+    //   },
+    // });
 
     // Set up the email options
     const mailOptions = {
@@ -660,7 +711,7 @@ router.get("/userAssessmentDetails", async (req, res) => {
 });
 
 
-
+ 
 
 
 

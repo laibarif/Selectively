@@ -19,7 +19,7 @@ way for top results.
 
           <div className="mt-8 flex flex-wrap gap-4 text-center">
             <Link
-              to=''
+              to='/freeassesment'
               className="block w-full rounded bg-yellow-600 px-12 py-3 text-sm font-medium text-white shadow hover:bg-yellow-500 focus:outline-none focus:ring active:bg-yellow-300 sm:w-auto"
             >
               Try a free test for my child

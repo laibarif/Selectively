@@ -280,7 +280,7 @@ function QuestionPage() {
       toast.error("Error submitting assessment:", error);
     }
   };
-console.log(questions)
+
   return (
     <div className="h-screen bg-white flex flex-col">
       <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">
@@ -294,7 +294,7 @@ console.log(questions)
       <div className="flex-grow flex flex-col md:flex-row pt-20 overflow-auto">
         {/* Left Panel */}
         <div
-          className="w-full md:w-1/2 bg-white p-6 pt-10 "
+          className="w-full md:w-1/2 bg-white p-6 pt-10  "
           style={
             window.innerWidth >= 768
               ? { width: `${leftWidth}%`, minHeight: "calc(100vh - 80px)" }
@@ -303,7 +303,7 @@ console.log(questions)
         >
           <p className="w-10/12 py-4 text-2xl font-bold space-y-10 text-gray-800 mb-4 text-justify">
             <span className="font-bold text-2xl text-black">
-              Question {currentIndex + 1}:{" "}
+              Question {currentIndex + 1}<br/>
             </span>
             {currentQuestion?.question || "Question not available"}
           </p>
@@ -322,6 +322,13 @@ console.log(questions)
               {currentQuestion.image_description}
             </p>
           )}
+           {
+          currentQuestion?.extract_text && (
+            <p className="text-black  mt-2 text-bold">
+              {currentQuestion.extract_text}
+            </p>
+          )
+         }
         </div>
 
         <div
@@ -373,10 +380,10 @@ console.log(questions)
       </div>
 
       {/* Footer Section */}
-      <div className="fixed bottom-0 left-0 right-0 bg-red-600 text-white py-3 flex justify-between z-30">
+      <div className="relative bottom-0 left-0 right-0 bg-orange-500 text-white py-3 flex justify-between z-30">
         <button
           onClick={handlePrevious}
-          className={`hover:bg-red-600 p-2 rounded-md font-semibold ${
+          className={` p-2 rounded-md font-semibold ${
             currentIndex === 0 || timerEnded
               ? "opacity-50 cursor-not-allowed"
               : ""
@@ -387,7 +394,7 @@ console.log(questions)
         </button>
         <button
           onClick={handleNext}
-          className={`hover:bg-red-600 p-2 rounded-md font-semibold ${
+          className={` p-2 rounded-md font-semibold ${
             currentIndex === questions.length - 1 || timerEnded
               ? "opacity-50 cursor-not-allowed"
               : ""
