@@ -322,7 +322,16 @@ router.get('/get-question/:id', async (req, res) => {
       `SELECT * FROM ${table} WHERE id = ?`,
       [id]
     );
+    const removeSpecialCharsQuestion = (question) => {
+      return question
+        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    };
 
+    // Sanitize the extract_text field
+    results.forEach((questions) => {
+      questions.question = removeSpecialCharsQuestion(questions.question);
+    });
     if (results.length > 0) {
       const question = results[0];
 
@@ -332,6 +341,8 @@ router.get('/get-question/:id', async (req, res) => {
         const buffer = Buffer.from(question.image_data); // Use the BLOB field directly
         question.image_data = `data:image/jpeg;base64,${buffer.toString('base64')}`;
       }
+
+      
 
       res.status(200).json(question);
     } else {
@@ -344,7 +355,80 @@ router.get('/get-question/:id', async (req, res) => {
 });
 
 
+                //Controller to get text from extract table and quesition detail
 
+// router.get('/get-question/:id', async (req, res) => {
+//   const { id } = req.params;
+//   const { subject } = req.query; // Get the subject from the query
+//   if (!subject) {
+//     return res.status(400).json({ error: 'Subject is required' });
+//   }
+
+//   // Map subject to corresponding table
+//   const tableMapping = {
+//     Maths: 'selectively_mathsquestion',
+//     ThinkingSkills: 'selectively_thinkingskillsquestion',
+//     Writing: 'selectively_writingquestion',
+//     Reading: 'selectively_readingquestion',
+//   };
+
+//   const table = tableMapping[subject];
+//   if (!table) {
+//     return res.status(400).json({ error: 'Invalid subject' });
+//   }
+
+//   try {
+//     // Fetch question details from the corresponding table
+//     const [results] = await db.query(
+//       `SELECT * FROM ${table} WHERE id = ?`,
+//       [id]
+//     );
+
+//     if (results.length > 0) {
+//       const question = results[0];
+
+//       // Sanitize the question field
+//       const removeSpecialCharsQuestion = (text) => {
+//         if (!text) return ''; // Return an empty string if the text is undefined or null
+//         return text
+//           .replace(/&#x[0-9A-Fa-f]+;/g, '') // Remove HTML entities like &#xE2;
+//           .replace(/[^\w\s]/gi, ''); // Remove non-alphanumeric characters except spaces
+//       };
+//       question.question = removeSpecialCharsQuestion(question.question);
+
+//       // Process image_data if it exists
+//       if (question.image_data) {
+//         const buffer = Buffer.from(question.image_data); // Use the BLOB field directly
+//         question.image_data = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+//       }
+
+//       // If subject is Reading, fetch extract data using extract_id
+//       if (subject === 'Reading' && question.extract_id) {
+//         const [extractResults] = await db.query(
+//           `SELECT * FROM selectively_extract WHERE id = ?`,
+//           [question.extract_id]
+//         );
+
+//         if (extractResults.length > 0) {
+//           // Sanitize the extract_text field
+//           extractResults[0].extract_text = removeSpecialCharsQuestion(
+//             extractResults[0].extract_text
+//           );
+//           question.extract = extractResults[0];
+//         } else {
+//           question.extract = null; // No extract found
+//         }
+//       }
+
+//       res.status(200).json(question);
+//     } else {
+//       res.status(404).json({ error: 'Question not found' });
+//     }
+//   } catch (error) {
+//     console.error('Error fetching question:', error);
+//     res.status(500).json({ error: 'Error fetching question' });
+//   }
+// });
 
 
 

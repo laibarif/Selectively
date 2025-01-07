@@ -170,7 +170,7 @@ const ViewQuestionsPage = () => {
   
   
  
-
+console.log(viewQuestion)
   return (
     <div>
       
@@ -225,7 +225,7 @@ const ViewQuestionsPage = () => {
                   {filteredQuestions.map((question, index) => (
                     <tr key={question.id}>
                       <td>{index + 1}</td>
-                      <td>{question.question.slice(0, 80)}...</td>
+                      <td>{question.question?.slice(0, 80)}...</td>
                       <td>{question.type || "N/A"}</td>
                       <td className="text-center flex justify-between gap-2">
                         <button
@@ -409,8 +409,18 @@ const ViewQuestionsPage = () => {
         )}
 
         {viewQuestion && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ">
             <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-4xl">
+{/* Conditionally render the paragraph
+{viewQuestion.extract && (
+                <div className="mb-4">
+                  <p className="text-lg font-semibold text-gray-700">
+                    <strong className="mr-2">paragraph:</strong>
+                    <span className=""> {viewQuestion?.extract.text}</span>
+                  </p>
+                </div>
+              )} */}
+
               {/* Conditionally render the Image Description */}
               {viewQuestion.image_description && (
                 <div className="mb-4">
@@ -423,14 +433,15 @@ const ViewQuestionsPage = () => {
 
               {/* Conditionally render the Image */}
               {viewQuestion.image_data && (
-                <div className="mb-4 flex justify-center">
-                  <img
-                    src={viewQuestion.image_data}
-                    alt="image-desc"
-                    className="h-40 w-40 object-cover border border-gray-300 rounded-md"
-                  />
-                </div>
-              )}
+              <div className="mb-4 flex justify-center">
+                
+                <img
+                  src={`data:image/jpeg;base64,${viewQuestion.image_data}`}
+                  alt={viewQuestion.image_description || 'Question image'}
+                   className="h-40 w-40 object-cover border border-gray-300 rounded-md"
+                />
+              </div>
+            )}
 
               <div className="mb-4">
                 <p className="text-lg font-semibold text-black">

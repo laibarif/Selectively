@@ -128,7 +128,7 @@ function TestAssesmentBooks() {
           </div>
 
           <div class="w-full h-full flex flex-col justify-between py-4">
-            <p class="text-xl md:text-2xl font-bold">English</p>
+            <p class="text-xl md:text-2xl font-bold">Reading</p>
 
             <p class="text-base md:text-lg text-gray-800 font-semibold">
               Test your English skills with MCQs.
@@ -201,7 +201,7 @@ function TestAssesmentBooks() {
           </div>
 
           <div class="w-full flex flex-col gap-1 py-2">
-            <p class="text-xl md:text-2xl font-bold">Math</p>
+            <p class="text-xl md:text-2xl font-bold">Mathematical Reasoning</p>
             <p class="w-36 md:w-full text-base text-gray-800 font-semibold md:text-lg ">
               Sharpen your Math skills with challenging MCQs.
             </p>
