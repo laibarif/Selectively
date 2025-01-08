@@ -24,6 +24,21 @@ router.get('/:subject', async (req, res) => {
   const query = `SELECT id, question, type FROM ${table} WHERE type = 'original'`;
   try {
     const [results] = await db.query(query); // Use async/await for the query
+    
+
+    const removeSpecialCharsQuestion = (question) => {
+      return question
+        .replace(/&#x[0-9A-Fa-f]+;/g, "") 
+        .replace(/[^\w\s]/gi, ""); 
+    };
+
+    // Sanitize the extract_text field
+    results.forEach((questions) => {
+      questions.question = removeSpecialCharsQuestion(questions.question);
+    });
+    
+
+
     res.json({ questions: results });
   } catch (err) {
     console.error('Database Error:', err);
@@ -193,11 +208,22 @@ console.log("rows ", rows)
     }
   
     try {
+     
+
       // Query to fetch entries where type is 'original' or 'finalized'
       const [results] = await db.query(
         `SELECT * FROM ${tableName} WHERE type IN ('Original', 'Generated')`
       );
+      const removeSpecialCharsQuestion = (question) => {
+        return question
+          .replace(/&#x[0-9A-Fa-f]+;/g, "") 
+          .replace(/[^\w\s]/gi, ""); 
+      };
   
+      // Sanitize the extract_text field
+      results.forEach((questions) => {
+        questions.question = removeSpecialCharsQuestion(questions.question);
+      });
       // Send the filtered questions data as a response
       res.json({ questions: results });
     } catch (err) {

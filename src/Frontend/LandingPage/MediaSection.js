@@ -1,5 +1,5 @@
-import React from "react";
-
+import React from "react"; 
+import image from '../../assets/image11.svg'
 function MediaSection() {
   return (
     <section className="py-24 bg-yellow-50">
@@ -12,17 +12,14 @@ function MediaSection() {
         </h2>
       </div>
       <div className="w-full mt-10">
-        <div className="w-8/12 mx-auto ">
+        <div className="w-1/2 mx-auto ">
           <div className="w-full ">
             {/* YouTube iframe */}
-            <iframe
+            <img
               className="w-full h-[300px] sm:h-[400px] lg:h-[500px]"
-              src="https://www.youtube.com/embed/VIDEO_ID" // Replace VIDEO_ID with your YouTube video ID
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+              src={image} 
+              alt="image"
+            ></img>
 
             {/* Overlay Play Button */}
           </div>

@@ -92,10 +92,25 @@ LIMIT 10;
       return res.status(404).json({ message: "No questions found." });
     }
 
+    
+    
     questions.image_data = questions.image_data
       ? Buffer.from(questions.image_data).toString("base64")
       : null;
 
+      const removeSpecialCharsMcq = (mcq_options) => {
+        return mcq_options
+          .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+          .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+      };
+  
+      // Sanitize the extract_text field
+      questions.forEach((question) => {
+        question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
+      });
+
+
+  
     const removeSpecialCharsQuestion = (question) => {
       return question
         .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
@@ -147,6 +162,19 @@ router.get("/randomThinkingskillQuestions", async (req, res) => {
     questions.forEach((question) => {
       question.question = removeSpecialCharsQuestion(question.question);
     });
+
+    const removeSpecialCharsMcq = (mcq_options) => {
+      return mcq_options
+        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+        .replace(/[^\w\s]/gi, "") // Remove non-alphanumeric characters except spaces
+        .replace(/Ã¢ÂÂ/g, ""); // Remove specific encoding issues
+    };
+    
+    // Sanitize the extract_text field
+    questions.forEach((question) => {
+      question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
+    });
+    
     res.status(200).json({ questions });
   } catch (error) {
     console.error("Error fetching thinking skills questions:", error);
@@ -209,6 +237,17 @@ router.get("/randomReadingQuestions", async (req, res) => {
     // Sanitize the extract_text field
     questions.forEach((question) => {
       question.question = removeSpecialCharsQuestion(question.question);
+    });
+
+    const removeSpecialCharsMcq = (mcq_options) => {
+      return mcq_options
+        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    };
+
+    // Sanitize the extract_text field
+    questions.forEach((question) => {
+      question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
     });
     // Send the fetched questions as a JSON response
     res.status(200).json({ questions });
