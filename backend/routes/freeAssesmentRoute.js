@@ -92,8 +92,11 @@ LIMIT 10;
       return res.status(404).json({ message: "No questions found." });
     }
 
+<<<<<<< HEAD
     
     
+=======
+>>>>>>> b8281fee483feda36fffbed6338f9cae241238cf
     // questions.image_data = questions.image_data
     //   ? Buffer.from(questions.image_data).toString("base64")
     //   : null;
