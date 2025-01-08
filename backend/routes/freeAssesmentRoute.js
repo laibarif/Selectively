@@ -94,9 +94,9 @@ LIMIT 10;
 
     
     
-    questions.image_data = questions.image_data
-      ? Buffer.from(questions.image_data).toString("base64")
-      : null;
+    // questions.image_data = questions.image_data
+    //   ? Buffer.from(questions.image_data).toString("base64")
+    //   : null;
 
       const removeSpecialCharsMcq = (mcq_options) => {
         return mcq_options
@@ -142,6 +142,10 @@ LIMIT 10;
     res.status(500).json({ message: "Server error." });
   }
 });
+
+
+
+
 
 router.get("/randomThinkingskillQuestions", async (req, res) => {
   try {

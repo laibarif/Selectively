@@ -135,39 +135,35 @@ function QuestionPage() {
         `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${endpoint}`,
         data
       );
-    
+
       // Navigate to the test assessment books page
       navigate("/test-assesment-books");
-    
-      // Clear localStorage after the API call is done
-      localStorage.removeItem('timer-randomReadingQuestions');
-localStorage.removeItem('timestamp-randomReadingQuestions');
-localStorage.removeItem('timer-randomMathsQuestions');
-localStorage.removeItem('timestamp-randomMathsQuestions');
-localStorage.removeItem('timer-randomThinkingskillQuestions');
-localStorage.removeItem('timestamp-randomThinkingskillQuestions');
 
-    
+      // Clear localStorage after the API call is done
+      localStorage.removeItem("timer-randomReadingQuestions");
+      localStorage.removeItem("timestamp-randomReadingQuestions");
+      localStorage.removeItem("timer-randomMathsQuestions");
+      localStorage.removeItem("timestamp-randomMathsQuestions");
+      localStorage.removeItem("timer-randomThinkingskillQuestions");
+      localStorage.removeItem("timestamp-randomThinkingskillQuestions");
     } catch (error) {
       // Handle any errors that occur during the API request
       toast.error("Error submitting assessment:", error);
     }
-    
   };
-
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-  const response = await axios.get(
-    `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`,
-    {
-      headers: {
-        "Accept": "application/json; charset=utf-8",
-      },
-    }
-  );
-  
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`,
+          {
+            headers: {
+              Accept: "application/json; charset=utf-8"
+            }
+          }
+        );
+        console.log("kkk", response.data.questions);
         setQuestions(response.data.questions);
         setAnswers(new Array(response.data.questions.length).fill(null));
         setLoading(false);
@@ -182,7 +178,9 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     const savedTimestamp = localStorage.getItem(`timestamp-${category}`);
 
     if (savedTime && savedTimestamp) {
-      const elapsedTime = Math.floor((Date.now() - parseInt(savedTimestamp, 10)) / 1000);
+      const elapsedTime = Math.floor(
+        (Date.now() - parseInt(savedTimestamp, 10)) / 1000
+      );
       const remainingTime = Math.max(parseInt(savedTime, 10) - elapsedTime, 0);
       setTimer(remainingTime);
 
@@ -210,7 +208,6 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
 
     return () => clearInterval(countdown);
   }, [category]);
-
 
   useEffect(() => {
     if (timerEnded) {
@@ -275,7 +272,7 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
 
   // const parseExtracts = (extractText) => {
   //   if (!extractText) return [];
-  
+
   //   return extractText.split("\n\n").map((extract) => {
   //     // Split the extract into title (e.g., "Extract A") and the rest
   //     const [title, ...paragraphs] = extract.split("\n");
@@ -315,21 +312,6 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
   
     return options;
   };
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
-  
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -363,13 +345,10 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     question: "Question not available",
     mcq_options: ""
   };
- // const extracts = parseExtracts(currentQuestion.extract_text);
+  // const extracts = parseExtracts(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
 
- 
-
-
-console.log(currentQuestion)
+  console.log(currentQuestion);
   return (
     <div className="h-screen bg-white flex flex-col">
       <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">
@@ -393,19 +372,34 @@ console.log(currentQuestion)
         >
           <p className="w-10/12 py-4 text-2xl font-bold space-y-10 text-gray-800 mb-4 text-justify">
             <span className="font-bold text-2xl text-black">
-              Question {currentIndex + 1}<br/>
+              Question {currentIndex + 1}
+              <br />
             </span>
             {currentQuestion?.question || "Question not available"}
           </p>
 
-          {currentQuestion?.image_data && (
+          {/* {currentQuestion?.image_data && (
             <img
-            src={`data:image/jpeg;base64,${currentQuestion.image_data}`}
+              src={`data:image/jpeg;base64,${currentQuestion.image_data}`}
               loading="lazy"
               alt="Question Image"
               className="w-40 h-40 mb-4"
             />
-          )}
+          )} */}
+           {currentQuestion.image_data && (
+                <div className="mb-4 flex justify-center">
+
+                  <img
+                    src={
+                      currentQuestion.image_data?.startsWith("http")
+                        ? currentQuestion.image_data
+                        : `http://${currentQuestion.image_data}` // Adjust this as needed
+                    }
+                    alt={currentQuestion.image_description || 'Question image'}
+                    className="h-40 w-40 object-cover border border-gray-300 rounded-md"
+                  />
+                </div>
+              )}
 
           {currentQuestion?.image_description && (
             <p className="text-black  mt-2 text-bold">
@@ -413,14 +407,13 @@ console.log(currentQuestion)
             </p>
           )}
 
-
-
-{currentQuestion?.extract_text && (
+          {currentQuestion?.extract_text && (
             <p className="text-black  mt-2 text-bold">
               {currentQuestion.extract_text}
             </p>
           )}
-           {/* {
+
+          {/* {
         extracts.map((extract, index) => (
           <p key={index} className="mb-6">
             <h1 className="text-2xl">{extract.title}</h1>
@@ -441,7 +434,7 @@ console.log(currentQuestion)
             cursor: "col-resize",
             backgroundColor: "gray",
             width: "3px",
-            height:"auto"
+            height: "auto"
           }}
         ></div>
 
@@ -506,7 +499,6 @@ console.log(currentQuestion)
     NEXT &gt;&gt;
   </button>
 </div>
-
 
       {/* Submit Button */}
       <div>
