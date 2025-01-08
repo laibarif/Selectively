@@ -83,6 +83,18 @@ function QuestionPage() {
     };
 
     fetchQuestions();
+    const savedTime = localStorage.getItem(`timer-${category}`);
+    const savedTimestamp = localStorage.getItem(`timestamp-${category}`);
+
+    if (savedTime && savedTimestamp) {
+      const elapsedTime = Math.floor((Date.now() - parseInt(savedTimestamp, 10)) / 1000);
+      const remainingTime = Math.max(parseInt(savedTime, 10) - elapsedTime, 0);
+      setTimer(remainingTime);
+
+      if (remainingTime === 0) {
+        setTimerEnded(true);
+      }
+    }
 
     const countdown = setInterval(() => {
       setTimer((prevTimer) => {
@@ -91,12 +103,19 @@ function QuestionPage() {
           setTimerEnded(true);
           return 0;
         }
-        return prevTimer - 1;
+        const newTime = prevTimer - 1;
+
+        // Save the updated timer value and timestamp to localStorage
+        localStorage.setItem(`timer-${category}`, newTime.toString());
+        localStorage.setItem(`timestamp-${category}`, Date.now().toString());
+
+        return newTime;
       });
     }, 1000);
 
     return () => clearInterval(countdown);
   }, [category]);
+
 
   useEffect(() => {
     if (timerEnded) {
@@ -356,14 +375,14 @@ console.log(currentQuestion)
           )}
            {
         extracts.map((extract, index) => (
-          <div key={index} className="w-10/12 mb-6">
+          <p key={index} className="mb-6">
             <h1 className="text-2xl">{extract.title}</h1>
             {extract.paragraphs.map((paragraph, idx) => (
               <p key={idx} className="text-black mt-2">
                 {paragraph}
               </p>
             ))}
-          </div>
+          </p>
         ))
        }
         </div>
@@ -374,8 +393,8 @@ console.log(currentQuestion)
           style={{
             cursor: "col-resize",
             backgroundColor: "gray",
-            width: "2px",
-            height:"100%"
+            width: "3px",
+            height:"auto"
           }}
         ></div>
 

@@ -17,8 +17,9 @@ const FreeAssesment = () => {
     try {
       setMessage("");
       setIsError(false);
+      console.log("URL",process.env.REACT_APP_BACKEND_URL);
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/userdetailforassesment`,
+        `https://api.selectiveexam.com.au/api/freeassesment/userdetailforassesment`,
         {  email }
       );
 
