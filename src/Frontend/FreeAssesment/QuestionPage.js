@@ -378,7 +378,10 @@ console.log(currentQuestion)
 
           {currentQuestion?.image_data && (
             <img
-            src={`data:image/jpeg;base64,${currentQuestion.image_data}`}
+             src={
+              currentQuestion.image_data?.startsWith("http")
+                ? currentQuestion.image_data
+                : `http://${currentQuestion.image_data}`}
               loading="lazy"
               alt="Question Image"
               className="w-40 h-40 mb-4"

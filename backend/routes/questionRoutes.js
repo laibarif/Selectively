@@ -336,13 +336,12 @@ router.get('/get-question/:id', async (req, res) => {
       const question = results[0];
 
       // Check if image_data exists and process it
-      if (question.image_data) {
-        // Convert BLOB to Base64
-        const buffer = Buffer.from(question.image_data); // Use the BLOB field directly
-        question.image_data = `data:image/jpeg;base64,${buffer.toString('base64')}`;
-      }
-
-      
+      // if (question.image_data) {
+      //   // Convert BLOB to Base64
+      //   const buffer = Buffer.from(question.image_data); // Use the BLOB field directly
+      //   question.image_data = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+      //   console.log("url", question.image_data);
+      // }
 
       res.status(200).json(question);
     } else {

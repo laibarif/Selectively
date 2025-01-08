@@ -91,8 +91,9 @@ const ViewQuestionsPage = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/questions/get-question/${id}`,
         { params: { subject } }
-      );
 
+      );
+      
       setQuestionText(response.data);
       setType(response.data.type);
       setSelectedQuestion(id);
@@ -144,10 +145,12 @@ const ViewQuestionsPage = () => {
 
   const handleView = async (id) => {
     try {
+      console.log('url',process.env.REACT_APP_BACKEND_URL)
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/questions/get-question/${id}`,
         { params: { subject } }
       );
+      console.log('image', response.image_data);
       setViewQuestion(response.data); // Set the question details for viewing
     } catch (error) {
       setError("Error fetching question details");
@@ -167,13 +170,13 @@ const ViewQuestionsPage = () => {
   </select>
 </div> */
   }
-  
-  
- 
-console.log(viewQuestion)
+
+
+
+  console.log(viewQuestion)
   return (
     <div>
-      
+
       <div className="w-4/12 shadow-none">
         <label className="block mx-auto w-72 px-1 font-semibold py-1 mt-8 text-gray-700 ">
           Search Questions type
@@ -189,7 +192,7 @@ console.log(viewQuestion)
         </select>
       </div>
       <div className="select-question-container">
-    
+
         {showHeading && (
           <h1 className="select-question-heading text-center mb-4 text-primary">
             View questions of {subject}
@@ -411,7 +414,7 @@ console.log(viewQuestion)
         {viewQuestion && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ">
             <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-4xl">
-{/* Conditionally render the paragraph
+              {/* Conditionally render the paragraph
 {viewQuestion.extract && (
                 <div className="mb-4">
                   <p className="text-lg font-semibold text-gray-700">
@@ -433,15 +436,19 @@ console.log(viewQuestion)
 
               {/* Conditionally render the Image */}
               {viewQuestion.image_data && (
-              <div className="mb-4 flex justify-center">
-                
-                <img
-                  src={`data:image/jpeg;base64,${viewQuestion.image_data}`}
-                  alt={viewQuestion.image_description || 'Question image'}
-                   className="h-40 w-40 object-cover border border-gray-300 rounded-md"
-                />
-              </div>
-            )}
+                <div className="mb-4 flex justify-center">
+
+                  <img
+                    src={
+                      viewQuestion.image_data?.startsWith("http")
+                        ? viewQuestion.image_data
+                        : `http://${viewQuestion.image_data}` // Adjust this as needed
+                    }
+                    alt={viewQuestion.image_description || 'Question image'}
+                    className="h-40 w-40 object-cover border border-gray-300 rounded-md"
+                  />
+                </div>
+              )}
 
               <div className="mb-4">
                 <p className="text-lg font-semibold text-black">

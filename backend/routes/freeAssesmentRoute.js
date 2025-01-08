@@ -92,9 +92,9 @@ LIMIT 10;
       return res.status(404).json({ message: "No questions found." });
     }
 
-    questions.image_data = questions.image_data
-      ? Buffer.from(questions.image_data).toString("base64")
-      : null;
+    // questions.image_data = questions.image_data
+    //   ? Buffer.from(questions.image_data).toString("base64")
+    //   : null;
 
     const removeSpecialCharsQuestion = (question) => {
       return question
