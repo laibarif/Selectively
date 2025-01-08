@@ -167,6 +167,7 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
       },
     }
   );
+  
         setQuestions(response.data.questions);
         setAnswers(new Array(response.data.questions.length).fill(null));
         setLoading(false);
@@ -272,41 +273,62 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     }
   };
 
-  const parseExtracts = (extractText) => {
-    if (!extractText) return [];
+  // const parseExtracts = (extractText) => {
+  //   if (!extractText) return [];
   
-    return extractText.split("\n\n").map((extract) => {
-      // Split the extract into title (e.g., "Extract A") and the rest
-      const [title, ...paragraphs] = extract.split("\n");
-      return {
-        title: title.trim(),
-        paragraphs: paragraphs.map((para) => para.trim()).filter(Boolean), // Remove empty lines
-      };
-    });
-  };
+  //   return extractText.split("\n\n").map((extract) => {
+  //     // Split the extract into title (e.g., "Extract A") and the rest
+  //     const [title, ...paragraphs] = extract.split("\n");
+  //     return {
+  //       title: title.trim(),
+  //       paragraphs: paragraphs.map((para) => para.trim()).filter(Boolean), // Remove empty lines
+  //     };
+  //   });
+  // };
 
   const parseOptions = (optionsString) => {
-    
     if (!optionsString) return [];
-    
-    return optionsString.split(",").map((option) => {
-      // Remove leading and trailing spaces
+  
+    // Step 1: Clean the string by replacing newlines with a space and trimming any extra spaces.
+    const cleanedString = optionsString
+      .replace(/\n/g, ' ')        // Replace newline characters with spaces
+      .trim();                    // Trim any extra spaces at the start or end
+  
+    // Step 2: Split the string by commas, keeping spaces between labels and values.
+    const options = cleanedString.split(/\s*,\s*/).map((option) => {
       const trimmedOption = option.trim();
   
-      // Find the closing parenthesis `)`
-      const separatorIndex = trimmedOption.indexOf(")");
+      // Step 3: Match the pattern for options like A) or A followed by a space and value
+      const regex = /^([A-E])(\)|\s)(.*)$/; // Match options like A) or A followed by a space
+      const match = trimmedOption.match(regex);
   
-      if (separatorIndex === -1) {
-        return { label: trimmedOption, value: trimmedOption };
+      if (match) {
+        const label = match[1];           // The label (A, B, C, D, E)
+        const value = match[3].trim();    // The value (Zoe is 10, David is 5, etc.)
+  
+        return { label, value };
       }
   
-      // Get the label (the letter before the parenthesis) and the value (the text after it)
-      const label = trimmedOption.substring(0, separatorIndex).trim();  // "A", "B", etc.
-      const value = trimmedOption.substring(separatorIndex + 1).trim(); // "War and violence", etc.
-  
-      return { label, value };
+      // If no match found, return the raw option text (this shouldn't usually happen with the correct format).
+      return { label: trimmedOption, value: trimmedOption };
     });
+  
+    return options;
   };
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
   
 
   const formatTime = (seconds) => {
@@ -341,7 +363,7 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     question: "Question not available",
     mcq_options: ""
   };
-  const extracts = parseExtracts(currentQuestion.extract_text);
+ // const extracts = parseExtracts(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
 
  
@@ -393,7 +415,15 @@ console.log(currentQuestion)
               {currentQuestion.image_description}
             </p>
           )}
-           {
+
+
+
+{currentQuestion?.extract_text && (
+            <p className="text-black  mt-2 text-bold">
+              {currentQuestion.extract_text}
+            </p>
+          )}
+           {/* {
         extracts.map((extract, index) => (
           <p key={index} className="mb-6">
             <h1 className="text-2xl">{extract.title}</h1>
@@ -404,7 +434,7 @@ console.log(currentQuestion)
             ))}
           </p>
         ))
-       }
+       } */}
         </div>
 
         <div
@@ -457,38 +487,38 @@ console.log(currentQuestion)
 
       {/* Footer Section */}
       <div className="relative bottom-0 left-0 right-0 bg-orange-500 text-white py-3 flex justify-between z-30">
-        <button
-          onClick={handlePrevious}
-          className={` p-2 rounded-md font-semibold ${
-            currentIndex === 0 || timerEnded
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          }`}
-          disabled={currentIndex === 0 || timerEnded}
-        >
-          &lt;&lt; PREVIOUS
-        </button>
-        <button
-          onClick={handleNext}
-          className={` p-2 rounded-md font-semibold ${
-            currentIndex === questions.length - 1 || timerEnded
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          }`}
-          disabled={currentIndex === questions.length - 1 || timerEnded}
-        >
-          NEXT &gt;&gt;
-        </button>
-      </div>
+  <button
+    onClick={handlePrevious}
+    className={`p-2 rounded-md font-semibold ${
+      currentIndex === 0 || timerEnded ? "opacity-50 cursor-not-allowed" : ""
+    }`}
+    disabled={currentIndex === 0 || timerEnded}
+  >
+    &lt;&lt; PREVIOUS
+  </button>
+  
+  <button
+    onClick={handleNext}
+    className={`p-2 rounded-md font-semibold ${
+      currentIndex === questions.length - 1 || timerEnded
+        ? "opacity-50 cursor-not-allowed"
+        : ""
+    } ${currentIndex === questions.length - 1 ? "left sm:mx-auto" : ""}`}
+    disabled={currentIndex === questions.length - 1 || timerEnded}
+  >
+    NEXT &gt;&gt;
+  </button>
+</div>
+
 
       {/* Submit Button */}
       <div>
         {(currentIndex === questions.length - 1 || timerEnded) &&
           !timerEnded && (
-            <div className="absolute bottom-20 right-6">
+            <div className="absolute bottom-20 sm:bottom-4 right-6 z-30">
               <button
                 onClick={handleButtonClick}
-                className="bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-600 text-white font-bold py-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+                className="bg-gradient-to-r from-yellow-500 via-orange-600 to-yellow-700 text-white font-bold py-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
               >
                 Finish Question! Go to Test Assessment Books
               </button>
