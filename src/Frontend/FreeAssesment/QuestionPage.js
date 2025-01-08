@@ -62,6 +62,100 @@ function QuestionPage() {
     };
   }, []);
 
+  const handleSubmit = async () => {
+    const questionStatus = questions.map((question, index) => {
+      const selectedAnswer = answers[index];
+      const correctAnswer = question.correct_answer;
+
+      const normalizedSelectedAnswer = String(selectedAnswer).trim();
+      const normalizedCorrectAnswer = String(correctAnswer).trim();
+
+      let isCorrect = false;
+
+      if (Array.isArray(normalizedSelectedAnswer)) {
+        isCorrect = normalizedSelectedAnswer.every((answer) =>
+          normalizedCorrectAnswer.includes(answer)
+        );
+      } else {
+        isCorrect =
+          normalizedSelectedAnswer.charAt(0) ===
+          normalizedCorrectAnswer.charAt(0);
+      }
+
+      return {
+        questionNumber: index + 1,
+        status: selectedAnswer ? "attempted" : "unattempted"
+      };
+    });
+
+    const score = questionStatus.reduce((acc, item, index) => {
+      const selectedAnswer = answers[index];
+      const correctAnswer = questions[index].correct_answer;
+
+      const normalizedSelectedAnswer = String(selectedAnswer).trim();
+      const normalizedCorrectAnswer = String(correctAnswer).trim();
+
+      let isCorrect = false;
+
+      if (Array.isArray(normalizedSelectedAnswer)) {
+        isCorrect = normalizedSelectedAnswer.every((answer) =>
+          normalizedCorrectAnswer.includes(answer)
+        );
+      } else {
+        isCorrect =
+          normalizedSelectedAnswer.charAt(0) ===
+          normalizedCorrectAnswer.charAt(0);
+      }
+
+      return isCorrect ? acc + 1 : acc;
+    }, 0);
+
+    const endpointMap = {
+      maths: "submitMathsAssessment",
+      "thinking skills": "submitThinkingSkillsAssessment",
+      reading: "randomReadingQuestions"
+    };
+
+    const rawSubject = questions[0]?.subject;
+    const subject = (rawSubject || "").toLowerCase().trim();
+    const endpoint = endpointMap[subject];
+
+    if (!endpoint) {
+      console.error("Invalid category");
+      return;
+    }
+
+    const email = localStorage.getItem("userEmail");
+
+    const data = { email, score, questionStatus };
+
+    try {
+      // Make the API request
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${endpoint}`,
+        data
+      );
+    
+      // Navigate to the test assessment books page
+      navigate("/test-assesment-books");
+    
+      // Clear localStorage after the API call is done
+      localStorage.removeItem('timer-randomReadingQuestions');
+localStorage.removeItem('timestamp-randomReadingQuestions');
+localStorage.removeItem('timer-randomMathsQuestions');
+localStorage.removeItem('timestamp-randomMathsQuestions');
+localStorage.removeItem('timer-randomThinkingskillQuestions');
+localStorage.removeItem('timestamp-randomThinkingskillQuestions');
+
+    
+    } catch (error) {
+      // Handle any errors that occur during the API request
+      toast.error("Error submitting assessment:", error);
+    }
+    
+  };
+
+
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -250,84 +344,7 @@ function QuestionPage() {
   const extracts = parseExtracts(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
 
-  const handleSubmit = async () => {
-    const questionStatus = questions.map((question, index) => {
-      const selectedAnswer = answers[index];
-      const correctAnswer = question.correct_answer;
-
-      const normalizedSelectedAnswer = String(selectedAnswer).trim();
-      const normalizedCorrectAnswer = String(correctAnswer).trim();
-
-      let isCorrect = false;
-
-      if (Array.isArray(normalizedSelectedAnswer)) {
-        isCorrect = normalizedSelectedAnswer.every((answer) =>
-          normalizedCorrectAnswer.includes(answer)
-        );
-      } else {
-        isCorrect =
-          normalizedSelectedAnswer.charAt(0) ===
-          normalizedCorrectAnswer.charAt(0);
-      }
-
-      return {
-        questionNumber: index + 1,
-        status: selectedAnswer ? "attempted" : "unattempted"
-      };
-    });
-
-    const score = questionStatus.reduce((acc, item, index) => {
-      const selectedAnswer = answers[index];
-      const correctAnswer = questions[index].correct_answer;
-
-      const normalizedSelectedAnswer = String(selectedAnswer).trim();
-      const normalizedCorrectAnswer = String(correctAnswer).trim();
-
-      let isCorrect = false;
-
-      if (Array.isArray(normalizedSelectedAnswer)) {
-        isCorrect = normalizedSelectedAnswer.every((answer) =>
-          normalizedCorrectAnswer.includes(answer)
-        );
-      } else {
-        isCorrect =
-          normalizedSelectedAnswer.charAt(0) ===
-          normalizedCorrectAnswer.charAt(0);
-      }
-
-      return isCorrect ? acc + 1 : acc;
-    }, 0);
-
-    const endpointMap = {
-      maths: "submitMathsAssessment",
-      "thinking skills": "submitThinkingSkillsAssessment",
-      reading: "randomReadingQuestions"
-    };
-
-    const rawSubject = questions[0]?.subject;
-    const subject = (rawSubject || "").toLowerCase().trim();
-    const endpoint = endpointMap[subject];
-
-    if (!endpoint) {
-      console.error("Invalid category");
-      return;
-    }
-
-    const email = localStorage.getItem("userEmail");
-
-    const data = { email, score, questionStatus };
-
-    try {
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${endpoint}`,
-        data
-      );
-
-      navigate("/test-assesment-books");
-    } catch (error) {
-      toast.error("Error submitting assessment:", error);
-    }
-  };
+ 
 
 
 console.log(currentQuestion)
