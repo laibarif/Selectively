@@ -167,6 +167,7 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
       },
     }
   );
+  console.log("kkk",response.data.questions)
         setQuestions(response.data.questions);
         setAnswers(new Array(response.data.questions.length).fill(null));
         setLoading(false);
@@ -286,27 +287,80 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
   };
 
   const parseOptions = (optionsString) => {
-    
     if (!optionsString) return [];
-    
-    return optionsString.split(",").map((option) => {
-      // Remove leading and trailing spaces
+  
+    // Split by commas or newlines
+    return optionsString.split(/[\n,]+/).map((option) => {
       const trimmedOption = option.trim();
   
-      // Find the closing parenthesis `)`
-      const separatorIndex = trimmedOption.indexOf(")");
+      // Find the space after the label (e.g., "A ")
+      const separatorIndex = trimmedOption.indexOf(" ");
   
       if (separatorIndex === -1) {
         return { label: trimmedOption, value: trimmedOption };
       }
   
-      // Get the label (the letter before the parenthesis) and the value (the text after it)
-      const label = trimmedOption.substring(0, separatorIndex).trim();  // "A", "B", etc.
-      const value = trimmedOption.substring(separatorIndex + 1).trim(); // "War and violence", etc.
+      // Get the label (e.g., "A") and the value (e.g., "A Greek god")
+      const label = trimmedOption.substring(0, separatorIndex).trim();
+      const value = trimmedOption.substring(separatorIndex + 1).trim();
   
       return { label, value };
     });
   };
+  const parseMCQ = (mcqText) => {
+  if (!mcqText) return {};
+
+  // Extract the question and options
+  const questionMatch = mcqText.match(/question\s*:\s*"(.*?)"/);
+  const optionsMatch = mcqText.match(/mcq_options\s*:\s*"(.*?)"/);
+
+  // Extract question text
+  const question = questionMatch ? questionMatch[1].trim() : null;
+
+  // Extract options and parse them
+  let options = [];
+  if (optionsMatch) {
+    const optionsString = optionsMatch[1].trim();
+    const labels = ["A)", "B)", "C)", "D)"];
+    let currentLabel = null;
+    let optionText = "";
+
+    for (let i = 0; i < optionsString.length; i++) {
+      const nextLabel = labels.find(
+        (label) =>
+          optionsString.substring(i, i + label.length) === label
+      );
+
+      if (nextLabel) {
+        if (currentLabel) {
+          options.push({
+            label: currentLabel,
+            value: optionText.trim(),
+          });
+        }
+        currentLabel = nextLabel;
+        optionText = "";
+        i += nextLabel.length - 1; // Move index to end of label
+      } else {
+        optionText += optionsString[i];
+      }
+    }
+
+    // Push the last option
+    if (currentLabel) {
+      options.push({
+        label: currentLabel,
+        value: optionText.trim(),
+      });
+    }
+  }
+
+  return {
+    question,
+    options,
+  };
+};
+
   
 
   const formatTime = (seconds) => {
