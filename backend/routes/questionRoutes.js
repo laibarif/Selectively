@@ -74,9 +74,9 @@ router.get('/question/:id', async (req, res) => {
       const question = results[0];
  
       // Convert image_data to Base64 if it exists
-      question.image_data = question.image_data
-        ? Buffer.from(question.image_data).toString('base64')
-        : null;
+      // question.image_data = question.image_data
+      //   ? Buffer.from(question.image_data).toString('base64')
+      //   : null;
 
       res.json(question); // Send the question as the response
     } else {

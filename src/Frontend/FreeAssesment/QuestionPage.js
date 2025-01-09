@@ -135,35 +135,39 @@ function QuestionPage() {
         `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${endpoint}`,
         data
       );
-
+    
       // Navigate to the test assessment books page
       navigate("/test-assesment-books");
-
+    
       // Clear localStorage after the API call is done
-      localStorage.removeItem("timer-randomReadingQuestions");
-      localStorage.removeItem("timestamp-randomReadingQuestions");
-      localStorage.removeItem("timer-randomMathsQuestions");
-      localStorage.removeItem("timestamp-randomMathsQuestions");
-      localStorage.removeItem("timer-randomThinkingskillQuestions");
-      localStorage.removeItem("timestamp-randomThinkingskillQuestions");
+      localStorage.removeItem('timer-randomReadingQuestions');
+localStorage.removeItem('timestamp-randomReadingQuestions');
+localStorage.removeItem('timer-randomMathsQuestions');
+localStorage.removeItem('timestamp-randomMathsQuestions');
+localStorage.removeItem('timer-randomThinkingskillQuestions');
+localStorage.removeItem('timestamp-randomThinkingskillQuestions');
+
+    
     } catch (error) {
       // Handle any errors that occur during the API request
       toast.error("Error submitting assessment:", error);
     }
+    
   };
+
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`,
-          {
-            headers: {
-              Accept: "application/json; charset=utf-8"
-            }
-          }
-        );
-        console.log("kkk", response.data.questions);
+  const response = await axios.get(
+    `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`,
+    {
+      headers: {
+        "Accept": "application/json; charset=utf-8",
+      },
+    }
+  );
+  
         setQuestions(response.data.questions);
         setAnswers(new Array(response.data.questions.length).fill(null));
         setLoading(false);
@@ -178,9 +182,7 @@ function QuestionPage() {
     const savedTimestamp = localStorage.getItem(`timestamp-${category}`);
 
     if (savedTime && savedTimestamp) {
-      const elapsedTime = Math.floor(
-        (Date.now() - parseInt(savedTimestamp, 10)) / 1000
-      );
+      const elapsedTime = Math.floor((Date.now() - parseInt(savedTimestamp, 10)) / 1000);
       const remainingTime = Math.max(parseInt(savedTime, 10) - elapsedTime, 0);
       setTimer(remainingTime);
 
@@ -272,7 +274,7 @@ function QuestionPage() {
 
   // const parseExtracts = (extractText) => {
   //   if (!extractText) return [];
-
+  
   //   return extractText.split("\n\n").map((extract) => {
   //     // Split the extract into title (e.g., "Extract A") and the rest
   //     const [title, ...paragraphs] = extract.split("\n");
@@ -283,35 +285,60 @@ function QuestionPage() {
   //   });
   // };
 
+  
+  
+  
+  
   const parseOptions = (optionsString) => {
     if (!optionsString) return [];
   
-    // Step 1: Clean the string by replacing newlines with a space and trimming any extra spaces.
+    // Step 1: Normalize the string by replacing newline characters with spaces.
     const cleanedString = optionsString
-      .replace(/\n/g, ' ')        // Replace newline characters with spaces
-      .trim();                    // Trim any extra spaces at the start or end
+      .replace(/\n/g, ' ') // Replace newlines with spaces.
+      .trim(); // Trim leading and trailing spaces.
   
-    // Step 2: Split the string by commas, keeping spaces between labels and values.
-    const options = cleanedString.split(/\s*,\s*/).map((option) => {
+    // Step 2: Split the string by labels (A, B, C, D, E) followed by optional text.
+    const options = cleanedString.split(/(?<![a-zA-Z0-9])(?=[A-E]\b)/).map((option) => {
       const trimmedOption = option.trim();
   
-      // Step 3: Match the pattern for options like A) or A followed by a space and value
-      const regex = /^([A-E])(\)|\s)(.*)$/; // Match options like A) or A followed by a space
+      // Step 3: Match the label (A, B, C, D) and optional value.
+      const regex = /^([A-E])\ns* B14(.*)$/; // Match the label and value.
       const match = trimmedOption.match(regex);
   
       if (match) {
-        const label = match[1];           // The label (A, B, C, D, E)
-        const value = match[3].trim();    // The value (Zoe is 10, David is 5, etc.)
+        const label = match[1]; // Extract the label (A, B, C, D, E).
+        const value = match[2]?.trim() || ''; // Extract the value or leave it empty.
   
         return { label, value };
       }
   
-      // If no match found, return the raw option text (this shouldn't usually happen with the correct format).
-      return { label: trimmedOption, value: trimmedOption };
+      // Return the raw option text as invalid if no match is found (fallback handling).
+      return { label: 'Invalid', value: trimmedOption };
     });
   
     return options;
   };
+  
+  
+  
+
+
+
+    
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -345,10 +372,13 @@ function QuestionPage() {
     question: "Question not available",
     mcq_options: ""
   };
-  // const extracts = parseExtracts(currentQuestion.extract_text);
+ // const extracts = parseExtracts(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
 
-  console.log(currentQuestion);
+ 
+
+console.log(currentQuestion)
+console.log(options)
   return (
     <div className="h-screen bg-white flex flex-col">
       <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">
@@ -372,28 +402,13 @@ function QuestionPage() {
         >
           <p className="w-10/12 py-4 text-2xl font-bold space-y-10 text-gray-800 mb-4 text-justify">
             <span className="font-bold text-2xl text-black">
-              Question {currentIndex + 1}
-              <br />
+              Question {currentIndex + 1}<br/>
             </span>
             {currentQuestion?.question || "Question not available"}
           </p>
 
-          {/* {currentQuestion?.image_data && (
-            <img
-<<<<<<< HEAD
-              src={`data:image/jpeg;base64,${currentQuestion.image_data}`}
-=======
-             src={
-              currentQuestion.image_data?.startsWith("http")
-                ? currentQuestion.image_data
-                : `http://${currentQuestion.image_data}`}
->>>>>>> b8281fee483feda36fffbed6338f9cae241238cf
-              loading="lazy"
-              alt="Question Image"
-              className="w-40 h-40 mb-4"
-            />
-          )} */}
-           {currentQuestion.image_data && (
+          {/* Conditionally render the Image */}
+          {currentQuestion.image_data && (
                 <div className="mb-4 flex justify-center">
 
                   <img
@@ -403,7 +418,7 @@ function QuestionPage() {
                         : `http://${currentQuestion.image_data}` // Adjust this as needed
                     }
                     alt={currentQuestion.image_description || 'Question image'}
-                    className="h-40 w-40 object-cover border border-gray-300 rounded-md"
+                    className="h-80 w-80 object-cover border border-gray-300 rounded-md"
                   />
                 </div>
               )}
@@ -414,13 +429,14 @@ function QuestionPage() {
             </p>
           )}
 
-          {currentQuestion?.extract_text && (
+
+
+{currentQuestion?.extract_text && (
             <p className="text-black  mt-2 text-bold">
               {currentQuestion.extract_text}
             </p>
           )}
-
-          {/* {
+           {/* {
         extracts.map((extract, index) => (
           <p key={index} className="mb-6">
             <h1 className="text-2xl">{extract.title}</h1>
@@ -441,7 +457,7 @@ function QuestionPage() {
             cursor: "col-resize",
             backgroundColor: "gray",
             width: "3px",
-            height: "auto"
+            height:"auto"
           }}
         ></div>
 
@@ -506,6 +522,7 @@ function QuestionPage() {
     NEXT &gt;&gt;
   </button>
 </div>
+
 
       {/* Submit Button */}
       <div>

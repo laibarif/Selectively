@@ -5,7 +5,7 @@ const router = express.Router();
 const path = require("path");
 const he = require("he");
 
-const WHITELISTED_EMAILS = ["awaisnaeem962@gmail.com", "kamini.soni.74@gmail.com", "rsaini77@gmail.com", "adeelnaeem2588@gmail.com"]; // Add emails that can perform multiple assessments
+const WHITELISTED_EMAILS = ["awaisnaeem962@gmail.com", "kamini.soni.74@gmail.com","rsaini77@gmail.com","adeelnaeem2588@gmail.com"]; // Add emails that can perform multiple assessments
 
 router.post("/userdetailforassesment", async (req, res) => {
   const { email } = req.body;
@@ -92,14 +92,11 @@ LIMIT 10;
       return res.status(404).json({ message: "No questions found." });
     }
 
-<<<<<<< HEAD
     
     
-=======
->>>>>>> b8281fee483feda36fffbed6338f9cae241238cf
-    // questions.image_data = questions.image_data
-    //   ? Buffer.from(questions.image_data).toString("base64")
-    //   : null;
+    questions.image_data = questions.image_data
+      ? Buffer.from(questions.image_data).toString("base64")
+      : null;
 
       const removeSpecialCharsMcq = (mcq_options) => {
         return mcq_options
@@ -145,10 +142,6 @@ LIMIT 10;
     res.status(500).json({ message: "Server error." });
   }
 });
-
-
-
-
 
 router.get("/randomThinkingskillQuestions", async (req, res) => {
   try {
