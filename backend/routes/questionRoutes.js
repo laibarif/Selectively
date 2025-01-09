@@ -208,6 +208,13 @@ console.log("rows ", rows)
     }
   
     try {
+      
+      
+      // Query to fetch entries where type is 'original' or 'finalized'
+      const [results] = await db.query(
+        `SELECT * FROM ${tableName} WHERE type IN ('Original', 'Generated')`
+      );
+     
       const removeSpecialCharsQuestion = (question) => {
         return question
           .replace(/&#x[0-9A-Fa-f]+;/g, "") 
@@ -218,12 +225,6 @@ console.log("rows ", rows)
       results.forEach((questions) => {
         questions.question = removeSpecialCharsQuestion(questions.question);
       });
-      
-      // Query to fetch entries where type is 'original' or 'finalized'
-      const [results] = await db.query(
-        `SELECT * FROM ${tableName} WHERE type IN ('Original', 'Generated')`
-      );
-  
       // Send the filtered questions data as a response
       res.json({ questions: results });
     } catch (err) {

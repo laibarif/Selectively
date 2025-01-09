@@ -33,7 +33,7 @@ const ViewQuestionsPage = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/questions/views-questions/${subject}`
       );
-
+console.log("view",response.data.questions)
       setQuestions(response.data.questions);
     } catch (error) {
       setError("Failed to fetch questions");

@@ -272,21 +272,22 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     }
   };
 
-  // const parseExtracts = (extractText) => {
-  //   if (!extractText) return [];
+ // Function to format the text
+
+  const formatExtractText = (text) => {
+    if (!text) return '';
   
-  //   return extractText.split("\n\n").map((extract) => {
-  //     // Split the extract into title (e.g., "Extract A") and the rest
-  //     const [title, ...paragraphs] = extract.split("\n");
-  //     return {
-  //       title: title.trim(),
-  //       paragraphs: paragraphs.map((para) => para.trim()).filter(Boolean), // Remove empty lines
-  //     };
-  //   });
-  // };
+    // Regex to match "Extract A", "Extract B", "Extract C", etc.
+    const regex = /\b(Extract\s+[A-Z])\b/g;
+  
+    // Replace matched phrases with bolded versions and add a new line
+    return text.replace(regex, (match) => `<br><b>${match}</b>`);
+  };
+  
 
   
-  
+
+
   
   
   const parseOptions = (optionsString) => {
@@ -297,27 +298,35 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
       .replace(/\n/g, ' ') // Replace newlines with spaces.
       .trim(); // Trim leading and trailing spaces.
   
-    // Step 2: Split the string by labels (A, B, C, D, E) followed by optional text.
-    const options = cleanedString.split(/(?<![a-zA-Z0-9])(?=[A-E]\b)/).map((option) => {
-      const trimmedOption = option.trim();
+    // Step 2: Split the string by labels (A, B, C, D, E) followed by their text.
+    const options = cleanedString
+      .split(/(?<![a-zA-Z0-9])(?=[A-E]\b)/) // Split at each label A, B, C, D, E.
+      .map((option) => {
+        const trimmedOption = option.trim();
   
-      // Step 3: Match the label (A, B, C, D) and optional value.
-      const regex = /^([A-E])\ns* B14(.*)$/; // Match the label and value.
-      const match = trimmedOption.match(regex);
+        // Step 3: Match the label (A, B, C, D, E) and optional value.
+        const regex = /^([A-E])\s*(.*)$/; // Match the label and optional value.
+        const match = trimmedOption.match(regex);
   
-      if (match) {
-        const label = match[1]; // Extract the label (A, B, C, D, E).
-        const value = match[2]?.trim() || ''; // Extract the value or leave it empty.
+        if (match) {
+          const label = match[1]; // Extract the label (A, B, C, D, E).
+          let value = match[2]?.trim(); // Extract the value if provided.
   
-        return { label, value };
-      }
+          // If no value is provided, use the label as the value.
+          if (!value || value === label) {
+            value = label; // Default to the label if no specific value exists.
+          }
   
-      // Return the raw option text as invalid if no match is found (fallback handling).
-      return { label: 'Invalid', value: trimmedOption };
-    });
+          return { label, value };
+        }
+  
+        // Return the raw option text as invalid if no match is found.
+        return { label: 'Invalid', value: trimmedOption };
+      });
   
     return options;
   };
+  
   
 
   const formatTime = (seconds) => {
@@ -352,7 +361,7 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     question: "Question not available",
     mcq_options: ""
   };
- // const extracts = parseExtracts(currentQuestion.extract_text);
+ const extracts = formatExtractText(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
 
  
@@ -409,13 +418,18 @@ console.log(options)
             </p>
           )}
 
-
-
 {currentQuestion?.extract_text && (
-            <p className="text-black  mt-2 text-bold">
-              {currentQuestion.extract_text}
-            </p>
-          )}
+  <p
+    className="text-black mt-2 text-bold"
+    dangerouslySetInnerHTML={{
+      __html: formatExtractText(currentQuestion.extract_text),
+    }}
+  ></p>
+)}
+
+
+
+
            {/* {
         extracts.map((extract, index) => (
           <p key={index} className="mb-6">
@@ -450,31 +464,32 @@ console.log(options)
               : {}
           }
         >
-          <div className="space-y-6">
-            {options?.map((option, index) => (
-              <label
-                key={index}
-                className="flex items-center space-x-2 py-4 px-2 bg-gray-200  border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name={`question-${currentIndex}`}
-                  value={option.value}
-                  className="peer h-8 w-8 focus:ring-yellow-600  border-gray-300 "
-                  disabled={timerEnded}
-                  onChange={() =>
-                    handleSelectAnswer(option.value, option.label)
-                  }
-                  checked={
-                    answers[currentIndex]?.startsWith(option.label) || false
-                  }
-                />
-                <span className="text-black text-lg font-semibold">
-                  {`${option.value}`}
-                </span>
-              </label>
-            ))}
-          </div>
+        <div className="space-y-6">
+  {options?.map((option, index) => (
+    <label
+      key={index}
+      className="flex items-center space-x-2 py-4 px-2 bg-gray-200 border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
+    >
+      <input
+        type="radio"
+        name={`question-${currentIndex}`}
+        value={option.value}
+        className="peer h-8 w-8 focus:ring-yellow-600 border-gray-300"
+        disabled={timerEnded}
+        onChange={() =>
+          handleSelectAnswer(option.value, option.label)
+        }
+        checked={
+          answers[currentIndex]?.startsWith(option.label) || false
+        }
+      />
+      <span className="text-black text-lg font-semibold">
+        {`${option.label}: ${option.value}`} {/* Combine label and value */}
+      </span>
+    </label>
+  ))}
+</div>
+
         </div>
       </div>
 
