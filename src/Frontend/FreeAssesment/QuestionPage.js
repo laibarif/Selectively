@@ -319,26 +319,6 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     return options;
   };
   
-  
-  
-
-
-
-    
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
-  
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
