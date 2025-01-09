@@ -290,10 +290,46 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
 
   
   
+  // const parseOptions = (optionsString) => {
+  //   if (!optionsString) return [];
+  
+  //   // Step 1: Normalize the string by replacing newline characters with spaces.
+  //   const cleanedString = optionsString
+  //     .replace(/\n/g, ' ') // Replace newlines with spaces.
+  //     .trim(); // Trim leading and trailing spaces.
+  
+  //   // Step 2: Split the string by labels (A, B, C, D, E) followed by their text.
+  //   const options = cleanedString
+  //     .split(/(?<![a-zA-Z0-9])(?=[A-E]\b)/) // Split at each label A, B, C, D, E.
+  //     .map((option) => {
+  //       const trimmedOption = option.trim();
+  
+  //       // Step 3: Match the label (A, B, C, D, E) and optional value.
+  //       const regex = /^([A-E])\s*(.*)$/; // Match the label and optional value.
+  //       const match = trimmedOption.match(regex);
+  
+  //       if (match) {
+  //         const label = match[1]; // Extract the label (A, B, C, D, E).
+  //         let value = match[2]?.trim(); // Extract the value if provided.
+  
+  //         // If no value is provided, use the label as the value.
+  //         if (!value || value === label) {
+  //           value = label; // Default to the label if no specific value exists.
+  //         }
+  
+  //         return { label, value };
+  //       }
+  
+  //       // Return the raw option text as invalid if no match is found.
+  //       return { label: 'Invalid', value: trimmedOption };
+  //     });
+  
+  //   return options;
+  // };
   const parseOptions = (optionsString) => {
     if (!optionsString) return [];
   
-    // Step 1: Normalize the string by replacing newline characters with spaces.
+    // Step 1: Normalize the string by replacing newline characters with spaces and trimming leading/trailing spaces.
     const cleanedString = optionsString
       .replace(/\n/g, ' ') // Replace newlines with spaces.
       .trim(); // Trim leading and trailing spaces.
@@ -304,16 +340,20 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
       .map((option) => {
         const trimmedOption = option.trim();
   
-        // Step 3: Match the label (A, B, C, D, E) and optional value.
-        const regex = /^([A-E])\s*(.*)$/; // Match the label and optional value.
+        // Step 3: Match the label (A, B, C, D, E) and its value (which may be empty or contain "Extract X").
+        const regex = /^([A-E])\s*(.*)$/; // Match the label (A, B, C, D, E) and optional value.
         const match = trimmedOption.match(regex);
   
         if (match) {
           const label = match[1]; // Extract the label (A, B, C, D, E).
           let value = match[2]?.trim(); // Extract the value if provided.
   
-          // If no value is provided, use the label as the value.
-          if (!value || value === label) {
+          // If the value contains "Extract A", "Extract B", etc., ensure it's preserved.
+          if (value && /Extract\s+[A-E] [A-E]/.test(value)) {
+            value = value.trim(); // Keep the value as is (e.g., "Extract A").
+          } 
+          // If the value is empty or matches the label itself, default to the label as value.
+          else if (!value || value === label) {
             value = label; // Default to the label if no specific value exists.
           }
   
@@ -326,6 +366,10 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
   
     return options;
   };
+  
+  
+  
+  
   
   
 
