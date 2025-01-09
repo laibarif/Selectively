@@ -10,7 +10,7 @@ function QuestionPage() {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const timerRef = useRef(780);
+  const timerRef = useRef(720);
   const [timer, setTimer] = useState(timerRef.current);
   const [timerEnded, setTimerEnded] = useState(false);
   const [answers, setAnswers] = useState([]);
@@ -135,39 +135,39 @@ function QuestionPage() {
         `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${endpoint}`,
         data
       );
-    
+
       // Navigate to the test assessment books page
       navigate("/test-assesment-books");
-    
+
       // Clear localStorage after the API call is done
       localStorage.removeItem('timer-randomReadingQuestions');
-localStorage.removeItem('timestamp-randomReadingQuestions');
-localStorage.removeItem('timer-randomMathsQuestions');
-localStorage.removeItem('timestamp-randomMathsQuestions');
-localStorage.removeItem('timer-randomThinkingskillQuestions');
-localStorage.removeItem('timestamp-randomThinkingskillQuestions');
+      localStorage.removeItem('timestamp-randomReadingQuestions');
+      localStorage.removeItem('timer-randomMathsQuestions');
+      localStorage.removeItem('timestamp-randomMathsQuestions');
+      localStorage.removeItem('timer-randomThinkingskillQuestions');
+      localStorage.removeItem('timestamp-randomThinkingskillQuestions');
 
-    
+
     } catch (error) {
       // Handle any errors that occur during the API request
       toast.error("Error submitting assessment:", error);
     }
-    
+
   };
 
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-  const response = await axios.get(
-    `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`,
-    {
-      headers: {
-        "Accept": "application/json; charset=utf-8",
-      },
-    }
-  );
-  
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`,
+          {
+            headers: {
+              "Accept": "application/json; charset=utf-8",
+            },
+          }
+        );
+
         setQuestions(response.data.questions);
         setAnswers(new Array(response.data.questions.length).fill(null));
         setLoading(false);
@@ -272,106 +272,80 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     }
   };
 
- // Function to format the text
+  // Function to format the text
 
   const formatExtractText = (text) => {
     if (!text) return '';
-  
+
     // Regex to match "Extract A", "Extract B", "Extract C", etc.
     const regex = /\b(Extract\s+[A-Z])\b/g;
-  
+
     // Replace matched phrases with bolded versions and add a new line
-    return text.replace(regex, (match) => `<br><b>${match}</b>`);
+    return text.replace(regex, (match) => `<br><br><b>${match}</b><br>`);
   };
-  
 
-  
-
-
-  
-  
-  // const parseOptions = (optionsString) => {
-  //   if (!optionsString) return [];
-  
-  //   // Step 1: Normalize the string by replacing newline characters with spaces.
-  //   const cleanedString = optionsString
-  //     .replace(/\n/g, ' ') // Replace newlines with spaces.
-  //     .trim(); // Trim leading and trailing spaces.
-  
-  //   // Step 2: Split the string by labels (A, B, C, D, E) followed by their text.
-  //   const options = cleanedString
-  //     .split(/(?<![a-zA-Z0-9])(?=[A-E]\b)/) // Split at each label A, B, C, D, E.
-  //     .map((option) => {
-  //       const trimmedOption = option.trim();
-  
-  //       // Step 3: Match the label (A, B, C, D, E) and optional value.
-  //       const regex = /^([A-E])\s*(.*)$/; // Match the label and optional value.
-  //       const match = trimmedOption.match(regex);
-  
-  //       if (match) {
-  //         const label = match[1]; // Extract the label (A, B, C, D, E).
-  //         let value = match[2]?.trim(); // Extract the value if provided.
-  
-  //         // If no value is provided, use the label as the value.
-  //         if (!value || value === label) {
-  //           value = label; // Default to the label if no specific value exists.
-  //         }
-  
-  //         return { label, value };
-  //       }
-  
-  //       // Return the raw option text as invalid if no match is found.
-  //       return { label: 'Invalid', value: trimmedOption };
-  //     });
-  
-  //   return options;
-  // };
   const parseOptions = (optionsString) => {
     if (!optionsString) return [];
-  
-    // Step 1: Normalize the string by replacing newline characters with spaces and trimming leading/trailing spaces.
+
+    // Step 1: Normalize the string by replacing newlines with spaces and trimming spaces
     const cleanedString = optionsString
-      .replace(/\n/g, ' ') // Replace newlines with spaces.
-      .trim(); // Trim leading and trailing spaces.
-  
-    // Step 2: Split the string by labels (A, B, C, D, E) followed by their text.
+        .replace(/\n/g, ' ') // Replace newlines with spaces
+        .trim();
+
+    // Step 2: Check if the input matches "A, B, C, D" or similar pattern
+    if (/^[A-E](,\s*[A-E])*$/.test(cleanedString)) {
+        return cleanedString.split(',').map((label) => ({
+            label: label.trim(),
+            value: label.trim() // Use the label itself as the value
+        }));
+    }
+
+    // Step 3: Split the string using labels A, B, C, D, E followed by specific patterns
     const options = cleanedString
-      .split(/(?<![a-zA-Z0-9])(?=[A-E]\b)/) // Split at each label A, B, C, D, E.
-      .map((option) => {
-        const trimmedOption = option.trim();
-  
-        // Step 3: Match the label (A, B, C, D, E) and its value (which may be empty or contain "Extract X").
-        const regex = /^([A-E])\s*(.*)$/; // Match the label (A, B, C, D, E) and optional value.
-        const match = trimmedOption.match(regex);
-  
-        if (match) {
-          const label = match[1]; // Extract the label (A, B, C, D, E).
-          let value = match[2]?.trim(); // Extract the value if provided.
-  
-          // If the value contains "Extract A", "Extract B", etc., ensure it's preserved.
-          if (value && /Extract\s+[A-E] [A-E]/.test(value)) {
-            value = value.trim(); // Keep the value as is (e.g., "Extract A").
-          } 
-          // If the value is empty or matches the label itself, default to the label as value.
-          else if (!value || value === label) {
-            value = label; // Default to the label if no specific value exists.
-          }
-  
-          return { label, value };
+        .split(/(?=\b[A-E]\b)/) // Split at each label (A, B, C, D, E) when it's a whole word
+        .map((option) => {
+            const trimmedOption = option.trim();
+
+            // Step 4: Match the label (A, B, C, D, E) and its value
+            const regex = /^([A-E])\s*(Extract\s+[A-E].*|.*)$/; // Match "Extract X" or any other value
+            const match = trimmedOption.match(regex);
+
+            if (match) {
+                const label = match[1]; // Extract the label (A, B, C, D, E)
+                let value = match[2]?.trim() || ''; // Extract value or default to empty
+
+                // Ensure "Extract A" format for consistency
+                if (value.toLowerCase().startsWith('extract')) {
+                    value = `Extract ${label}`;
+                }
+
+                // Handle the case where value is empty
+                if (!value || value === label) {
+                    value = `Extract ${label}`; // Default to "Extract X" if no specific value exists
+                }
+
+                return { label, value };
+            }
+
+            // Handle invalid or improperly formatted options
+            return { label: 'Invalid', value: trimmedOption };
+        });
+
+    // Remove duplicate options
+    const uniqueOptions = [];
+    const seenLabels = new Set();
+
+    options.forEach((option) => {
+        if (!seenLabels.has(option.label)) {
+            uniqueOptions.push(option);
+            seenLabels.add(option.label);
         }
-  
-        // Return the raw option text as invalid if no match is found.
-        return { label: 'Invalid', value: trimmedOption };
-      });
-  
-    return options;
-  };
-  
-  
-  
-  
-  
-  
+    });
+
+    return uniqueOptions;
+};
+
+
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -405,13 +379,13 @@ localStorage.removeItem('timestamp-randomThinkingskillQuestions');
     question: "Question not available",
     mcq_options: ""
   };
- const extracts = formatExtractText(currentQuestion.extract_text);
+  const extracts = formatExtractText(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
 
- 
 
-console.log(currentQuestion)
-console.log(options)
+
+  console.log(currentQuestion)
+  console.log(options)
   return (
     <div className="h-screen bg-white flex flex-col">
       <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">
@@ -435,26 +409,26 @@ console.log(options)
         >
           <p className="w-10/12 py-4 text-2xl font-bold space-y-10 text-gray-800 mb-4 text-justify">
             <span className="font-bold text-2xl text-black">
-              Question {currentIndex + 1}<br/>
+              Question {currentIndex + 1}<br />
             </span>
             {currentQuestion?.question || "Question not available"}
           </p>
 
           {/* Conditionally render the Image */}
           {currentQuestion.image_data && (
-                <div className="mb-4 flex justify-center">
+            <div className="mb-4 flex justify-center">
 
-                  <img
-                    src={
-                      currentQuestion.image_data?.startsWith("http")
-                        ? currentQuestion.image_data
-                        : `http://${currentQuestion.image_data}` // Adjust this as needed
-                    }
-                    alt={currentQuestion.image_description || 'Question image'}
-                    className="h-80 w-80 object-cover border border-gray-300 rounded-md"
-                  />
-                </div>
-              )}
+              <img
+                src={
+                  currentQuestion.image_data?.startsWith("http")
+                    ? currentQuestion.image_data
+                    : `http://${currentQuestion.image_data}` // Adjust this as needed
+                }
+                alt={currentQuestion.image_description || 'Question image'}
+                className="object-cover border border-gray-300 rounded-md"
+              />
+            </div>
+          )}
 
           {currentQuestion?.image_description && (
             <p className="text-black  mt-2 text-bold">
@@ -462,19 +436,19 @@ console.log(options)
             </p>
           )}
 
-{currentQuestion?.extract_text && (
-  <p
-    className="text-black mt-2 text-bold"
-    dangerouslySetInnerHTML={{
-      __html: formatExtractText(currentQuestion.extract_text),
-    }}
-  ></p>
-)}
+          {currentQuestion?.extract_text && (
+            <p
+              className="text-black mt-2 text-bold"
+              dangerouslySetInnerHTML={{
+                __html: formatExtractText(currentQuestion.extract_text),
+              }}
+            ></p>
+          )}
 
 
 
 
-           {/* {
+          {/* {
         extracts.map((extract, index) => (
           <p key={index} className="mb-6">
             <h1 className="text-2xl">{extract.title}</h1>
@@ -495,7 +469,7 @@ console.log(options)
             cursor: "col-resize",
             backgroundColor: "gray",
             width: "3px",
-            height:"auto"
+            height: "auto"
           }}
         ></div>
 
@@ -508,59 +482,57 @@ console.log(options)
               : {}
           }
         >
-        <div className="space-y-6">
-  {options?.map((option, index) => (
-    <label
-      key={index}
-      className="flex items-center space-x-2 py-4 px-2 bg-gray-200 border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
-    >
-      <input
-        type="radio"
-        name={`question-${currentIndex}`}
-        value={option.value}
-        className="peer h-8 w-8 focus:ring-yellow-600 border-gray-300"
-        disabled={timerEnded}
-        onChange={() =>
-          handleSelectAnswer(option.value, option.label)
-        }
-        checked={
-          answers[currentIndex]?.startsWith(option.label) || false
-        }
-      />
-      <span className="text-black text-lg font-semibold">
-        {`${option.label}: ${option.value}`} {/* Combine label and value */}
-      </span>
-    </label>
-  ))}
-</div>
+          <div className="space-y-6">
+            {options?.map((option, index) => (
+              <label
+                key={index}
+                className="flex items-center space-x-2 py-4 px-2 bg-gray-200 border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
+              >
+                <input
+                  type="radio"
+                  name={`question-${currentIndex}`}
+                  value={option.value}
+                  className="peer h-8 w-8 focus:ring-yellow-600 border-gray-300"
+                  disabled={timerEnded}
+                  onChange={() =>
+                    handleSelectAnswer(option.value, option.label)
+                  }
+                  checked={
+                    answers[currentIndex]?.startsWith(option.label) || false
+                  }
+                />
+                <span className="text-black text-lg font-semibold">
+                  {` ${option.value}`} {/* Combine label and value */}
+                </span>
+              </label>
+            ))}
+          </div>
 
         </div>
       </div>
 
       {/* Footer Section */}
       <div className="relative bottom-0 left-0 right-0 bg-orange-500 text-white py-3 flex justify-between z-30">
-  <button
-    onClick={handlePrevious}
-    className={`p-2 rounded-md font-semibold ${
-      currentIndex === 0 || timerEnded ? "opacity-50 cursor-not-allowed" : ""
-    }`}
-    disabled={currentIndex === 0 || timerEnded}
-  >
-    &lt;&lt; PREVIOUS
-  </button>
-  
-  <button
-    onClick={handleNext}
-    className={`p-2 rounded-md font-semibold ${
-      currentIndex === questions.length - 1 || timerEnded
-        ? "opacity-50 cursor-not-allowed"
-        : ""
-    } ${currentIndex === questions.length - 1 ? "left sm:mx-auto" : ""}`}
-    disabled={currentIndex === questions.length - 1 || timerEnded}
-  >
-    NEXT &gt;&gt;
-  </button>
-</div>
+        <button
+          onClick={handlePrevious}
+          className={`p-2 rounded-md font-semibold ${currentIndex === 0 || timerEnded ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          disabled={currentIndex === 0 || timerEnded}
+        >
+          &lt;&lt; PREVIOUS
+        </button>
+
+        <button
+          onClick={handleNext}
+          className={`p-2 rounded-md font-semibold ${currentIndex === questions.length - 1 || timerEnded
+            ? "opacity-50 cursor-not-allowed"
+            : ""
+            } ${currentIndex === questions.length - 1 ? "left sm:mx-auto" : ""}`}
+          disabled={currentIndex === questions.length - 1 || timerEnded}
+        >
+          NEXT &gt;&gt;
+        </button>
+      </div>
 
 
       {/* Submit Button */}
@@ -579,92 +551,92 @@ console.log(options)
 
         {/* Popup for confirmation */}
         {showPopup && (
-  <div id="YOUR_ID" className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div
-      className="relative bg-white rounded-lg shadow-lg overflow-hidden transform transition-all w-full max-w-md sm:mx-auto"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-headline"
-    >
-      {/* Close Button */}
-      <button
-        onClick={handleCancel}
-        type="button"
-        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
-        aria-label="Close"
-      >
-        <svg
-          className="w-5 h-5"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
-
-      {/* Modal Content */}
-      <div className="px-6 py-8">
-        {/* Icon and Header */}
-        <div className="flex items-center space-x-4">
-          <div className="flex-shrink-0">
-            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-              <svg
-                className="h-6 w-6 text-green-600"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+          <div id="YOUR_ID" className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div
+              className="relative bg-white rounded-lg shadow-lg overflow-hidden transform transition-all w-full max-w-md sm:mx-auto"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-headline"
+            >
+              {/* Close Button */}
+              <button
+                onClick={handleCancel}
+                type="button"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                aria-label="Close"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+                <svg
+                  className="w-5 h-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              {/* Modal Content */}
+              <div className="px-6 py-8">
+                {/* Icon and Header */}
+                <div className="flex items-center space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                      <svg
+                        className="h-6 w-6 text-green-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3
+                    className="text-lg font-semibold text-gray-900"
+                    id="modal-headline"
+                  >
+                    Confirm Submission
+                  </h3>
+                </div>
+
+                {/* Message */}
+                <div className="mt-4 text-gray-700">
+                  Are you sure you want to submit the result? Please confirm your action below.
+                </div>
+
+                {/* Buttons */}
+                <div className="mt-6 flex justify-end space-x-3">
+                  <button
+                    onClick={handleCancel}
+                    type="button"
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirm}
+                    type="button"
+                    className="px-4 py-2 text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          <h3
-            className="text-lg font-semibold text-gray-900"
-            id="modal-headline"
-          >
-            Confirm Submission
-          </h3>
-        </div>
-
-        {/* Message */}
-        <div className="mt-4 text-gray-700">
-          Are you sure you want to submit the result? Please confirm your action below.
-        </div>
-
-        {/* Buttons */}
-        <div className="mt-6 flex justify-end space-x-3">
-          <button
-            onClick={handleCancel}
-            type="button"
-            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            type="button"
-            className="px-4 py-2 text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+        )}
 
       </div>
 

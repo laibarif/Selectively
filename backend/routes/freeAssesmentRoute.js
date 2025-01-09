@@ -5,7 +5,7 @@ const router = express.Router();
 const path = require("path");
 const he = require("he");
 
-const WHITELISTED_EMAILS = ["awaisnaeem962@gmail.com", "kamini.soni.74@gmail.com","rsaini77@gmail.com","adeelnaeem2588@gmail.com"]; // Add emails that can perform multiple assessments
+const WHITELISTED_EMAILS = ["awaisnaeem962@gmail.com", "kamini.soni.74@gmail.com","rsaini77@gmail.com","adeelnaeem2588@gmail.com", "laibaslatch@gmail.com"]; // Add emails that can perform multiple assessments
 
 router.post("/userdetailforassesment", async (req, res) => {
   const { email } = req.body;
