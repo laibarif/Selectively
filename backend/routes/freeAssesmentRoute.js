@@ -98,42 +98,40 @@ LIMIT 10;
       ? Buffer.from(questions.image_data).toString("base64")
       : null;
 
-      const removeSpecialCharsMcq = (mcq_options) => {
-        return mcq_options
-          .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-          .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-      };
+      // const removeSpecialCharsMcq = (mcq_options) => {
+      //   return mcq_options
+      //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+      //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+      // };
   
-      // Sanitize the extract_text field
-      questions.forEach((question) => {
-        question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
-      });
+      // // Sanitize the extract_text field
+      // questions.forEach((question) => {
+      //   question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
+      // });
 
+    // const removeSpecialCharsQuestion = (question) => {
+    //   return question
+    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    // };
 
-  
-    const removeSpecialCharsQuestion = (question) => {
-      return question
-        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    };
+    // // Sanitize the extract_text field
+    // questions.forEach((question) => {
+    //   question.question = removeSpecialCharsQuestion(question.question);
+    // });
 
-    // Sanitize the extract_text field
-    questions.forEach((question) => {
-      question.question = removeSpecialCharsQuestion(question.question);
-    });
+    // const removeSpecialCharsDiscription = (image_description) => {
+    //   return image_description
+    //     ?.replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    // };
 
-    const removeSpecialCharsDiscription = (image_description) => {
-      return image_description
-        ?.replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    };
-
-    // Sanitize the extract_text field
-    questions.forEach((question) => {
-      question.image_description = removeSpecialCharsDiscription(
-        question.image_description
-      );
-    });
+    // // Sanitize the extract_text field
+    // questions.forEach((question) => {
+    //   question.image_description = removeSpecialCharsDiscription(
+    //     question.image_description
+    //   );
+    // });
 
     // Send the questions to the frontend
     res.status(200).json({ questions });
@@ -152,28 +150,28 @@ router.get("/randomThinkingskillQuestions", async (req, res) => {
     if (questions.length === 0) {
       return res.status(404).json({ message: "No questions found." });
     }
-    const removeSpecialCharsQuestion = (question) => {
-      return question
-        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    };
+    // const removeSpecialCharsQuestion = (question) => {
+    //   return question
+    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    // };
 
     // Sanitize the extract_text field
-    questions.forEach((question) => {
-      question.question = removeSpecialCharsQuestion(question.question);
-    });
+    // questions.forEach((question) => {
+    //   question.question = removeSpecialCharsQuestion(question.question);
+    // });
 
-    const removeSpecialCharsMcq = (mcq_options) => {
-      return mcq_options
-        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-        .replace(/[^\w\s]/gi, "") // Remove non-alphanumeric characters except spaces
-        .replace(/Ã¢ÂÂ/g, ""); // Remove specific encoding issues
-    };
+    // const removeSpecialCharsMcq = (mcq_options) => {
+    //   return mcq_options
+    //   .split(/\r?\n/) // Split options by newlines (handles both \n and \r\n)
+    //   .map((option) => option.trim().replace(/,$/, "")) // Trim whitespace and remove trailing comma
+    //   .join("\n"); // Rejoin the options with newlines
+    // };
     
-    // Sanitize the extract_text field
-    questions.forEach((question) => {
-      question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
-    });
+    // // Sanitize the extract_text field
+    // questions.forEach((question) => {
+    //   question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
+    // });
     
     res.status(200).json({ questions });
   } catch (error) {
@@ -217,38 +215,38 @@ router.get("/randomReadingQuestions", async (req, res) => {
     }
 
     // Function to remove special characters from the extract text
-    const removeSpecialChars = (text) => {
-      return text
-        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    };
+    // const removeSpecialChars = (text) => {
+    //   return text
+    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    // };
 
     // Sanitize the extract_text field
-    questions.forEach((question) => {
-      question.extract_text = removeSpecialChars(question.extract_text);
-    });
+    // questions.forEach((question) => {
+    //   question.extract_text = removeSpecialChars(question.extract_text);
+    // });
 
-    const removeSpecialCharsQuestion = (question) => {
-      return question
-        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    };
-
-    // Sanitize the extract_text field
-    questions.forEach((question) => {
-      question.question = removeSpecialCharsQuestion(question.question);
-    });
-
-    const removeSpecialCharsMcq = (mcq_options) => {
-      return mcq_options
-        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    };
+    // const removeSpecialCharsQuestion = (question) => {
+    //   return question
+    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    // };
 
     // Sanitize the extract_text field
-    questions.forEach((question) => {
-      question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
-    });
+    // questions.forEach((question) => {
+    //   question.question = removeSpecialCharsQuestion(question.question);
+    // });
+
+    // const removeSpecialCharsMcq = (mcq_options) => {
+    //   return mcq_options
+    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+    //     // .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    // };
+
+    // // Sanitize the extract_text field
+    // questions.forEach((question) => {
+    //   question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
+    // });
     // Send the fetched questions as a JSON response
     res.status(200).json({ questions });
   } catch (error) {
