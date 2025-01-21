@@ -414,7 +414,7 @@ function QuestionPage() {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secondsLeft = seconds % 60;
-  
+
     return {
       hours: hours < 10 ? `0${hours}` : `${hours}`,
       minutes: minutes < 10 ? `0${minutes}` : `${minutes}`,
@@ -452,8 +452,7 @@ function QuestionPage() {
   };
   const extracts = formatExtractText(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
-
-
+console.log("quston",questions)
   return (
     <div className="h-screen bg-white flex flex-col">
       <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">
@@ -494,34 +493,38 @@ function QuestionPage() {
               : {}
           }
         >
-          <p className="w-10/12 py-4 text-2xl font-bold text-gray-800 mb-4 text-justify">
-            <span className="font-bold text-2xl text-black">
-              Question {currentIndex + 1}
-            </span>
-            <span style={{ display: "block", marginTop: "0.8rem" }}>
-              {currentQuestion?.question || "Question not available"}
-            </span>
-          </p>
+          {category !== "randomReadingQuestions" && (
+            <>
+              <p className="w-10/12 py-4 text-2xl font-bold text-gray-800 mb-4 text-justify">
+                <span className="font-bold text-2xl text-black">
+                  Question {currentIndex + 1}
+                </span>
+                <span style={{ display: "block", marginTop: "0.8rem" }}>
+                  {currentQuestion?.question || "Question not available"}
+                </span>
+              </p>
 
-          {/* Conditionally render the Image */}
-          {currentQuestion.image_data && (
-            <div className="mb-4 flex justify-center">
-              <img
-                src={
-                  currentQuestion.image_data?.startsWith("http")
-                    ? currentQuestion.image_data
-                    : `http://${currentQuestion.image_data}` // Adjust this as needed
-                }
-                alt={currentQuestion.image_description || "Question image"}
-                className="object-cover border border-gray-300 rounded-md"
-              />
-            </div>
-          )}
+              {/* Conditionally render the Image */}
+              {currentQuestion.image_data && (
+                <div className="mb-4 flex justify-center">
+                  <img
+                    src={
+                      currentQuestion.image_data?.startsWith("http")
+                        ? currentQuestion.image_data
+                        : `http://${currentQuestion.image_data}` // Adjust this as needed
+                    }
+                    alt={currentQuestion.image_description || "Question image"}
+                    className="object-cover border border-gray-300 rounded-md"
+                  />
+                </div>
+              )}
 
-          {currentQuestion?.image_description && (
-            <p className="text-black  mt-2 text-2xl">
-              {currentQuestion.image_description}
-            </p>
+              {currentQuestion?.image_description && (
+                <p className="text-black mt-2 text-2xl">
+                  {currentQuestion.image_description}
+                </p>
+              )}
+            </>
           )}
 
           {currentQuestion?.extract_text && (
@@ -566,6 +569,40 @@ function QuestionPage() {
               : {}
           }
         >
+          {category == "randomReadingQuestions" && (
+            <>
+              <p className="w-10/12 py-4 text-2xl font-bold text-gray-800 mb-4 text-justify">
+                <span className="font-bold text-2xl text-black">
+                  Question {currentIndex + 1}
+                </span>
+                <span style={{ display: "block", marginTop: "0.8rem" }}>
+                  {currentQuestion?.question || "Question not available"}
+                </span>
+              </p>
+
+              {/* Conditionally render the Image */}
+              {currentQuestion.image_data && (
+                <div className="mb-4 flex justify-center">
+                  <img
+                    src={
+                      currentQuestion.image_data?.startsWith("http")
+                        ? currentQuestion.image_data
+                        : `http://${currentQuestion.image_data}` // Adjust this as needed
+                    }
+                    alt={currentQuestion.image_description || "Question image"}
+                    className="object-cover border border-gray-300 rounded-md"
+                  />
+                </div>
+              )}
+
+              {currentQuestion?.image_description && (
+                <p className="text-black mt-2 text-2xl">
+                  {currentQuestion.image_description}
+                </p>
+              )}
+            </>
+          )}
+
           <div className="space-y-6">
             {options?.map((option, index) => (
               <label

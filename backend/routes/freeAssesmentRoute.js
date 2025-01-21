@@ -234,121 +234,188 @@ ORDER BY RAND();
   }
 });
 
+// router.get("/randomReadingQuestions", async (req, res) => {
+//   try {
+//     // Execute the query to fetch random reading questions along with the corresponding text from the extract table
+//     const [questions] = await db.query(
+//       `(
+//     SELECT 
+//         r.id AS question_id, 
+//         r.question, 
+//         r.mcq_options, 
+//         r.correct_answer, 
+//         r.explanation, 
+//         r.subject, 
+//         r.type, 
+//         e.text AS extract_text 
+//     FROM 
+//         selectively_readingquestion r
+//     JOIN 
+//         selectively_extract e 
+//     ON 
+//         r.extract_id = e.id
+//     WHERE 
+//         r.type = "finalized" 
+//         AND r.question IS NOT NULL 
+//         AND r.question != "" 
+//         AND r.mcq_options IS NOT NULL 
+//         AND r.level = "easy"
+//     ORDER BY 
+//         RAND()
+//     LIMIT 3
+// )
+// UNION ALL
+// (
+//     SELECT 
+//         r.id AS question_id, 
+//         r.question, 
+//         r.mcq_options, 
+//         r.correct_answer, 
+//         r.explanation, 
+//         r.subject, 
+//         r.type, 
+//         e.text AS extract_text 
+//     FROM 
+//         selectively_readingquestion r
+//     JOIN 
+//         selectively_extract e 
+//     ON 
+//         r.extract_id = e.id
+//     WHERE 
+//         r.type = "finalized" 
+//         AND r.question IS NOT NULL 
+//         AND r.question != "" 
+//         AND r.mcq_options IS NOT NULL 
+//         AND r.level = "medium"
+//     ORDER BY 
+//         RAND()
+//     LIMIT 4
+// )
+// UNION ALL
+// (
+//     SELECT 
+//         r.id AS question_id, 
+//         r.question, 
+//         r.mcq_options, 
+//         r.correct_answer, 
+//         r.explanation, 
+//         r.subject, 
+//         r.type, 
+//         e.text AS extract_text 
+//     FROM 
+//         selectively_readingquestion r
+//     JOIN 
+//         selectively_extract e 
+//     ON 
+//         r.extract_id = e.id
+//     WHERE 
+//         r.type = "finalized" 
+//         AND r.question IS NOT NULL 
+//         AND r.question != "" 
+//         AND r.mcq_options IS NOT NULL 
+//         AND r.level = "difficult"
+//     ORDER BY 
+//         RAND()
+//     LIMIT 3
+// )
+// ORDER BY RAND();
+
+// `
+//     );
+
+//     // Check if no questions were found
+//     if (questions.length === 0) {
+//       return res.status(404).json({ message: "No questions found." });
+//     }
+
+//     const removeTrailingCommas = (mcq_options) => {
+//       // Split the options into an array based on commas or newlines
+//       let options = mcq_options.split(/,|\n/); // Splits on commas or newlines
+
+//       // Trim each option and remove trailing commas
+//       options = options.map(option => option.trim().replace(/,$/, ""));
+
+//       // Join the options back into a string with newlines or commas if needed
+//       return options.join("\n"); // Adjust to use "," or "\n" as per your needs
+//     };
+
+//     // Sanitize the extract_text field
+//     questions.forEach((question) => {
+//       question.mcq_options = removeTrailingCommas(question.mcq_options);
+//     });
+
+
+//     // Send the fetched questions as a JSON response
+//     res.status(200).json({ questions });
+//   } catch (error) {
+//     // Log and handle any errors that occur
+//     console.error("Error fetching reading questions:", error);
+//     res.status(500).json({ message: "Server error." });
+//   }
+// });
+
+
 router.get("/randomReadingQuestions", async (req, res) => {
   try {
-    // Execute the query to fetch random reading questions along with the corresponding text from the extract table
-    const [questions] = await db.query(
-      `(
-    SELECT 
-        r.id AS question_id, 
-        r.question, 
-        r.mcq_options, 
-        r.correct_answer, 
-        r.explanation, 
-        r.subject, 
-        r.type, 
-        e.text AS extract_text 
-    FROM 
-        selectively_readingquestion r
-    JOIN 
-        selectively_extract e 
-    ON 
-        r.extract_id = e.id
-    WHERE 
-        r.type = "finalized" 
-        AND r.question IS NOT NULL 
-        AND r.question != "" 
-        AND r.mcq_options IS NOT NULL 
-        AND r.level = "easy"
-    ORDER BY 
-        RAND()
-    LIMIT 3
-)
-UNION ALL
-(
-    SELECT 
-        r.id AS question_id, 
-        r.question, 
-        r.mcq_options, 
-        r.correct_answer, 
-        r.explanation, 
-        r.subject, 
-        r.type, 
-        e.text AS extract_text 
-    FROM 
-        selectively_readingquestion r
-    JOIN 
-        selectively_extract e 
-    ON 
-        r.extract_id = e.id
-    WHERE 
-        r.type = "finalized" 
-        AND r.question IS NOT NULL 
-        AND r.question != "" 
-        AND r.mcq_options IS NOT NULL 
-        AND r.level = "medium"
-    ORDER BY 
-        RAND()
-    LIMIT 4
-)
-UNION ALL
-(
-    SELECT 
-        r.id AS question_id, 
-        r.question, 
-        r.mcq_options, 
-        r.correct_answer, 
-        r.explanation, 
-        r.subject, 
-        r.type, 
-        e.text AS extract_text 
-    FROM 
-        selectively_readingquestion r
-    JOIN 
-        selectively_extract e 
-    ON 
-        r.extract_id = e.id
-    WHERE 
-        r.type = "finalized" 
-        AND r.question IS NOT NULL 
-        AND r.question != "" 
-        AND r.mcq_options IS NOT NULL 
-        AND r.level = "difficult"
-    ORDER BY 
-        RAND()
-    LIMIT 3
-)
-ORDER BY RAND();
+    const [questions] = await db.query(`
+      SELECT 
+          r.id AS question_id, 
+          r.question, 
+          r.mcq_options, 
+          r.correct_answer, 
+          r.explanation, 
+          r.subject, 
+          r.type, 
+          e.text AS extract_text, 
+          r.extract_id
+      FROM 
+          selectively_readingquestion r
+      JOIN 
+          selectively_extract e 
+      ON 
+          r.extract_id = e.id
+      WHERE 
+          r.type = "finalized" 
+          AND r.question IS NOT NULL 
+          AND r.question != "" 
+          AND r.mcq_options IS NOT NULL 
+          AND r.level IN ("easy", "medium", "difficult")
+      ORDER BY 
+          RAND()
+    `);
 
-`
-    );
-
-    // Check if no questions were found
     if (questions.length === 0) {
       return res.status(404).json({ message: "No questions found." });
     }
 
     const removeTrailingCommas = (mcq_options) => {
-      // Split the options into an array based on commas or newlines
-      let options = mcq_options.split(/,|\n/); // Splits on commas or newlines
-
-      // Trim each option and remove trailing commas
-      options = options.map(option => option.trim().replace(/,$/, ""));
-
-      // Join the options back into a string with newlines or commas if needed
-      return options.join("\n"); // Adjust to use "," or "\n" as per your needs
+      let options = mcq_options.split(/,|\n/).map(option => option.trim().replace(/,$/, ""));
+      return options.join("\n");
     };
 
-    // Sanitize the extract_text field
+    // Sanitize mcq_options
     questions.forEach((question) => {
       question.mcq_options = removeTrailingCommas(question.mcq_options);
     });
 
+    // Group questions by extract_id
+    const groupedQuestions = questions.reduce((acc, question) => {
+      if (!acc[question.extract_id]) {
+        acc[question.extract_id] = [];
+      }
+      acc[question.extract_id].push(question);
+      return acc;
+    }, {});
 
-    // Send the fetched questions as a JSON response
-    res.status(200).json({ questions });
+    // Convert grouped object to an array and shuffle the groups
+    const shuffledGroups = Object.values(groupedQuestions).sort(() => Math.random() - 0.5);
+
+    // Flatten the shuffled groups into a single array while maintaining group sequence
+    const orderedQuestions = shuffledGroups.flat();
+
+    res.status(200).json({ questions: orderedQuestions });
+
   } catch (error) {
-    // Log and handle any errors that occur
     console.error("Error fetching reading questions:", error);
     res.status(500).json({ message: "Server error." });
   }
