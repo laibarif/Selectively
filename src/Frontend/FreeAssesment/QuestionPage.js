@@ -276,121 +276,121 @@ function QuestionPage() {
 
   // const formatExtractText = (text) => {
   //   if (!text) return '';
-  
+
   //   // Regex to match "Extract A", "Extract B", "Extract C", etc.
   //   const extractRegex = /\b(Extract\s+[A-Z]|Text\s+[A-Z])\b/g;
-  
+
   //   // Format Extract/Text
   //   const formattedText = text.replace(extractRegex, (match) => `<br><br><b>${match}</b><br>`);
-  
+
   //   // Split the text by new lines to handle poem structure
   //   const lines = formattedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
+
   //   // The first part should be "Read the poem and answer the questions", which should be bold and on one line
   //   const introText = `<p><strong>${lines[0]}</strong></p>`;
-  
+
   //   // Check if the second line contains "Poem", and if so, format it correctly
   //   let poemLabel = '';
   //   if (lines[1].toLowerCase().startsWith('poem')) {
   //     poemLabel = `<p><strong>${lines[1]}</strong></p>`; // Only format "Poem" if it's in the second line
   //   }
-  
+
   //   // The remaining part is the poem text, which should be split into individual lines
   //   const poemContent = lines.slice(poemLabel ? 2 : 1).map(line => `<p>${line}</p>`).join('');
-  
+
   //   // Return the formatted text with Extract/Text formatted and poem properly structured
   //   return introText + poemLabel + poemContent;
   // };
-  
+
   const formatExtractText = (text) => {
     if (!text) return '';
-  
+
     // Regex to match "Extract A", "Text A", "Extract B", "Text B", etc.
     const extractRegex = /\b(Extract\s+[A-Z]|Text\s+[A-Z])\b/g;
-  
+
     // Format the Extract/Text but keep punctuation marks intact
     const formattedText = text.replace(extractRegex, (match) => `<br><br><b>${match}</b><br>`);
-  
+
     // Split the text by new lines to handle poem structure
     const lines = formattedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
+
     // The first part should be "Read the poem and answer the questions", which should be bold and on one line
     const introText = `<p><strong>${lines[0]}</strong></p>`;
-  
+
     // Ensure there is a second line before checking for "Poem"
     let poemLabel = '';
     if (lines.length > 1 && lines[1].toLowerCase().startsWith('poem')) {
       poemLabel = `<p><strong>${lines[1]}</strong></p>`; // Only format "Poem" if it's in the second line
     }
-  
+
     // The remaining part is the poem text, which should be split into individual lines
     const poemContent = lines.slice(poemLabel ? 2 : 1).map(line => `<p>${line}</p>`).join('');
-  
+
     // Return the formatted text with Extract/Text formatted and poem properly structured
     return introText + poemLabel + poemContent;
   };
-  
-  
+
+
   const parseOptions = (optionsString) => {
     if (!optionsString) return [];
 
     // Step 1: Normalize the string by replacing newlines with spaces and trimming spaces
     const cleanedString = optionsString
-        .replace(/\n/g, ' ') // Replace newlines with spaces
-        .trim();
+      .replace(/\n/g, ' ') // Replace newlines with spaces
+      .trim();
 
     // Step 2: Check if the input matches "A, B, C, D" or similar pattern
     if (/^[A-E](,\s*[A-E])*$/.test(cleanedString)) {
-        return cleanedString.split(',').map((label) => ({
-            label: label.trim(),
-            value: label.trim() // Use the label itself as the value
-        }));
+      return cleanedString.split(',').map((label) => ({
+        label: label.trim(),
+        value: label.trim() // Use the label itself as the value
+      }));
     }
 
     // Step 3: Split the string using labels A, B, C, D, E followed by specific patterns
     const options = cleanedString
-        .split(/(?=\b[A-E]\b)/) // Split at each label (A, B, C, D, E) when it's a whole word
-        .map((option) => {
-            const trimmedOption = option.trim();
+      .split(/(?=\b[A-E]\b)/) // Split at each label (A, B, C, D, E) when it's a whole word
+      .map((option) => {
+        const trimmedOption = option.trim();
 
-            // Step 4: Match the label (A, B, C, D, E) and its value
-            const regex = /^([A-E])\s*(Extract\s+[A-E].*|.*)$/; // Match "Extract X" or any other value
-            const match = trimmedOption.match(regex);
+        // Step 4: Match the label (A, B, C, D, E) and its value
+        const regex = /^([A-E])\s*(Extract\s+[A-E].*|.*)$/; // Match "Extract X" or any other value
+        const match = trimmedOption.match(regex);
 
-            if (match) {
-                const label = match[1]; // Extract the label (A, B, C, D, E)
-                let value = match[2]?.trim() || ''; // Extract value or default to empty
+        if (match) {
+          const label = match[1]; // Extract the label (A, B, C, D, E)
+          let value = match[2]?.trim() || ''; // Extract value or default to empty
 
-                // Ensure "Extract A" format for consistency
-                if (value.toLowerCase().startsWith('extract')) {
-                    value = `Extract ${label}`;
-                }
+          // Ensure "Extract A" format for consistency
+          if (value.toLowerCase().startsWith('extract')) {
+            value = `Extract ${label}`;
+          }
 
-                // Handle the case where value is empty
-                if (!value || value === label) {
-                    value = `Extract ${label}`; // Default to "Extract X" if no specific value exists
-                }
+          // Handle the case where value is empty
+          if (!value || value === label) {
+            value = `Extract ${label}`; // Default to "Extract X" if no specific value exists
+          }
 
-                return { label, value };
-            }
+          return { label, value };
+        }
 
-            // Handle invalid or improperly formatted options
-            return { label: 'Invalid', value: trimmedOption };
-        });
+        // Handle invalid or improperly formatted options
+        return { label: 'Invalid', value: trimmedOption };
+      });
 
     // Remove duplicate options
     const uniqueOptions = [];
     const seenLabels = new Set();
 
     options.forEach((option) => {
-        if (!seenLabels.has(option.label)) {
-            uniqueOptions.push(option);
-            seenLabels.add(option.label);
-        }
+      if (!seenLabels.has(option.label)) {
+        uniqueOptions.push(option);
+        seenLabels.add(option.label);
+      }
     });
 
     return uniqueOptions;
-};
+  };
 
 
 
@@ -454,12 +454,17 @@ function QuestionPage() {
               : {}
           }
         >
-          <p className="w-10/12 py-4 text-2xl font-bold space-y-10 text-gray-800 mb-4 text-justify">
-            <span className="font-bold text-2xl text-black">
-              Question {currentIndex + 1}<br />
-            </span>
-            {currentQuestion?.question || "Question not available"} 
-          </p>
+<p className="w-10/12 py-4 text-2xl font-bold text-gray-800 mb-4 text-justify">
+  <span className="font-bold text-2xl text-black">
+    Question {currentIndex + 1}
+  </span>
+  <span style={{ display: "block", marginTop: "0.8rem" }}>
+    {currentQuestion?.question || "Question not available"}
+  </span>
+</p>
+
+
+
 
           {/* Conditionally render the Image */}
           {currentQuestion.image_data && (
@@ -478,14 +483,14 @@ function QuestionPage() {
           )}
 
           {currentQuestion?.image_description && (
-            <p className="text-black  mt-2 text-bold text-2xl font-bold">
+            <p className="text-black  mt-2 text-2xl">
               {currentQuestion.image_description}
             </p>
           )}
 
           {currentQuestion?.extract_text && (
             <p
-              className="text-black mt-2 text-bold"
+              className="text-black mt-2"
               dangerouslySetInnerHTML={{
                 __html: formatExtractText(currentQuestion.extract_text),
               }}

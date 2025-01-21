@@ -5,7 +5,7 @@ const router = express.Router();
 const path = require("path");
 const he = require("he");
 
-const WHITELISTED_EMAILS = ["awaisnaeem962@gmail.com", "kamini.soni.74@gmail.com","rsaini77@gmail.com","adeelnaeem2588@gmail.com", "laibaslatch@gmail.com"]; // Add emails that can perform multiple assessments
+const WHITELISTED_EMAILS = ["awaisnaeem962@gmail.com", "kamini.soni.74@gmail.com", "rsaini77@gmail.com", "adeelnaeem2588@gmail.com", "laibaslatch@gmail.com"]; // Add emails that can perform multiple assessments
 
 router.post("/userdetailforassesment", async (req, res) => {
   const { email } = req.body;
@@ -66,25 +66,67 @@ router.get("/randomMathsQuestions", async (req, res) => {
   try {
     // Fetch all finalized questions, including those without images
     const [questions] = await db.query(
-      `SELECT 
-    q.*, 
-    CASE 
-        WHEN q.parent_question_id IS NOT NULL THEN p.image_data
-        ELSE q.image_data 
-    END AS image_data,
-    CASE 
-        WHEN q.parent_question_id IS NOT NULL THEN p.image_description
-        ELSE q.image_description 
-    END AS image_description
-FROM  
-    selectively_mathsquestion q
-LEFT JOIN 
-    selectively_mathsquestion p ON q.parent_question_id = p.id
-WHERE 
-    q.type = "finalized"
-ORDER BY 
-    RAND()
-LIMIT 10;
+      `(
+    SELECT 
+        q.*, 
+        CASE 
+            WHEN q.parent_question_id IS NOT NULL THEN p.image_data
+            ELSE q.image_data 
+        END AS image_data,
+        CASE 
+            WHEN q.parent_question_id IS NOT NULL THEN p.image_description
+            ELSE q.image_description 
+        END AS image_description
+    FROM 
+        selectively_mathsquestion q
+    LEFT JOIN 
+        selectively_mathsquestion p ON q.parent_question_id = p.id
+    WHERE 
+        q.type = "finalized" AND q.level = "easy"
+    LIMIT 3
+)
+UNION ALL
+(
+    SELECT 
+        q.*, 
+        CASE 
+            WHEN q.parent_question_id IS NOT NULL THEN p.image_data
+            ELSE q.image_data 
+        END AS image_data,
+        CASE 
+            WHEN q.parent_question_id IS NOT NULL THEN p.image_description
+            ELSE q.image_description 
+        END AS image_description
+    FROM 
+        selectively_mathsquestion q
+    LEFT JOIN 
+        selectively_mathsquestion p ON q.parent_question_id = p.id
+    WHERE 
+        q.type = "finalized" AND q.level = "medium"
+    LIMIT 3
+)
+UNION ALL
+(
+    SELECT 
+        q.*, 
+        CASE 
+            WHEN q.parent_question_id IS NOT NULL THEN p.image_data
+            ELSE q.image_data 
+        END AS image_data,
+        CASE 
+            WHEN q.parent_question_id IS NOT NULL THEN p.image_description
+            ELSE q.image_description 
+        END AS image_description
+    FROM 
+        selectively_mathsquestion q
+    LEFT JOIN 
+        selectively_mathsquestion p ON q.parent_question_id = p.id
+    WHERE 
+        q.type = "finalized" AND q.level = "Difficult"
+    LIMIT 4
+)
+ORDER BY RAND();
+
 `
     );
 
@@ -92,46 +134,25 @@ LIMIT 10;
       return res.status(404).json({ message: "No questions found." });
     }
 
-    
-    
     questions.image_data = questions.image_data
       ? Buffer.from(questions.image_data).toString("base64")
       : null;
 
-      // const removeSpecialCharsMcq = (mcq_options) => {
-      //   return mcq_options
-      //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-      //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-      // };
-  
-      // // Sanitize the extract_text field
-      // questions.forEach((question) => {
-      //   question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
-      // });
+    const removeTrailingCommas = (mcq_options) => {
+      // Split the options into an array based on commas or newlines
+      let options = mcq_options.split(/,|\n/); // Splits on commas or newlines
 
-    // const removeSpecialCharsQuestion = (question) => {
-    //   return question
-    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    // };
+      // Trim each option and remove trailing commas
+      options = options.map(option => option.trim().replace(/,$/, ""));
 
-    // // Sanitize the extract_text field
-    // questions.forEach((question) => {
-    //   question.question = removeSpecialCharsQuestion(question.question);
-    // });
+      // Join the options back into a string with newlines or commas if needed
+      return options.join("\n"); // Adjust to use "," or "\n" as per your needs
+    };
 
-    // const removeSpecialCharsDiscription = (image_description) => {
-    //   return image_description
-    //     ?.replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    // };
-
-    // // Sanitize the extract_text field
-    // questions.forEach((question) => {
-    //   question.image_description = removeSpecialCharsDiscription(
-    //     question.image_description
-    //   );
-    // });
+    // Sanitize the extract_text field
+    questions.forEach((question) => {
+      question.mcq_options = removeTrailingCommas(question.mcq_options);
+    });
 
     // Send the questions to the frontend
     res.status(200).json({ questions });
@@ -144,35 +165,68 @@ LIMIT 10;
 router.get("/randomThinkingskillQuestions", async (req, res) => {
   try {
     const [questions] = await db.query(
-      'SELECT * FROM selectively_thinkingskillsquestion WHERE type = "finalized" AND question IS NOT NULL AND question != "" AND mcq_options IS NOT NULL ORDER BY RAND() LIMIT 10'
+      `(
+    SELECT * 
+    FROM selectively_thinkingskillsquestion
+    WHERE 
+        type = "finalized" 
+        AND question IS NOT NULL 
+        AND question != "" 
+        AND mcq_options IS NOT NULL 
+        AND level = "easy"
+    ORDER BY RAND()
+    LIMIT 2
+)
+UNION ALL
+(
+    SELECT * 
+    FROM selectively_thinkingskillsquestion
+    WHERE 
+        type = "finalized" 
+        AND question IS NOT NULL 
+        AND question != "" 
+        AND mcq_options IS NOT NULL 
+        AND level = "medium"
+    ORDER BY RAND()
+    LIMIT 5
+)
+UNION ALL
+(
+    SELECT * 
+    FROM selectively_thinkingskillsquestion
+    WHERE 
+        type = "finalized" 
+        AND question IS NOT NULL 
+        AND question != "" 
+        AND mcq_options IS NOT NULL 
+        AND level = "difficult"
+    ORDER BY RAND()
+    LIMIT 3
+)
+ORDER BY RAND();
+`
     );
 
     if (questions.length === 0) {
       return res.status(404).json({ message: "No questions found." });
     }
-    // const removeSpecialCharsQuestion = (question) => {
-    //   return question
-    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    // };
+
+    const removeTrailingCommas = (mcq_options) => {
+      // Split the options into an array based on commas or newlines
+      let options = mcq_options.split(/,|\n/); // Splits on commas or newlines
+
+      // Trim each option and remove trailing commas
+      options = options.map(option => option.trim().replace(/,$/, ""));
+
+      // Join the options back into a string with newlines or commas if needed
+      return options.join("\n"); // Adjust to use "," or "\n" as per your needs
+    };
 
     // Sanitize the extract_text field
-    // questions.forEach((question) => {
-    //   question.question = removeSpecialCharsQuestion(question.question);
-    // });
+    questions.forEach((question) => {
+      question.mcq_options = removeTrailingCommas(question.mcq_options);
+    });
 
-    // const removeSpecialCharsMcq = (mcq_options) => {
-    //   return mcq_options
-    //   .split(/\r?\n/) // Split options by newlines (handles both \n and \r\n)
-    //   .map((option) => option.trim().replace(/,$/, "")) // Trim whitespace and remove trailing comma
-    //   .join("\n"); // Rejoin the options with newlines
-    // };
-    
-    // // Sanitize the extract_text field
-    // questions.forEach((question) => {
-    //   question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
-    // });
-    
     res.status(200).json({ questions });
   } catch (error) {
     console.error("Error fetching thinking skills questions:", error);
@@ -184,29 +238,89 @@ router.get("/randomReadingQuestions", async (req, res) => {
   try {
     // Execute the query to fetch random reading questions along with the corresponding text from the extract table
     const [questions] = await db.query(
-      `SELECT 
-         r.id AS question_id, 
-         r.question, 
-         r.mcq_options, 
-         r.correct_answer, 
-         r.explanation, 
-         r.subject, 
-         r.type, 
-         e.text AS extract_text 
-       FROM 
-         selectively_readingquestion r
-       JOIN 
-         selectively_extract e 
-       ON 
-         r.extract_id = e.id
-       WHERE 
-         r.type = "finalized" 
-         AND r.question IS NOT NULL 
-         AND r.question != "" 
-         AND r.mcq_options IS NOT NULL
-       ORDER BY 
-         RAND() 
-       LIMIT 10`
+      `(
+    SELECT 
+        r.id AS question_id, 
+        r.question, 
+        r.mcq_options, 
+        r.correct_answer, 
+        r.explanation, 
+        r.subject, 
+        r.type, 
+        e.text AS extract_text 
+    FROM 
+        selectively_readingquestion r
+    JOIN 
+        selectively_extract e 
+    ON 
+        r.extract_id = e.id
+    WHERE 
+        r.type = "finalized" 
+        AND r.question IS NOT NULL 
+        AND r.question != "" 
+        AND r.mcq_options IS NOT NULL 
+        AND r.level = "easy"
+    ORDER BY 
+        RAND()
+    LIMIT 3
+)
+UNION ALL
+(
+    SELECT 
+        r.id AS question_id, 
+        r.question, 
+        r.mcq_options, 
+        r.correct_answer, 
+        r.explanation, 
+        r.subject, 
+        r.type, 
+        e.text AS extract_text 
+    FROM 
+        selectively_readingquestion r
+    JOIN 
+        selectively_extract e 
+    ON 
+        r.extract_id = e.id
+    WHERE 
+        r.type = "finalized" 
+        AND r.question IS NOT NULL 
+        AND r.question != "" 
+        AND r.mcq_options IS NOT NULL 
+        AND r.level = "medium"
+    ORDER BY 
+        RAND()
+    LIMIT 4
+)
+UNION ALL
+(
+    SELECT 
+        r.id AS question_id, 
+        r.question, 
+        r.mcq_options, 
+        r.correct_answer, 
+        r.explanation, 
+        r.subject, 
+        r.type, 
+        e.text AS extract_text 
+    FROM 
+        selectively_readingquestion r
+    JOIN 
+        selectively_extract e 
+    ON 
+        r.extract_id = e.id
+    WHERE 
+        r.type = "finalized" 
+        AND r.question IS NOT NULL 
+        AND r.question != "" 
+        AND r.mcq_options IS NOT NULL 
+        AND r.level = "difficult"
+    ORDER BY 
+        RAND()
+    LIMIT 3
+)
+ORDER BY RAND();
+
+`
     );
 
     // Check if no questions were found
@@ -214,39 +328,23 @@ router.get("/randomReadingQuestions", async (req, res) => {
       return res.status(404).json({ message: "No questions found." });
     }
 
-    // Function to remove special characters from the extract text
-    // const removeSpecialChars = (text) => {
-    //   return text
-    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    // };
+    const removeTrailingCommas = (mcq_options) => {
+      // Split the options into an array based on commas or newlines
+      let options = mcq_options.split(/,|\n/); // Splits on commas or newlines
+
+      // Trim each option and remove trailing commas
+      options = options.map(option => option.trim().replace(/,$/, ""));
+
+      // Join the options back into a string with newlines or commas if needed
+      return options.join("\n"); // Adjust to use "," or "\n" as per your needs
+    };
 
     // Sanitize the extract_text field
-    // questions.forEach((question) => {
-    //   question.extract_text = removeSpecialChars(question.extract_text);
-    // });
+    questions.forEach((question) => {
+      question.mcq_options = removeTrailingCommas(question.mcq_options);
+    });
 
-    // const removeSpecialCharsQuestion = (question) => {
-    //   return question
-    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    // };
 
-    // Sanitize the extract_text field
-    // questions.forEach((question) => {
-    //   question.question = removeSpecialCharsQuestion(question.question);
-    // });
-
-    // const removeSpecialCharsMcq = (mcq_options) => {
-    //   return mcq_options
-    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-    //     // .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    // };
-
-    // // Sanitize the extract_text field
-    // questions.forEach((question) => {
-    //   question.mcq_options = removeSpecialCharsMcq(question.mcq_options);
-    // });
     // Send the fetched questions as a JSON response
     res.status(200).json({ questions });
   } catch (error) {
@@ -704,15 +802,7 @@ router.post("/send-user-details", async (req, res) => {
         pass: process.env.EMAIL_PASSWORD // Your Hostinger email password
       }
     });
-    // Configure the transporter for sending email
-    // const transporter = nodemailer.createTransport({
-    //   service: 'gmail',
-    //   auth: {
-    //     user: process.env.EMAIL_USER,
-    //     pass: process.env.EMAIL_PASSWORD,
-    //   },
-    // });
-
+  
     // Set up the email options
     const mailOptions = {
       from: process.env.EMAIL_USER,

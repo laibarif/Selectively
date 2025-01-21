@@ -180,15 +180,17 @@ console.log(emailforverifyotp,otp)
 
     // Check if OTP matches and is not expired
     if (
-      user.two_fa_otp === otp &&
-      new Date(user.two_fa_otp_expiry) > new Date()
+      user.two_fa_otp === otp 
+      
     ) {
+      console.log("ENter")
       // OTP is valid
       // Mark 2FA as verified and clear OTP fields
       await db.query(
         'UPDATE users SET two_fa_verified = 1, two_fa_otp = NULL, two_fa_otp_expiry = NULL WHERE id = ?',
         [user.id]
       );
+      console.log("Query",db.query)
       res.status(200).json({ message: 'OTP verified successfully.' });
     } else {
       res.status(400).json({ message: 'Invalid or expired OTP.' });

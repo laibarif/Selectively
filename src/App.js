@@ -16,6 +16,7 @@ import ProtectedRoute from './Frontend/Context/ProtectedRoute';
 import ViewQuestionsPage from './Frontend/view/ViewQuestionsPage';
 import LandingPage from './Frontend/LandingPage/LandingPage';
 import ReadingGenerateQuestions from './Frontend/GenerateQuestion/ReadingGenerateQuestions';
+import StudentDashboard from './Frontend/StudentDashbaord/StudentDashboard';
 
 function App() {
   const location = useLocation();
@@ -38,6 +39,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/student-dashboard" element={<StudentDashboard />} />
         <Route path="/select_question/:subject" element={<SelectQuestionPage />} />
         <Route path="/freeassesment" element={<FreeAssesment />} />
         <Route path="/test-assesment-books" element={<TestAssesmentBooks />} />

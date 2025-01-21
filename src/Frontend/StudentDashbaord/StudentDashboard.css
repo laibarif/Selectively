@@ -1,0 +1,92 @@
+/* LearningSection.css */
+.learning-section {
+    background-color: #fff7e6; /* Light yellow background */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    max-width: 600px; /* Adjusted for smaller width */
+    margin: 40px auto 0 40px; /* Align more to the left */
+  }
+  
+  .learning-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    color: #ff8c00; /* Orange for the title */
+  }
+  
+  .learning-section .emoji {
+    font-size: 32px;
+    margin-right: 10px;
+  }
+  
+  .subject-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two cards per row */
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .subject-card {
+    text-align: center;
+    padding: 20px;
+    background-color: #ffd54f; /* Bright yellow */
+    border-radius: 12px;
+    color: #6d4c41; /* Deep brown for text */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .subject-card h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .subject-card button {
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #ffd54f; /* Yellow for button text */
+    background: white; /* Brown for button background */
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .subject-card button:hover {
+    background-color: #ff8c00; /* Orange on hover */
+    color: white;
+  }
+  
+  .subject-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    background-color: #ffb74d; /* Slightly darker yellow */
+  }
+  
+  .test-buttons {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .test-button {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #ff8c00; /* Bright orange */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .test-button:hover {
+    background-color: #e65100; /* Darker orange */
+  }
+  
