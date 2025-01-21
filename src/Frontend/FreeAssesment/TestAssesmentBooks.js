@@ -142,7 +142,7 @@ function TestAssesmentBooks() {
               minutes
             </span>
 
-            <div class="text-gray-800 font-medium text-xs sm:text-sm mt-1">
+            {/* <div class="text-gray-800 font-medium text-xs sm:text-sm mt-1">
               {assessmentDetails.user?.reading_score === null ? (
                 <strong class="text-gray-800 text-lg">Unattempted</strong>
               ) : (
@@ -165,7 +165,7 @@ function TestAssesmentBooks() {
                   </span>
                 </>
               )}
-            </div>
+            </div> */}
 
             <div class="flex items-center justify-end">
               <button
@@ -212,10 +212,10 @@ function TestAssesmentBooks() {
               10
             </p>
             <span class="text-gray-800 font-semibold text-lg">
-              <strong class="text-black font-bold text-xl">Time:</strong> 13
+              <strong class="text-black font-bold text-xl">Time:</strong> 12
               minutes
             </span>
-            <div class="text-gray-800 font-medium text-xs sm:text-sm mt-1">
+            {/* <div class="text-gray-800 font-medium text-xs sm:text-sm mt-1">
               {assessmentDetails.user?.maths_score === null ? (
                 <strong class="text-gray-800 text-lg">Unattempted</strong>
               ) : (
@@ -238,7 +238,7 @@ function TestAssesmentBooks() {
                   </span>
                 </>
               )}
-            </div>
+            </div> */}
             <div className="flex items-center justify-end">
               <button
                 onClick={() =>
@@ -283,11 +283,11 @@ function TestAssesmentBooks() {
               10
             </p>
             <span class="text-gray-800 font-semibold text-lg">
-              <strong class="text-black font-bold text-xl">Time:</strong> 13
+              <strong class="text-black font-bold text-xl">Time:</strong> 10
               minutes
             </span>
 
-            <div class="text-gray-800 font-medium text-xs sm:text-sm mt-1">
+            {/* <div class="text-gray-800 font-medium text-xs sm:text-sm mt-1">
               {assessmentDetails.user?.thinking_skills_score === null ? (
                 <strong class="text-gray-800 text-lg">Unattempted</strong>
               ) : (
@@ -310,7 +310,7 @@ function TestAssesmentBooks() {
                   </span>
                 </>
               )}
-            </div>
+            </div> */}
             <div className="flex items-center justify-end">
               <button
                 onClick={() =>

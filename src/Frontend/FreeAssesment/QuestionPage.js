@@ -10,11 +10,23 @@ function QuestionPage() {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const timerRef = useRef(720);
-  const [timer, setTimer] = useState(timerRef.current);
+  // const timerRef = useRef(720);
+  // const [timer, setTimer] = useState(timerRef.current);
   const [timerEnded, setTimerEnded] = useState(false);
   const [answers, setAnswers] = useState([]);
   const navigate = useNavigate();
+
+  const categoryTimers = {
+    randomReadingQuestions: 13 * 60, // 13 minutes
+    randomMathsQuestions: 12 * 60, // 12 minutes
+    randomThinkingskillQuestions: 10 * 60, // 10 minutes
+  };
+
+  // Get the timer value based on the category, default to 12 minutes if not found
+  const initialTime = categoryTimers[category] || 12 * 60;
+
+  const timerRef = useRef(initialTime);
+  const [timer, setTimer] = useState(timerRef.current);
 
   const [leftWidth, setLeftWidth] = useState(50);
   const [rightWidth, setRightWidth] = useState(50);
@@ -84,7 +96,7 @@ function QuestionPage() {
 
       return {
         questionNumber: index + 1,
-        status: selectedAnswer ? "attempted" : "unattempted"
+        status: selectedAnswer ? "attempted" : "unattempted",
       };
     });
 
@@ -113,7 +125,7 @@ function QuestionPage() {
     const endpointMap = {
       maths: "submitMathsAssessment",
       "thinking skills": "submitThinkingSkillsAssessment",
-      reading: "randomReadingQuestions"
+      reading: "randomReadingQuestions",
     };
 
     const rawSubject = questions[0]?.subject;
@@ -140,21 +152,17 @@ function QuestionPage() {
       navigate("/test-assesment-books");
 
       // Clear localStorage after the API call is done
-      localStorage.removeItem('timer-randomReadingQuestions');
-      localStorage.removeItem('timestamp-randomReadingQuestions');
-      localStorage.removeItem('timer-randomMathsQuestions');
-      localStorage.removeItem('timestamp-randomMathsQuestions');
-      localStorage.removeItem('timer-randomThinkingskillQuestions');
-      localStorage.removeItem('timestamp-randomThinkingskillQuestions');
-
-
+      localStorage.removeItem("timer-randomReadingQuestions");
+      localStorage.removeItem("timestamp-randomReadingQuestions");
+      localStorage.removeItem("timer-randomMathsQuestions");
+      localStorage.removeItem("timestamp-randomMathsQuestions");
+      localStorage.removeItem("timer-randomThinkingskillQuestions");
+      localStorage.removeItem("timestamp-randomThinkingskillQuestions");
     } catch (error) {
       // Handle any errors that occur during the API request
       toast.error("Error submitting assessment:", error);
     }
-
   };
-
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -163,7 +171,7 @@ function QuestionPage() {
           `${process.env.REACT_APP_BACKEND_URL}/api/freeassesment/${category}`,
           {
             headers: {
-              "Accept": "application/json; charset=utf-8",
+              Accept: "application/json; charset=utf-8",
             },
           }
         );
@@ -182,7 +190,9 @@ function QuestionPage() {
     const savedTimestamp = localStorage.getItem(`timestamp-${category}`);
 
     if (savedTime && savedTimestamp) {
-      const elapsedTime = Math.floor((Date.now() - parseInt(savedTimestamp, 10)) / 1000);
+      const elapsedTime = Math.floor(
+        (Date.now() - parseInt(savedTimestamp, 10)) / 1000
+      );
       const remainingTime = Math.max(parseInt(savedTime, 10) - elapsedTime, 0);
       setTimer(remainingTime);
 
@@ -303,47 +313,55 @@ function QuestionPage() {
   // };
 
   const formatExtractText = (text) => {
-    if (!text) return '';
+    if (!text) return "";
 
     // Regex to match "Extract A", "Text A", "Extract B", "Text B", etc.
     const extractRegex = /\b(Extract\s+[A-Z]|Text\s+[A-Z])\b/g;
 
     // Format the Extract/Text but keep punctuation marks intact
-    const formattedText = text.replace(extractRegex, (match) => `<br><br><b>${match}</b><br>`);
+    const formattedText = text.replace(
+      extractRegex,
+      (match) => `<br><br><b>${match}</b><br>`
+    );
 
     // Split the text by new lines to handle poem structure
-    const lines = formattedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    const lines = formattedText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
     // The first part should be "Read the poem and answer the questions", which should be bold and on one line
     const introText = `<p><strong>${lines[0]}</strong></p>`;
 
     // Ensure there is a second line before checking for "Poem"
-    let poemLabel = '';
-    if (lines.length > 1 && lines[1].toLowerCase().startsWith('poem')) {
+    let poemLabel = "";
+    if (lines.length > 1 && lines[1].toLowerCase().startsWith("poem")) {
       poemLabel = `<p><strong>${lines[1]}</strong></p>`; // Only format "Poem" if it's in the second line
     }
 
     // The remaining part is the poem text, which should be split into individual lines
-    const poemContent = lines.slice(poemLabel ? 2 : 1).map(line => `<p>${line}</p>`).join('');
+    const poemContent = lines
+      .slice(poemLabel ? 2 : 1)
+      .map((line) => `<p>${line}</p>`)
+      .join("");
 
     // Return the formatted text with Extract/Text formatted and poem properly structured
     return introText + poemLabel + poemContent;
   };
-
 
   const parseOptions = (optionsString) => {
     if (!optionsString) return [];
 
     // Step 1: Normalize the string by replacing newlines with spaces and trimming spaces
     const cleanedString = optionsString
-      .replace(/\n/g, ' ') // Replace newlines with spaces
+      .replace(/\n/g, " ") // Replace newlines with spaces
       .trim();
 
     // Step 2: Check if the input matches "A, B, C, D" or similar pattern
     if (/^[A-E](,\s*[A-E])*$/.test(cleanedString)) {
-      return cleanedString.split(',').map((label) => ({
+      return cleanedString.split(",").map((label) => ({
         label: label.trim(),
-        value: label.trim() // Use the label itself as the value
+        value: label.trim(), // Use the label itself as the value
       }));
     }
 
@@ -359,10 +377,10 @@ function QuestionPage() {
 
         if (match) {
           const label = match[1]; // Extract the label (A, B, C, D, E)
-          let value = match[2]?.trim() || ''; // Extract value or default to empty
+          let value = match[2]?.trim() || ""; // Extract value or default to empty
 
           // Ensure "Extract A" format for consistency
-          if (value.toLowerCase().startsWith('extract')) {
+          if (value.toLowerCase().startsWith("extract")) {
             value = `Extract ${label}`;
           }
 
@@ -375,7 +393,7 @@ function QuestionPage() {
         }
 
         // Handle invalid or improperly formatted options
-        return { label: 'Invalid', value: trimmedOption };
+        return { label: "Invalid", value: trimmedOption };
       });
 
     // Remove duplicate options
@@ -392,13 +410,19 @@ function QuestionPage() {
     return uniqueOptions;
   };
 
-
-
   const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const secondsLeft = seconds % 60;
-    return `${minutes}:${secondsLeft < 10 ? "0" : ""}${secondsLeft}`;
+  
+    return {
+      hours: hours < 10 ? `0${hours}` : `${hours}`,
+      minutes: minutes < 10 ? `0${minutes}` : `${minutes}`,
+      seconds: secondsLeft < 10 ? `0${secondsLeft}` : `${secondsLeft}`,
+    };
   };
+
+  const { hours, minutes, seconds } = formatTime(timer);
 
   if (loading) {
     return (
@@ -424,22 +448,38 @@ function QuestionPage() {
 
   const currentQuestion = questions[currentIndex] || {
     question: "Question not available",
-    mcq_options: ""
+    mcq_options: "",
   };
   const extracts = formatExtractText(currentQuestion.extract_text);
   const options = parseOptions(currentQuestion.mcq_options);
 
 
-
-  console.log(currentQuestion)
-  console.log(options)
   return (
     <div className="h-screen bg-white flex flex-col">
       <div className="absolute w-full h-24 flex justify-between items-center py-1 px-3 rounded-md bg-white shadow-md z-10">
         <img src={logo} alt="img-logo" className="h-24 w-32" />
-        <p className="font-bold text-white my-auto bg-black px-4 py-2 rounded-md">
-          {formatTime(timer)} Time remaining!
-        </p>
+        <div className="flex justify-center items-center bg-black text-white text-xl font-bold p-1  shadow-lg">
+          <div className="flex flex-col items-center mx-2">
+            <span>{hours}</span>
+            <span className="text-sm text-gray-400 uppercase tracking-wide">
+              Hour
+            </span>
+          </div>
+          <span className="text-4xl mx-2">:</span>
+          <div className="flex flex-col items-center mx-2">
+            <span>{minutes}</span>
+            <span className="text-sm text-gray-400 uppercase tracking-wide">
+              Min
+            </span>
+          </div>
+          <span className="text-4xl mx-2">:</span>
+          <div className="flex flex-col items-center mx-2">
+            <span>{seconds}</span>
+            <span className="text-sm text-gray-400 uppercase tracking-wide">
+              Sec
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Main Content Section */}
@@ -454,29 +494,25 @@ function QuestionPage() {
               : {}
           }
         >
-<p className="w-10/12 py-4 text-2xl font-bold text-gray-800 mb-4 text-justify">
-  <span className="font-bold text-2xl text-black">
-    Question {currentIndex + 1}
-  </span>
-  <span style={{ display: "block", marginTop: "0.8rem" }}>
-    {currentQuestion?.question || "Question not available"}
-  </span>
-</p>
-
-
-
+          <p className="w-10/12 py-4 text-2xl font-bold text-gray-800 mb-4 text-justify">
+            <span className="font-bold text-2xl text-black">
+              Question {currentIndex + 1}
+            </span>
+            <span style={{ display: "block", marginTop: "0.8rem" }}>
+              {currentQuestion?.question || "Question not available"}
+            </span>
+          </p>
 
           {/* Conditionally render the Image */}
           {currentQuestion.image_data && (
             <div className="mb-4 flex justify-center">
-
               <img
                 src={
                   currentQuestion.image_data?.startsWith("http")
                     ? currentQuestion.image_data
                     : `http://${currentQuestion.image_data}` // Adjust this as needed
                 }
-                alt={currentQuestion.image_description || 'Question image'}
+                alt={currentQuestion.image_description || "Question image"}
                 className="object-cover border border-gray-300 rounded-md"
               />
             </div>
@@ -517,7 +553,7 @@ function QuestionPage() {
             cursor: "col-resize",
             backgroundColor: "gray",
             width: "3px",
-            height: "auto"
+            height: "auto",
           }}
         ></div>
 
@@ -555,7 +591,6 @@ function QuestionPage() {
               </label>
             ))}
           </div>
-
         </div>
       </div>
 
@@ -563,8 +598,11 @@ function QuestionPage() {
       <div className="relative bottom-0 left-0 right-0 bg-orange-500 text-white py-3 flex justify-between z-30">
         <button
           onClick={handlePrevious}
-          className={`p-2 rounded-md font-semibold ${currentIndex === 0 || timerEnded ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+          className={`p-2 px-4 rounded-md font-semibold bg-black ml-2 ${
+            currentIndex === 0 || timerEnded
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
           disabled={currentIndex === 0 || timerEnded}
         >
           &lt;&lt; PREVIOUS
@@ -572,16 +610,16 @@ function QuestionPage() {
 
         <button
           onClick={handleNext}
-          className={`p-2 rounded-md font-semibold ${currentIndex === questions.length - 1 || timerEnded
-            ? "opacity-50 cursor-not-allowed"
-            : ""
-            } ${currentIndex === questions.length - 1 ? "left sm:mx-auto" : ""}`}
+          className={`p-2 px-4 rounded-md font-semibold bg-black mr-3 ${
+            currentIndex === questions.length - 1 || timerEnded
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          } ${currentIndex === questions.length - 1 ? "left sm:mx-auto" : ""}`}
           disabled={currentIndex === questions.length - 1 || timerEnded}
         >
           NEXT &gt;&gt;
         </button>
       </div>
-
 
       {/* Submit Button */}
       <div>
@@ -590,16 +628,19 @@ function QuestionPage() {
             <div className="absolute bottom-20 sm:bottom-4 right-6 z-30">
               <button
                 onClick={handleButtonClick}
-                className="bg-gradient-to-r from-yellow-500 via-orange-600 to-yellow-700 text-white font-bold py-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+                className="bg-black text-white font-bold py-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
               >
-                Finish Question! Go to Test Assessment Books
+                Submit! Go to Test Assessment Books
               </button>
             </div>
           )}
 
         {/* Popup for confirmation */}
         {showPopup && (
-          <div id="YOUR_ID" className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            id="YOUR_ID"
+            className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          >
             <div
               className="relative bg-white rounded-lg shadow-lg overflow-hidden transform transition-all w-full max-w-md sm:mx-auto"
               role="dialog"
@@ -661,7 +702,8 @@ function QuestionPage() {
 
                 {/* Message */}
                 <div className="mt-4 text-gray-700">
-                  Are you sure you want to submit the result? Please confirm your action below.
+                  Are you sure you want to submit the result? Please confirm
+                  your action below.
                 </div>
 
                 {/* Buttons */}
@@ -685,7 +727,6 @@ function QuestionPage() {
             </div>
           </div>
         )}
-
       </div>
 
       <ToastContainer />
