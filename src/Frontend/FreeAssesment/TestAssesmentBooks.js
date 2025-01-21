@@ -117,7 +117,7 @@ function TestAssesmentBooks() {
   return (
     <div>
       <div class="max-w-7xl mx-auto mt-2 space-y-8">
-        <div class="flex gap-5 mt-8 bg-white border border-gray-300 rounded-xl overflow-hidden items-stretch hover:bg-gray-100 relative transition-all transform hover:-translate-y-3 hover:translate-z-4 hover:shadow-md hover:shadow-gray-500">
+        <div class="flex gap-5 bg-white border border-gray-300 rounded-xl overflow-hidden items-center justify-start hover:bg-gray-100 relative transition-all transform hover:-translate-y-3 hover:translate-z-4 hover:shadow-md hover:shadow-gray-500">
           <div class="relative w-1/3 h-56 flex-shrink-0">
             <img
               class="absolute left-0 top-0 w-full h-full object-cover object-center transition duration-50"
@@ -127,11 +127,12 @@ function TestAssesmentBooks() {
             />
           </div>
 
-          <div class="w-full h-full flex flex-col justify-between py-4">
+          <div class="w-full flex flex-col gap-1 py-2 mt-6">
             <p class="text-xl md:text-2xl font-bold">Reading</p>
 
             <p class="text-base md:text-lg text-gray-800 font-semibold">
-              {/* Test your English skills with MCQs. */}
+            Boost your comprehension and analytical reading abilities.
+           
             </p>
             <p class="text-gray-800 font-semibold text-lg">
               <strong class="text-black font-bold text-xl">Questions:</strong>{" "}
@@ -200,10 +201,10 @@ function TestAssesmentBooks() {
             />
           </div>
 
-          <div class="w-full flex flex-col gap-1 py-2">
+          <div class="w-full flex flex-col gap-1 py-2 mt-6">
             <p class="text-xl md:text-2xl font-bold">Mathematical Reasoning</p>
             <p class="w-36 md:w-full text-base text-gray-800 font-semibold md:text-lg ">
-              {/* Sharpen your Math skills with challenging MCQs. */}
+            Enhance your problem-solving and numerical skills
             </p>
             <p class="text-gray-800 font-semibold text-lg">
               <strong class="text-black font-bold text-xl pb-2">
@@ -271,7 +272,7 @@ function TestAssesmentBooks() {
             />
           </div>
 
-          <div class="w-full flex flex-col gap-1 py-2">
+          <div class="w-full flex flex-col gap-1 py-2 mt-6">
             <p class="text-xl md:text-2xl font-bold">Thinking Skills</p>
             <p class="w-36 md:w-full text-base text-gray-800 font-semibold md:text-lg ">
               Test your logical and analytical thinking abilities.

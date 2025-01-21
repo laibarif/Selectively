@@ -625,10 +625,10 @@ function QuestionPage() {
       <div>
         {(currentIndex === questions.length - 1 || timerEnded) &&
           !timerEnded && (
-            <div className="absolute bottom-20 sm:bottom-4 right-6 z-30">
+            <div className="absolute bottom-20 sm:bottom-3 right-6 z-30">
               <button
                 onClick={handleButtonClick}
-                className="bg-black text-white font-bold py-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+                className="bg-black text-white font-bold p-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
               >
                 Submit! Go to Test Assessment Books
               </button>
