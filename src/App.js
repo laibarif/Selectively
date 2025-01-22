@@ -17,6 +17,8 @@ import ViewQuestionsPage from './Frontend/view/ViewQuestionsPage';
 import LandingPage from './Frontend/LandingPage/LandingPage';
 import ReadingGenerateQuestions from './Frontend/GenerateQuestion/ReadingGenerateQuestions';
 import StudentDashboard from './Frontend/StudentDashbaord/StudentDashboard';
+import AddQuestionBooks from './Frontend/AddQuestions/AddQuestionBooks';
+import MathQuestionAdd from './Frontend/AddQuestions/MathQuestionAdd';
 
 function App() {
   const location = useLocation();
@@ -50,6 +52,9 @@ function App() {
         <Route path="/readingQuestion/:subject/:questionId/:extractQuestionId" element={<ReadingGenerateQuestions/>}/>
         <Route path="/landing" element={<LandingPage/>}/>
         <Route path="/free-assessment" element={<ProtectedRoute><FreeAssessment /></ProtectedRoute>} />
+        <Route path='/add-questionsBooks' element={<ProtectedRoute><AddQuestionBooks/></ProtectedRoute>}/>
+        <Route path='/add-mathQuestions' element={<ProtectedRoute><MathQuestionAdd/></ProtectedRoute>}/>
+        
         
       </Routes>
     </>

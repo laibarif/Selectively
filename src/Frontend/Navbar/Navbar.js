@@ -1,25 +1,33 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-// import { Drawer, DrawerBody, DrawerHeader, DrawerContent, DrawerCloseButton, Button, useDisclosure } from '@chakra-ui/react';
-// import { Drawer, DrawerBody, DrawerHeader, DrawerCloseButton,DrawerContent, Button, useDisclosure  } from '@chakra-ui/react';
-// import { HamburgerIcon } from '@chakra-ui/icons';
 import logo from "../../assets/Logo_Transparent - Complete.svg";
 import './Navbar.css';
 
 function Navbar() {
+    const [isDropdownOpen, setDropdownOpen] = useState(false);  // State for "Other Services" dropdown (desktop)
+    const [userRole, setUserRole] = useState(null); // State to store user role
+
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, []);
-    // const { isOpen, onOpen, onClose } = useDisclosure(); // For main drawer (mobile)
-    // const { isOpen: isServicesOpen, onOpen: onServicesOpen, onClose: onServicesClose } = useDisclosure(); // For "Other Services" drawer (mobile)
-    const [isDropdownOpen, setDropdownOpen] = useState(false);  // State for "Other Services" dropdown (desktop)
+
+        // Get the user object from localStorage
+        const user = localStorage.getItem('user');
+        
+        // If the user object exists, parse it and set the role
+        if (user) {
+            const parsedUser = JSON.parse(user); // Parse the user object from the string
+            setUserRole(parsedUser.role); // Set the role
+        }
+    }, []); 
 
     const toggleDropdown = () => setDropdownOpen(!isDropdownOpen);
 
-    // const handleLinkClick = (link) => {
-    //     onClose(); // Close the main drawer
-    // };
+    const handleLogout = () => {
+        // Clear user data from localStorage and redirect to login page
+        localStorage.removeItem('userRole');
+        // Redirect to login (or home page)
+        window.location.href = '/login'; // Or use history.push('/login') if using react-router-dom v5+
+    };
 
     return (
         <nav className="navbar">
@@ -27,11 +35,13 @@ function Navbar() {
                 <Link to="/">
                     <img src={logo} alt="Logo" className="responsive-logo" />
                 </Link>
-                {/* <h2 className="title">Selectively</h2> */}
             </div>
 
             {/* Desktop Navigation */}
+            
             <ul className="navbar-nav">
+            {userRole === 'user' && (
+                <>
                 <li className="nav-item">
                     <Link className="nav-link" to="/landing">Home</Link>
                 </li>
@@ -41,25 +51,39 @@ function Navbar() {
                 <li className="nav-item">
                     <Link className="nav-link" to="freeassesment">Free Assessment</Link>
                 </li>
-                {/* Other Services dropdown for desktop */}
-                {/* <li className="nav-item dropdown" onMouseEnter={toggleDropdown} onMouseLeave={toggleDropdown}>
-                    <Link className="nav-link dropdown-toggle" to="/service/mortgage-broker">Services</Link>
-                    {isDropdownOpen && (
-                        <ul className="dropdown-menu">
-                            <li><Link className="dropdown-item" to="/service/mortgage-broker">CONNECT YOU TO MORTGAGE BROKER</Link></li>
-                            <li><Link className="dropdown-item" to="/service/accountant">CONNECT YOU TO ACCOUNTANT</Link></li>
-                            <li><Link className="dropdown-item" to="/service/solicitor">CONNECT YOU TO SOLICITOR</Link></li>
-                        </ul>
-                    )}
-                </li> */}
                 <li className="nav-item">
-                    <Link className="nav-link" to="">Usefull resources</Link>
+                    <Link className="nav-link" to="">Useful resources</Link>
                 </li>
-                {/* Add Login Button */}
-                <li className="nav-item login-item">
-                    <Link className="font-semibold bg-yellow-600 px-6 py-3 rounded-md text-center text-white hover:bg-yellow-500" to="/login">Log In/Sign up</Link>
-                </li>
+
+                
+                    <li className="nav-item login-item">
+                        <Link className="font-semibold bg-yellow-600 px-6 py-3 rounded-md text-center text-white hover:bg-yellow-500" to="/login">Log In/Sign up</Link>
+                    </li>
+                    </>
+                )}
+
+                {/* If the user is an admin */}
+                {userRole === 'admin' && (
+                    <>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/admin-dashboard">Admin Dashboard</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/add-questionsBooks">Add Questions</Link>
+                        </li>
+                        <li className="nav-item">
+                            <button className="font-semibold bg-red-600 px-6 py-3 rounded-md text-center text-white hover:bg-red-500" onClick={handleLogout}>Logout</button>
+                        </li>
+                    </>
+                )}
             </ul>
+        </nav>
+    );
+}
+
+export default Navbar;
+
+
 
             {/* Hamburger icon to open the main drawer for mobile */}
             {/* <Button variant="outline" className="menu-icon" onClick={onOpen}>
@@ -126,8 +150,3 @@ function Navbar() {
                     </DrawerBody>
                 </DrawerContent>
             </Drawer> */}
-        </nav>
-    );
-}
-
-export default Navbar;

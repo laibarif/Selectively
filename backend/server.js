@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const freeAssesmentRoutes = require('./routes/freeAssesmentRoute');
+const addQuestionsRoute = require('./routes/addQuestionsRoute')
 const cors = require('cors'); 
 const { generateRelatedQuestions ,extractAndGenerateQuestions} = require('./routes/generateQuestions');
 
@@ -69,7 +70,7 @@ app.post('/api/extract-generate-questions', extractAndGenerateQuestions);
 app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/freeassesment', freeAssesmentRoutes);
-
+app.use('/api/addQuestions', addQuestionsRoute)
 // Global error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
