@@ -1,56 +1,63 @@
 import React from 'react';
 import math from '../../assets/math.jpg';
-import english from '../../assets/english.png';
-import thinking from '../../assets/thinkingskill.jpg'
-import wirting from '../../assets/wrodCloud.png'
+import english from '../../assets/englishbook.jpg';
+import thinking from '../../assets/thinkingskill.jpg';
+import writing from '../../assets/wrodCloud.png';
 import { Link } from 'react-router-dom';
+
 function AddQuestionBooks() {
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 p-4">
-        {/* Card 1 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 w-72"> {/* Increased width */}
-          <img src={english} alt="Book Cover" className="w-full h-64 object-cover"/> {/* Increased height */}
-          <div className="p-4">
+    <div className="flex justify-center items-center pt-20 bg-gray-50 p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12">
+        
+        {/* English Card */}
+        <div className="bg-white shadow-lg shadow-slate-500 rounded-2xl overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl w-80">
+          <img src={english} alt="English Book" className="w-full h-64 object-cover" />
+          <div className="p-6 text-center">
             <Link to='/add-readingQuestions'>
-            <button className="mt-4 w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500">Add English Question</button>
+              <button className="w-full py-3 bg-blue-600 text-white rounded-md font-semibold transition-all duration-300 hover:bg-blue-500 shadow-md hover:shadow-lg">
+                Add English Question
+              </button>
             </Link>
           </div>
         </div>
 
-        {/* Card 2 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 w-72"> {/* Increased width */}
-          <img src={math} alt="Book Cover" className="w-full h-64 object-cover"/> {/* Increased height */}
-          <div className="p-4">
+        {/* Math Card */}
+        <div className="bg-white shadow-lg shadow-slate-500 rounded-2xl overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl w-80">
+          <img src={math} alt="Math Book" className="w-full h-64 object-cover" />
+          <div className="p-6 text-center">
             <Link to='/add-mathQuestions'>
-            <button className="mt-4 w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500">Add Math Question</button>
+              <button className="w-full py-3 bg-green-600 text-white rounded-md font-semibold transition-all duration-300 hover:bg-green-500 shadow-md hover:shadow-lg">
+                Add Math Question
+              </button>
             </Link>
           </div>
-          
         </div>
-      
-                
 
-        {/* Card 3 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 w-72"> {/* Increased width */}
-          <img src={thinking} alt="Book Cover" className="w-full h-64 object-cover"/> {/* Increased height */}
-          <div className="p-4">
+        {/* Thinking Skill Card */}
+        <div className="bg-white shadow-lg shadow-slate-500 rounded-2xl overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl w-80">
+          <img src={thinking} alt="Thinking Skill Book" className="w-full h-64 object-cover" />
+          <div className="p-6 text-center">
             <Link to='/add-thinkingskillQuestions'>
-            <button className="mt-4 w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500">Add ThinkingSkill Question</button>
+              <button className="w-full py-3 bg-yellow-500 text-white rounded-md font-semibold transition-all duration-300 hover:bg-yellow-400 shadow-md hover:shadow-lg">
+                Add Thinking Skill Question
+              </button>
             </Link>
           </div>
         </div>
 
-        {/* Card 4 */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden transform transition-all hover:scale-105 w-72"> {/* Increased width */}
-          <img src={wirting} alt="Book Cover" className="w-full h-64 object-cover"/> {/* Increased height */}
-          <div className="p-4">
-            {/* <h3 className="text-xl font-semibold text-gray-700">Book Name 4</h3> */}
+        {/* Writing Card */}
+        <div className="bg-white shadow-lg  shadow-slate-500 rounded-2xl overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl w-80">
+          <img src={writing} alt="Writing Book" className="w-full h-64 object-cover" />
+          <div className="p-6 text-center">
             <Link to='/add-writingQuestions'>
-            <button className="mt-4 w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500">Add Writing Question</button>
+              <button className="w-full py-3 bg-red-600 text-white rounded-md font-semibold transition-all duration-300 hover:bg-red-500 shadow-md hover:shadow-lg">
+                Add Writing Question
+              </button>
             </Link>
           </div>
         </div>
+
       </div>
     </div>
   );
