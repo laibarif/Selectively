@@ -19,6 +19,9 @@ import ReadingGenerateQuestions from './Frontend/GenerateQuestion/ReadingGenerat
 import StudentDashboard from './Frontend/StudentDashbaord/StudentDashboard';
 import AddQuestionBooks from './Frontend/AddQuestions/AddQuestionBooks';
 import MathQuestionAdd from './Frontend/AddQuestions/MathQuestionAdd';
+import ReadingQuestiionAdd from './Frontend/AddQuestions/ReadingQuestiionAdd';
+import ThinkingSkillQuestionAdd from './Frontend/AddQuestions/ThinkingSkillQuestionAdd';
+import WritingQuestionAdd from './Frontend/AddQuestions/WritingQuestionAdd';
 
 function App() {
   const location = useLocation();
@@ -54,7 +57,9 @@ function App() {
         <Route path="/free-assessment" element={<ProtectedRoute><FreeAssessment /></ProtectedRoute>} />
         <Route path='/add-questionsBooks' element={<ProtectedRoute><AddQuestionBooks/></ProtectedRoute>}/>
         <Route path='/add-mathQuestions' element={<ProtectedRoute><MathQuestionAdd/></ProtectedRoute>}/>
-        
+        <Route path='/add-readingQuestions' element={<ProtectedRoute><ReadingQuestiionAdd/></ProtectedRoute>}/>
+        <Route path='/add-thinkingskillQuestions' element={<ProtectedRoute><ThinkingSkillQuestionAdd/></ProtectedRoute>}/>
+        <Route path='/add-writingQuestions' element={<ProtectedRoute><WritingQuestionAdd/></ProtectedRoute>}/>
         
       </Routes>
     </>

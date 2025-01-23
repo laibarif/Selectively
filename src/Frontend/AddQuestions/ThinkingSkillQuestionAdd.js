@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-function MathQuestionAdd() {
+function ThinkingSkillQuestionAdd() {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    subject: 'Maths',
+    subject: 'Thinking Skills',
     question: '',
     mcq_options: '',
     correct_answer: '',
@@ -51,13 +51,13 @@ for (const key in formData) {
     try {
         
       
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/addQuestions/addMathQuestions`, data, {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/addQuestions/addThinkingSkillQuestions`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       console.log('Response:', response.data);
-      setFormData({
+      setFormData({ 
         question: '',
         mcq_options: '',
         correct_answer: '',
@@ -65,7 +65,8 @@ for (const key in formData) {
         image_data: '',
         image_description: '',
         type: '',
-        level: ''
+        level: '',
+    
       });
       navigate('/add-questionsBooks')
       // Handle the API response (e.g., display a success message)
@@ -77,7 +78,7 @@ for (const key in formData) {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-6 shadow-slate-400">
-      <h2 className="text-3xl font-semibold text-center text-gray-700 mb-6">Math Question Add</h2>
+      <h2 className="text-3xl font-semibold text-center text-gray-700 mb-6">Thinking Skill Question Add</h2>
       <form onSubmit={handleSubmit}>
         
 
@@ -235,4 +236,6 @@ for (const key in formData) {
   );
 }
 
-export default MathQuestionAdd;
+
+
+export default ThinkingSkillQuestionAdd
