@@ -46,6 +46,7 @@ function MathQuestionAdd() {
       }
     }
     const mcqOptionsRegex = /^(A\s[^,]+,\sB\s[^,]+,\sC\s[^,]+,\sD\s[^,]+)$/;
+
     const correctAnswerRegex = /^[A-D]$/;
 
     if (!mcqOptionsRegex.test(formData.mcq_options.trim())) {

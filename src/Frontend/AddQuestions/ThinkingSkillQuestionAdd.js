@@ -45,6 +45,8 @@ function ThinkingSkillQuestionAdd() {
         data.append(key, formData[key]);
       }
     }
+        //space allow regix
+    // const mcqOptionsRegex = /^(A\s+[A-Z\s]+),\s*B\s+[A-Z\s]+,\s*C\s+[A-Z\s]+,\s*D\s+[A-Z\s]+$/i;
     const mcqOptionsRegex = /^(A\s[^,]+,\sB\s[^,]+,\sC\s[^,]+,\sD\s[^,]+)$/;
     const correctAnswerRegex = /^[A-D]$/;
 

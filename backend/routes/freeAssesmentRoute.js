@@ -382,6 +382,7 @@ router.get("/randomReadingQuestions", async (req, res) => {
           AND r.level IN ("easy", "medium", "difficult")
       ORDER BY 
           RAND()
+          LIMIT 10
     `);
 
     if (questions.length === 0) {
