@@ -64,7 +64,7 @@ function ReadingQuestiionAdd() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-50 rounded-lg shadow-xl mt-6 shadow-slate-500">
+    <div className="max-w-4xl mx-auto p-6 bg-gray-50 rounded-lg shadow-xl my-6 shadow-slate-500">
       <h2 className="text-3xl font-semibold text-center text-gray-700 mb-6">
        Add English Question
       </h2>

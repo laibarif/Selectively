@@ -92,7 +92,7 @@ function ThinkingSkillQuestionAdd() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg mt-6 shadow-slate-400">
+    <div className="max-w-4xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg my-6 shadow-slate-400">
       <h2 className="text-3xl font-semibold text-center text-gray-700 mb-6">
        Add Thinking Skill Question
       </h2>
