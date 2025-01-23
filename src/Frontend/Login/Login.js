@@ -47,10 +47,12 @@ console.log(process.env.REACT_APP_BACKEND_URL)
 
       // Navigate to the appropriate dashboard based on the role
       if (user.role === 'admin') {
+       
         navigate('/admin-dashboard');  // Admin dashboard
       } else {
         navigate('/student-dashboard');  // Student dashboard
       }
+      window.location.reload();
     } catch (err) {
       if (err.response) {
         setError(err.response.data.message || 'Invalid credentials. Please try again.');
