@@ -212,7 +212,7 @@ console.log("rows ", rows)
       
       // Query to fetch entries where type is 'original' or 'finalized'
       const [results] = await db.query(
-        `SELECT * FROM ${tableName} WHERE type IN ('Original', 'Generated')`
+        `SELECT * FROM ${tableName}`
       );
      
       const removeSpecialCharsQuestion = (question) => {

@@ -69,7 +69,7 @@ router.post('/addMathQuestions', async (req, res) => {
         }
       }
   
-      const query = `INSERT INTO selectively_mathsquestion (subject, question, mcq_options, correct_answer, explanation, image_data, image_description, level, type)
+      const query = `INSERT INTO original_maths (subject, question, mcq_options, correct_answer, explanation, image_data, image_description, level, type)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   
       const [result] = await db.query(query, [
@@ -147,7 +147,7 @@ router.post('/addMathQuestions', async (req, res) => {
         }
       }
   
-      const query = `INSERT INTO selectively_thinkingskillsquestion (subject, question, mcq_options, correct_answer, explanation, image_data, image_description, level, type)
+      const query = `INSERT INTO original_thinkingskillsquestion (subject, question, mcq_options, correct_answer, explanation, image_data, image_description, level, type)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   
       const [result] = await db.query(query, [
@@ -189,9 +189,9 @@ router.post('/addMathQuestions', async (req, res) => {
         return res.status(400).json({ message: 'All fields except image_description are required.' });
       }
   
-      // Insert into selectively_extract table and get the generated extract_id
+      // Insert into original_extract table and get the generated extract_id
       const insertExtractQuery = `
-      INSERT INTO selectively_extract (subject, text, type) 
+      INSERT INTO original_extract (subject, text, type) 
       VALUES (?, ?, ?);
     `;
 
@@ -200,9 +200,9 @@ router.post('/addMathQuestions', async (req, res) => {
     const [result] = await db.query('SELECT LAST_INSERT_ID()');
     const extract_id = result[0]['LAST_INSERT_ID()']; 
   
-      // Insert into selectively_readingquestion table
+      // Insert into original_readingquestion table
       const insertQuestionQuery = `
-        INSERT INTO selectively_readingquestion 
+        INSERT INTO original_readingquestion 
         (subject, question, mcq_options, correct_answer, explanation, extract_id, level, type) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?);
       `;
@@ -226,9 +226,9 @@ router.post('/addMathQuestions', async (req, res) => {
         return res.status(400).json({ message: 'All fields are required.' });
       }
   
-      // Insert into selectively_writingquestion table
+      // Insert into original_writingquestion table
       const insertExtractQuery = `
-        INSERT INTO selectively_writingquestion (subject, question, type) 
+        INSERT INTO original_writingquestion (subject, question, type) 
         VALUES (?, ?, ?);
       `;
   

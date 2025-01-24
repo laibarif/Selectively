@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import "./ViewQuestionPage.css"; // Add custom styles
 
+const PAGE_SIZE = 50
+
 const ViewQuestionsPage = () => {
   const { subject } = useParams(); // Get subject from URL params
   const [questions, setQuestions] = useState([]);
@@ -15,7 +17,8 @@ const ViewQuestionsPage = () => {
   const [questionText, setQuestionText] = useState({});
   const [type, setType] = useState("");
   const [viewQuestion, setViewQuestion] = useState(null);
-  const [filter, setFilter] = useState("All"); // Single filter state for dropdown
+  const [filter, setFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleFilterChange = (e) => {
     setFilter(e.target.value); // Update filter with selected value
@@ -33,7 +36,7 @@ const ViewQuestionsPage = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/questions/views-questions/${subject}`
       );
-console.log("view",response.data.questions)
+      console.log("view", response.data.questions)
       setQuestions(response.data.questions);
     } catch (error) {
       setError("Failed to fetch questions");
@@ -93,7 +96,7 @@ console.log("view",response.data.questions)
         { params: { subject } }
 
       );
-      
+
       setQuestionText(response.data);
       setType(response.data.type);
       setSelectedQuestion(id);
@@ -145,7 +148,7 @@ console.log("view",response.data.questions)
 
   const handleView = async (id) => {
     try {
-      console.log('url',process.env.REACT_APP_BACKEND_URL)
+      console.log('url', process.env.REACT_APP_BACKEND_URL)
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/questions/get-question/${id}`,
         { params: { subject } }
@@ -156,24 +159,20 @@ console.log("view",response.data.questions)
       setError("Error fetching question details");
     }
   };
-  {
-    /* <div class="w-3/12  pt-6 block  ">
-    <label class="flex text-center pl-14 pb-1 font-bold">Search Questions Types</label>
-  <select 
-    onChange="handleFilterChange(event)" 
-    value="filter" 
-    class="block mx-auto w-72 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-  >
-    <option value="All">All</option>
-    <option value="Generated">Generated</option>
-    <option value="Original">Original</option>
-  </select>
-</div> */
-  }
-
-
 
   console.log(viewQuestion)
+  const totalPages = Math.ceil(filteredQuestions.length / PAGE_SIZE);
+
+  const currentQuestions = filteredQuestions.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
   return (
     <div>
 
@@ -187,8 +186,9 @@ console.log("view",response.data.questions)
           className="block mx-auto w-72 px-4 py-2  text-gray-700 "
         >
           <option value="All">All</option>
-          <option value="Generated">Generated</option>
           <option value="Original">Original</option>
+          <option value="Generated">Generated</option>
+          <option value="Finalized">Finalized</option>
         </select>
       </div>
       <div className="select-question-container">
@@ -225,9 +225,10 @@ console.log("view",response.data.questions)
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredQuestions.map((question, index) => (
+                  {currentQuestions.map((question, index) => (
                     <tr key={question.id}>
-                      <td>{index + 1}</td>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
+                      {/* <td>{index + 1}</td> */}
                       <td>{question.question?.slice(0, 80)}...</td>
                       <td>{question.type || "N/A"}</td>
                       <td className="text-center flex justify-between gap-2">
@@ -261,6 +262,27 @@ console.log("view",response.data.questions)
                 </tbody>
               </table>
             </div>
+            <div className="pagination-container text-center mt-6">
+              <button
+                className="btn-prev text-white bg-gradient-to-r from-yellow-400 to-yellow-600 px-6 py-3 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 hover:from-yellow-500 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="mx-2 text-lg text-gray-800">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                className="btn-next text-white bg-gradient-to-r from-yellow-400 to-yellow-600 px-6 py-3 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 hover:from-yellow-500 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+
+
           </>
         )}
 

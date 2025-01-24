@@ -13,7 +13,7 @@ const SelectQuestionPage = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        // Fetch questions for the selected subject
+        // Fetch questions for the selected subject 
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/questions/${subject}`);
         console.log("API Response:", response.data);
 
