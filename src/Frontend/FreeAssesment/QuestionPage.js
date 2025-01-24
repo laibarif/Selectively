@@ -342,7 +342,7 @@ function QuestionPage() {
     // The remaining part is the poem text, which should be split into individual lines
     const poemContent = lines
       .slice(poemLabel ? 2 : 1)
-      .map((line) => `<p>${line}</p>`)
+      .map((line) => `<p><strong>${line}</strong></p>`)
       .join("");
 
     // Return the formatted text with Extract/Text formatted and poem properly structured
