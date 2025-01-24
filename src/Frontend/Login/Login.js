@@ -8,7 +8,7 @@ const Login = () => {
     usernameOrEmail: '',  // Single field for both username or email
     password: '',
   });
-  console.log("hello")
+
 console.log(process.env.REACT_APP_BACKEND_URL)
   const [error, setError] = useState(null);  // To hold error messages
   const [loading, setLoading] = useState(false);  // To manage loading state
@@ -35,7 +35,7 @@ console.log(process.env.REACT_APP_BACKEND_URL)
         email_or_username: formData.usernameOrEmail,
         password: formData.password,
       });
-console.log(response)
+
       const { access, refresh, user } = response.data;
 
       // Store the tokens and user data in localStorage
@@ -47,10 +47,12 @@ console.log(response)
 
       // Navigate to the appropriate dashboard based on the role
       if (user.role === 'admin') {
+       
         navigate('/admin-dashboard');  // Admin dashboard
       } else {
         navigate('/student-dashboard');  // Student dashboard
       }
+      window.location.reload();
     } catch (err) {
       if (err.response) {
         setError(err.response.data.message || 'Invalid credentials. Please try again.');
