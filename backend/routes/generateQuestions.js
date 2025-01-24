@@ -22,16 +22,16 @@ const generateRelatedQuestions = async (req, res) => {
   // Step 1: Determine the table name
   switch (subject) {
     case 'Maths':
-      tableName = 'selectively_mathsquestion';
+      tableName = 'original_maths';
       break;
     case 'ThinkingSkills':
-      tableName = 'selectively_thinkingskillsquestion';
+      tableName = 'original_thinkingskillsquestion';
       break;
     case 'Writing':
-      tableName = 'selectively_writingquestion';
+      tableName = 'original_writingquestion';
       break;
     case 'Reading':
-      tableName = 'selectively_readingquestion';
+      tableName = 'original_readingquestion';
       break;
     default:
       console.log('Invalid subject:', subject);
@@ -168,8 +168,8 @@ const generateRelatedQuestions = async (req, res) => {
       let values;
 
       switch (tableName) {
-        case 'selectively_mathsquestion':
-        case 'selectively_thinkingskillsquestion':
+        case 'original_maths':
+        case 'original_thinkingskillsquestion':
           query = `INSERT INTO ${tableName} 
             (question, mcq_options, correct_answer, explanation, image_data, image_description, type, parent_question_id, subject)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -186,7 +186,7 @@ const generateRelatedQuestions = async (req, res) => {
           ];
           break;
 
-        case 'selectively_readingquestion':
+        case 'original_readingquestion':
           query = `INSERT INTO ${tableName} 
             (question, mcq_options, correct_answer, explanation, type, extract_id, subject)
           VALUES (?, ?, ?, ?, ?, ?, ?)`;
@@ -201,7 +201,7 @@ const generateRelatedQuestions = async (req, res) => {
           ];
           break;
 
-        case 'selectively_writingquestion':
+        case 'original_writingquestion':
           query = `INSERT INTO ${tableName} 
             (question, type, parent_question_id, subject)
           VALUES (?, ?, ?, ?)`;
@@ -242,8 +242,8 @@ const extractAndGenerateQuestions = async (req, res) => {
 
   const [rows] = await db.query(
     `SELECT e.*, r.*
-     FROM selectively_extract e
-     LEFT JOIN selectively_readingquestion r ON e.id = r.id
+     FROM original_extract e
+     LEFT JOIN original_readingquestion r ON e.id = r.id
      WHERE e.id = ?`,
     [extractId]
   );
@@ -252,7 +252,7 @@ const extractAndGenerateQuestions = async (req, res) => {
   if (!Array.isArray(rows) || rows.length === 0) {
     return res.status(404).json({
       success: false,
-      message: 'No text found for this extractId in the selectively_extract table.',
+      message: 'No text found for this extractId in the original_extract table.',
     });
   }
 
@@ -320,7 +320,7 @@ const extractAndGenerateQuestions = async (req, res) => {
 
   // Insert the new text into the `selectively_extract` table
   const [insertTextResult] = await db.execute(
-    'INSERT INTO selectively_extract (text, subject, type) VALUES (?, ?, ?)',
+    'INSERT INTO original_extract (text, subject, type) VALUES (?, ?, ?)',
     [newText.trim(), subject, 'Generated']
   );
 
@@ -371,7 +371,7 @@ console.log(newExtractId)
   // Save questions in the database
   const savePromises = generatedQuestions.map((q) => {
     return db.execute(
-      `INSERT INTO selectively_readingquestion 
+      `INSERT INTO original_readingquestion 
        (question, mcq_options, correct_answer, explanation, type, extract_id, subject)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [

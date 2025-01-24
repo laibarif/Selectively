@@ -12,10 +12,10 @@ router.get('/:subject', async (req, res) => {
  
   console.log(subject)
   const tableMapping = {
-    Maths: 'selectively_mathsquestion',
-    ThinkingSkills: 'selectively_thinkingskillsquestion',
-    Writing: 'selectively_writingquestion',
-    Reading: 'selectively_readingquestion',
+    Maths: 'original_maths',
+    ThinkingSkills: 'original_thinkingskillsquestion',
+    Writing: 'original_writingquestion',
+    Reading: 'original_readingquestion',
   };
   const table = tableMapping[subject];
   if (!table) {
@@ -57,10 +57,10 @@ router.get('/question/:id', async (req, res) => {
     return res.status(400).json({ error: 'Missing required parameters' });
   }
   const tableMapping = {
-    Maths: 'selectively_mathsquestion',
-    ThinkingSkills: 'selectively_thinkingskillsquestion',
-    Writing: 'selectively_writingquestion',
-    Reading: 'selectively_readingquestion',
+    Maths: 'original_mathsquestion',
+    ThinkingSkills: 'original_thinkingskillsquestion',
+    Writing: 'original_writingquestion',
+    Reading: 'original_readingquestion',
   };
   const table = tableMapping[subject];
   if (!table) {
@@ -99,11 +99,11 @@ router.get('/generated/:originalQuestionId', async (req, res) => {
   try {
     if (subject.toLowerCase() === 'reading') {
       // Verify if the extract_id exists
-      const checkQuery = `SELECT id FROM selectively_extract WHERE id = ?`;
+      const checkQuery = `SELECT id FROM original_extract WHERE id = ?`;
       const [extractRows] = await db.query(checkQuery, [originalQuestionId]);
 
       if (extractRows.length === 0) {
-        return res.status(400).json({ error: 'Invalid extract ID. No corresponding entry in selectively_extract.' });
+        return res.status(400).json({ error: 'Invalid extract ID. No corresponding entry in original_extract.' });
       }
     }
 
@@ -113,7 +113,7 @@ router.get('/generated/:originalQuestionId', async (req, res) => {
     if (subject.toLowerCase() === 'reading') {
       query = `
         SELECT * 
-        FROM selectively_readingquestion 
+        FROM original_readingquestion 
         WHERE extract_id = ?
         AND type = 'Generated'
         ORDER BY id DESC
@@ -122,7 +122,7 @@ router.get('/generated/:originalQuestionId', async (req, res) => {
     } else {
       query = `
         SELECT * 
-        FROM selectively_${subject.toLowerCase()}question 
+        FROM original_${subject.toLowerCase()}question 
         WHERE parent_question_id = ? 
         AND type = 'Generated'
         ORDER BY id DESC
@@ -159,7 +159,7 @@ console.log("extract wala")
     let params;
       query = `
         SELECT * 
-        FROM selectively_readingquestion 
+        FROM original_readingquestion 
         WHERE extract_id = ?
         AND type = 'Generated'
         ORDER BY id DESC
@@ -192,16 +192,16 @@ console.log("rows ", rows)
     let tableName = '';
     switch (subject) {
       case 'Maths':
-        tableName = 'selectively_mathsquestion';
+        tableName = 'original_maths';
         break;
       case 'Reading':
-        tableName = 'selectively_readingquestion';
+        tableName = 'original_readingquestion';
         break;
       case 'ThinkingSkills':
-        tableName = 'selectively_thinkingskillsquestion';
+        tableName = 'original_thinkingskillsquestion';
         break;
       case 'Writing':
-        tableName = 'selectively_writingquestion';
+        tableName = 'original_writingquestion';
         break;
       default:
         return res.status(400).json({ error: 'Invalid subject' });
@@ -244,10 +244,10 @@ console.log("rows ", rows)
     }
   
     const tableMapping = {
-      Maths: 'selectively_mathsquestion',
-      ThinkingSkills: 'selectively_thinkingskillsquestion',
-      Writing: 'selectively_writingquestion',
-      Reading: 'selectively_readingquestion',
+      Maths: 'original_maths',
+      ThinkingSkills: 'original_thinkingskillsquestion',
+      Writing: 'original_writingquestion',
+      Reading: 'original_readingquestion',
     };
   
     const table = tableMapping[subject];
@@ -285,10 +285,10 @@ router.delete('/delete-question/:id', async (req, res) => {
 
   // Map subject to corresponding table
   const tableMapping = {
-    Maths: 'selectively_mathsquestion',
-    ThinkingSkills: 'selectively_thinkingskillsquestion',
-    Writing: 'selectively_writingquestion',
-    Reading: 'selectively_readingquestion',
+    Maths: 'original_mathsquestion',
+    ThinkingSkills: 'original_thinkingskillsquestion',
+    Writing: 'original_writingquestion',
+    Reading: 'original_readingquestion',
   };
 
   const table = tableMapping[subject];
@@ -332,10 +332,10 @@ router.get('/get-question/:id', async (req, res) => {
 
   // Map subject to corresponding table
   const tableMapping = {
-    Maths: 'selectively_mathsquestion',
-    ThinkingSkills: 'selectively_thinkingskillsquestion',
-    Writing: 'selectively_writingquestion',
-    Reading: 'selectively_readingquestion',
+    Maths: 'original_maths',
+    ThinkingSkills: 'original_thinkingskillsquestion',
+    Writing: 'original_writingquestion',
+    Reading: 'original_readingquestion',
   };
 
   const table = tableMapping[subject];
@@ -482,10 +482,10 @@ router.put('/update-questions/:id', upload.none(), async (req, res) => {
 
   // Map subject to corresponding table
   const tableMapping = {
-    Maths: { table: 'selectively_mathsquestion', parentColumn: 'parent_question_id' },
-    ThinkingSkills: { table: 'selectively_thinkingskillsquestion', parentColumn: 'parent_question_id' },
-    Writing: { table: 'selectively_writingquestion', parentColumn: 'parent_question_id' },
-    Reading: { table: 'selectively_readingquestion', parentColumn: 'extract_id' },
+    Maths: { table: 'original_maths', parentColumn: 'parent_question_id' },
+    ThinkingSkills: { table: 'original_thinkingskillsquestion', parentColumn: 'parent_question_id' },
+    Writing: { table: 'original_writingquestion', parentColumn: 'parent_question_id' },
+    Reading: { table: 'original_readingquestion', parentColumn: 'extract_id' },
   };
 
   const tableInfo = tableMapping[subject];

@@ -459,12 +459,12 @@ console.log("quston",questions)
         <img src={logo} alt="img-logo" className="h-24 w-32" />
         <div className="flex justify-center items-center bg-black text-white text-xl font-bold p-1  shadow-lg">
           <div className="flex flex-col items-center mx-2">
-            <span>{hours}</span>
+            {/* <span>{hours}</span>
             <span className="text-sm text-gray-400 uppercase tracking-wide">
               Hour
-            </span>
+            </span> */}
           </div>
-          <span className="text-4xl mx-2">:</span>
+          {/* <span className="text-4xl mx-2">:</span> */}
           <div className="flex flex-col items-center mx-2">
             <span>{minutes}</span>
             <span className="text-sm text-gray-400 uppercase tracking-wide">
