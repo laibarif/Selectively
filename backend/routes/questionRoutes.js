@@ -536,8 +536,4 @@ router.put('/update-questions/:id', upload.none(), async (req, res) => {
 });
 
 
-
-
-
-
 module.exports = router;

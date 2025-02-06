@@ -435,7 +435,7 @@ const ViewQuestionsPage = () => {
 
         {viewQuestion && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-4xl">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-5xl max-h-[90vh] overflow-y-auto">
               {/* Conditionally render the paragraph
 {viewQuestion.extract && (
                 <div className="mb-4">
@@ -449,26 +449,28 @@ const ViewQuestionsPage = () => {
               {/* Conditionally render the Image Description */}
               {viewQuestion.image_description && (
                 <div className="mb-4">
-                  <p className="text-lg font-semibold text-gray-700">
-                    <strong className="mr-2">Image Description:</strong>
-                    <span className=""> {viewQuestion.image_description}</span>
+                  <p className="text-lg font-semibold text-black">
+                    Image Description:
+                    <span className="text-gray-500 ml-2"> {viewQuestion.image_description}</span>
                   </p>
                 </div>
               )}
 
               {/* Conditionally render the Image */}
               {viewQuestion.image_data && (
-                <div className="mb-4 flex justify-center">
-
-                  <img
-                    src={
-                      viewQuestion.image_data?.startsWith("http")
-                        ? viewQuestion.image_data
-                        : `http://${viewQuestion.image_data}` // Adjust this as needed
-                    }
-                    alt={viewQuestion.image_description || 'Question image'}
-                    className="h-40 w-40 object-cover border border-gray-300 rounded-md"
-                  />
+                <div className="mb-4">
+                  <p className="text-lg font-semibold text-black">Image: </p>
+                  <div className="flex justify-center">
+                    <img
+                      src={
+                        viewQuestion.image_data?.startsWith("http")
+                          ? viewQuestion.image_data
+                          : `http://${viewQuestion.image_data}` // Adjust this as needed
+                      }
+                      alt={viewQuestion.image_description || 'Question image'}
+                      className="h-60 w-100 object-cover border border-gray-300 rounded-md"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -490,29 +492,41 @@ const ViewQuestionsPage = () => {
                 </p>
               </div>
               {viewQuestion.mcq_options && (
-                <ul className="space-y-2 mb-4">
-                  {viewQuestion.mcq_options &&
-                    viewQuestion.mcq_options.split(",").map((option, index) => (
+                <div className="mb-4">
+                  <p className="text-lg font-semibold text-black">MCQs Options</p>
+                  <ul className="space-y-2">
+                    {viewQuestion.mcq_options.split(",").map((option, index) => (
                       <li key={index} className="text-gray-700">
                         <span>{option}</span>
                       </li>
                     ))}
-                </ul>
+                  </ul>
+                </div>
               )}
+
               {viewQuestion.correct_answer && (
                 <div className="mb-6">
-                  <p className="text-sm text-gray-600">
-                    <strong>Correct Answer:</strong>{" "}
-                    <span className="text-blue-500 font-semibold">
+                  <p className="text-lg font-semibold text-black">
+                    Correct Answer:{" "}
+                    <span className="text-green-700 font-bold">
                       {viewQuestion.correct_answer}
                     </span>
                   </p>
                 </div>
               )}
-
+              {viewQuestion.explanation && (
+                <div className="mb-6">
+                  <p className="text-lg font-semibold text-black">
+                    Explanation:{" "}
+                    <span className="text-gray-500 ml-2">
+                      {viewQuestion.explanation}
+                    </span>
+                  </p>
+                </div>
+              )}
               <div className="mt-6 flex justify-end">
                 <button
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-orange-400"
                   onClick={() => setViewQuestion(null)}
                 >
                   Back to Questions

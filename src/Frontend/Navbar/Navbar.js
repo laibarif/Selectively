@@ -5,8 +5,8 @@ import './Navbar.css';
 
 function Navbar() {
   const navigate = useNavigate();
-  const [isDropdownOpen, setDropdownOpen] = useState(false); 
-  const [userRole, setUserRole] = useState(null); 
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -14,21 +14,21 @@ function Navbar() {
     const user = localStorage.getItem('user');
     if (user) {
       const parsedUser = JSON.parse(user);
-      setUserRole(parsedUser.role); 
+      setUserRole(parsedUser.role);
     } else {
       setUserRole(null); // Set userRole to null if no user is logged in
     }
-  }, []); 
+  }, []);
 
   const toggleDropdown = () => setDropdownOpen(!isDropdownOpen);
 
   const handleLogout = () => {
-    localStorage.removeItem('user'); 
+    localStorage.removeItem('user');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('refresh_token');
     localStorage.setItem('isAuthenticated', false);
-    setUserRole(null); 
-    navigate('/'); 
+    setUserRole(null);
+    navigate('/');
   };
 
   return (
@@ -48,6 +48,18 @@ function Navbar() {
             <li className="nav-item">
               <Link className="nav-link" to="/add-questionsBooks">Add Questions</Link>
             </li>
+            <li className="nav-item">
+              <button className="font-semibold bg-red-600 px-6 py-3 rounded-md text-center text-white hover:bg-red-500" onClick={handleLogout}>Logout</button>
+            </li>
+          </>
+        ) : userRole === 'student' ? (
+          <>
+            <li className="nav-item">
+              <Link className="nav-link" to="/student-dashboard">Student Dashboard</Link>
+            </li>
+            {/* <li className="nav-item">
+              <Link className="nav-link" to="/profile">My Profile</Link>
+            </li> */}
             <li className="nav-item">
               <button className="font-semibold bg-red-600 px-6 py-3 rounded-md text-center text-white hover:bg-red-500" onClick={handleLogout}>Logout</button>
             </li>
