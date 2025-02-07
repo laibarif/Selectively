@@ -224,8 +224,9 @@ const generateRelatedQuestions = async (req, res) => {
 
     console.log('Generated Questions Saved Successfully.');
     res.json({ success: true, questions: generatedQuestions });
-  } catch (error) {
-    console.error('Error generating related questions:', error.message);
+  } 
+  catch (error) {
+    console.log('Error generating related questions:', error);
     res.status(500).send('Failed to generate questions');
   }
 };

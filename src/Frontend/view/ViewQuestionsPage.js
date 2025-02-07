@@ -19,6 +19,7 @@ const ViewQuestionsPage = () => {
   const [viewQuestion, setViewQuestion] = useState(null);
   const [filter, setFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
 
   const handleFilterChange = (e) => {
     setFilter(e.target.value); // Update filter with selected value
@@ -90,13 +91,14 @@ const ViewQuestionsPage = () => {
 
   // Function to handle editing the question
   const handleEdit = async (id) => {
+    const index = filteredQuestions.findIndex((q) => q.id === id)
     try {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/api/questions/get-question/${id}`,
         { params: { subject } }
 
       );
-
+      setSelectedQuestionIndex(index);
       setQuestionText(response.data);
       setType(response.data.type);
       setSelectedQuestion(id);
@@ -387,7 +389,7 @@ const ViewQuestionsPage = () => {
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
                     Image Description:
                   </label>
-                  <input
+                  <textarea
                     value={questionText.image_description || ""}
                     onChange={(e) =>
                       setQuestionText((prev) => ({
@@ -413,21 +415,60 @@ const ViewQuestionsPage = () => {
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
                   />
                 </div>
-                <div className="flex space-x-4">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    Save
-                  </button>
+                <div className="flex justify-between items-center space-x-4">
                   <button
                     type="button"
-                    onClick={() => setSelectedQuestion(null)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md shadow hover:bg-gray-400 focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+                    className={`px-4 py-2 rounded-md shadow ${selectedQuestionIndex > 0
+                        ? "bg-gray-500 hover:bg-gray-600 text-white"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
+                    disabled={selectedQuestionIndex === 0}
+                    onClick={() => {
+                      const prevIndex = selectedQuestionIndex - 1;
+                      setSelectedQuestion(filteredQuestions[prevIndex].id);
+                      setQuestionText(filteredQuestions[prevIndex]);
+                      setType(filteredQuestions[prevIndex].type);
+                      setSelectedQuestionIndex(prevIndex);
+                    }}
                   >
-                    Cancel
+                    Previous
+                  </button>
+
+                  <div className="flex space-x-4">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-orange-500 text-white rounded-md shadow hover:bg-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedQuestion(null)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-400 focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-md shadow ${selectedQuestionIndex < filteredQuestions.length - 1
+                        ? "bg-blue-500 hover:bg-blue-600 text-white"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
+                    disabled={selectedQuestionIndex === filteredQuestions.length - 1}
+                    onClick={() => {
+                      const nextIndex = selectedQuestionIndex + 1;
+                      setSelectedQuestion(filteredQuestions[nextIndex].id);
+                      setQuestionText(filteredQuestions[nextIndex]);
+                      setType(filteredQuestions[nextIndex].type);
+                      setSelectedQuestionIndex(nextIndex);
+                    }}
+                  >
+                    Next
                   </button>
                 </div>
+
               </form>
             </div>
           </div>
@@ -496,7 +537,7 @@ const ViewQuestionsPage = () => {
                   <p className="text-lg font-semibold text-black">MCQs Options</p>
                   <ul className="space-y-2">
                     {viewQuestion.mcq_options.split(",").map((option, index) => (
-                      <li key={index} className="text-gray-700">
+                      <li key={index} className="text-gray-500 font-semibold">
                         <span>{option}</span>
                       </li>
                     ))}
@@ -519,7 +560,12 @@ const ViewQuestionsPage = () => {
                   <p className="text-lg font-semibold text-black">
                     Explanation:{" "}
                     <span className="text-gray-500 ml-2">
-                      {viewQuestion.explanation}
+                      {viewQuestion.explanation.split(/\r\n|\n/).map((line, index) => (
+                        <React.Fragment key={index}>
+                          {line}
+                          <br />
+                        </React.Fragment>
+                      ))}
                     </span>
                   </p>
                 </div>

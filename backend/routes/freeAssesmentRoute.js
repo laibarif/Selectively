@@ -234,126 +234,6 @@ ORDER BY RAND();
   }
 });
 
-// router.get("/randomReadingQuestions", async (req, res) => {
-//   try {
-//     // Execute the query to fetch random reading questions along with the corresponding text from the extract table
-//     const [questions] = await db.query(
-//       `(
-//     SELECT 
-//         r.id AS question_id, 
-//         r.question, 
-//         r.mcq_options, 
-//         r.correct_answer, 
-//         r.explanation, 
-//         r.subject, 
-//         r.type, 
-//         e.text AS extract_text 
-//     FROM 
-//         selectively_readingquestion r
-//     JOIN 
-//         selectively_extract e 
-//     ON 
-//         r.extract_id = e.id
-//     WHERE 
-//         r.type = "finalized" 
-//         AND r.question IS NOT NULL 
-//         AND r.question != "" 
-//         AND r.mcq_options IS NOT NULL 
-//         AND r.level = "easy"
-//     ORDER BY 
-//         RAND()
-//     LIMIT 3
-// )
-// UNION ALL
-// (
-//     SELECT 
-//         r.id AS question_id, 
-//         r.question, 
-//         r.mcq_options, 
-//         r.correct_answer, 
-//         r.explanation, 
-//         r.subject, 
-//         r.type, 
-//         e.text AS extract_text 
-//     FROM 
-//         selectively_readingquestion r
-//     JOIN 
-//         selectively_extract e 
-//     ON 
-//         r.extract_id = e.id
-//     WHERE 
-//         r.type = "finalized" 
-//         AND r.question IS NOT NULL 
-//         AND r.question != "" 
-//         AND r.mcq_options IS NOT NULL 
-//         AND r.level = "medium"
-//     ORDER BY 
-//         RAND()
-//     LIMIT 4
-// )
-// UNION ALL
-// (
-//     SELECT 
-//         r.id AS question_id, 
-//         r.question, 
-//         r.mcq_options, 
-//         r.correct_answer, 
-//         r.explanation, 
-//         r.subject, 
-//         r.type, 
-//         e.text AS extract_text 
-//     FROM 
-//         selectively_readingquestion r
-//     JOIN 
-//         selectively_extract e 
-//     ON 
-//         r.extract_id = e.id
-//     WHERE 
-//         r.type = "finalized" 
-//         AND r.question IS NOT NULL 
-//         AND r.question != "" 
-//         AND r.mcq_options IS NOT NULL 
-//         AND r.level = "difficult"
-//     ORDER BY 
-//         RAND()
-//     LIMIT 3
-// )
-// ORDER BY RAND();
-
-// `
-//     );
-
-//     // Check if no questions were found
-//     if (questions.length === 0) {
-//       return res.status(404).json({ message: "No questions found." });
-//     }
-
-//     const removeTrailingCommas = (mcq_options) => {
-//       // Split the options into an array based on commas or newlines
-//       let options = mcq_options.split(/,|\n/); // Splits on commas or newlines
-
-//       // Trim each option and remove trailing commas
-//       options = options.map(option => option.trim().replace(/,$/, ""));
-
-//       // Join the options back into a string with newlines or commas if needed
-//       return options.join("\n"); // Adjust to use "," or "\n" as per your needs
-//     };
-
-//     // Sanitize the extract_text field
-//     questions.forEach((question) => {
-//       question.mcq_options = removeTrailingCommas(question.mcq_options);
-//     });
-
-
-//     // Send the fetched questions as a JSON response
-//     res.status(200).json({ questions });
-//   } catch (error) {
-//     // Log and handle any errors that occur
-//     console.error("Error fetching reading questions:", error);
-//     res.status(500).json({ message: "Server error." });
-//   }
-// });
-
 
 router.get("/randomReadingQuestions", async (req, res) => {
   try {
@@ -803,7 +683,7 @@ router.post("/send-user-details", async (req, res) => {
             
             <!-- User Information -->
             <p style="color: #555; font-size: 16px;">
-              Dear student<br><br>
+              Dear student,<br><br>
               We are pleased to share the results of your recent assessment. Please find the details below:
             </p>
     
@@ -814,6 +694,10 @@ router.post("/send-user-details", async (req, res) => {
                 <td style="padding: 10px; border: 1px solid #ddd;">${userDetails.created_at}</td>
               </tr>
               <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Reading Score</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${userDetails.reading_score}</td>
+              </tr>
+              <tr>
                 <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Math Score</td>
                 <td style="padding: 10px; border: 1px solid #ddd;">${userDetails.maths_score}</td>
               </tr>
@@ -821,19 +705,17 @@ router.post("/send-user-details", async (req, res) => {
                 <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Thinking Skills Score</td>
                 <td style="padding: 10px; border: 1px solid #ddd;">${userDetails.thinking_skills_score}</td>
               </tr>
-              <tr>
-                <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Reading Score</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${userDetails.reading_score}</td>
-              </tr>
-              <tr>
-                <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Total Score</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${userDetails.totalScore}</td>
-              </tr>
+              
             </table>
     
             <!-- Question Attempted Section -->
             <h3 style="color: #333;">Question Attempt Details</h3>
             <p style="color: #555; font-size: 14px;">
+              Reading:
+              <ul>
+                <li>Attempted: ${reading.attempted}</li>
+                <li>Unattempted: ${reading.unattempted}</li>
+              </ul>
               Math:
               <ul>
                 <li>Attempted: ${maths.attempted}</li>
@@ -844,18 +726,20 @@ router.post("/send-user-details", async (req, res) => {
                 <li>Attempted: ${thinkingSkills.attempted}</li>
                 <li>Unattempted: ${thinkingSkills.unattempted}</li>
               </ul>
-              Reading:
-              <ul>
-                <li>Attempted: ${reading.attempted}</li>
-                <li>Unattempted: ${reading.unattempted}</li>
-              </ul>
             </p>
-    
+            <div style="text-align: center; margin-top: 20px;">
+            <ul style="list-style-type: none; padding: 0; margin: 0;">
+            <li className="nav-item login-item">
+              <a href="https://selectiveexam.com.au/signup" style="text-decoration: none;">
+                <div style="background-color: #fbbf24; padding: 10px 20px; border-radius: 5px; display: inline-block; color: #fff; font-weight: bold;">Sign up</div>
+              </a>
+            </li>
+            </ul>
+        </div>
             <!-- Footer Section -->
             <div style="text-align: center; margin-top: 30px;">
               <p style="font-size: 12px; color: #aaa;">Thank you for using our service!</p>
             </div>
-    
           </div>
         </body>
       </html>
@@ -870,7 +754,7 @@ router.post("/send-user-details", async (req, res) => {
         pass: process.env.EMAIL_PASSWORD // Your Hostinger email password
       }
     });
-  
+
     // Set up the email options
     const mailOptions = {
       from: process.env.EMAIL_USER,
