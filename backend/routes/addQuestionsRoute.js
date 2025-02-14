@@ -122,6 +122,7 @@ router.post('/addMathQuestions', async (req, res) => {
         image_description,
         level,
         type,
+        exam_type
       } = req.body;
   
       if (!question || !mcq_options || !correct_answer || !explanation || !level || !type || !subject) {
@@ -164,8 +165,8 @@ router.post('/addMathQuestions', async (req, res) => {
         }
       }
   
-      const query = `INSERT INTO original_thinkingskillsquestion (subject, question, mcq_options, correct_answer, explanation, image_data, image_description, level, type)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      const query = `INSERT INTO original_thinkingskillsquestion (subject, question, mcq_options, correct_answer, explanation, image_data, image_description, level, type,exam_type)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   
       const [result] = await db.query(query, [
         subject, 
@@ -176,7 +177,8 @@ router.post('/addMathQuestions', async (req, res) => {
         imageUrl || null, 
         image_description || null,  
         level, 
-        type
+        type,
+        exam_type
       ]);
   
       res.status(201).json({
@@ -239,7 +241,7 @@ router.post('/addMathQuestions', async (req, res) => {
 
   router.post('/addWritingQuestions', async (req, res) => {
     try {
-      const { subject, question, type } = req.body;
+      const { subject, question, type, exam_type } = req.body;
   
       if (!question || !subject) {
         return res.status(400).json({ message: 'All fields are required.' });
@@ -247,11 +249,11 @@ router.post('/addMathQuestions', async (req, res) => {
   
       // Insert into original_writingquestion table
       const insertExtractQuery = `
-        INSERT INTO original_writingquestion (subject, question, type) 
-        VALUES (?, ?, ?);
+        INSERT INTO original_writingquestion (subject, question, type, exam_type) 
+        VALUES (?, ?, ?, ?);
       `;
   
-      await db.query(insertExtractQuery, [subject, question, type]);
+      await db.query(insertExtractQuery, [subject, question, type, exam_type]);
   
       res.status(201).json({ message: 'Writing question added successfully!' });
   

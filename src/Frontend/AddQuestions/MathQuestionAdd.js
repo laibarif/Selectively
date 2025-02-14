@@ -297,7 +297,7 @@ function MathQuestionAdd() {
             value={formData.exam_type}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter Exam Type"
+            placeholder="Enter Exam Type (Practice, Weekly, Monthly)"
             required
           />
         </div>

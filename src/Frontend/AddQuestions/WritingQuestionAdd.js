@@ -8,6 +8,7 @@ function WritingQuestionAdd() {
     subject: "Writing",
     question: "",
     type: "",
+    exam_type:""
   });
   const [loading, setLoading] = useState(false);
   const handleChange = (e) => {
@@ -30,6 +31,7 @@ function WritingQuestionAdd() {
       setFormData({
         question: "",
         type: "",
+        exam_type:""
       });
       navigate("/add-questionsBooks");
     } catch (error) {
@@ -84,10 +86,26 @@ function WritingQuestionAdd() {
             <option value="">Select Type</option>
             <option value="Original">Original</option>
             <option value="Finalized">Finalized</option>
-            <option value="Generated">Generated</option>
           </select>
         </div>
-
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-lg font-medium mb-2"
+            htmlFor="correctAnswer"
+          >
+            Exam Type
+          </label>
+          <input
+            type="text"
+            id="exam_type"
+            name="exam_type"
+            value={formData.exam_type}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter Exam Type (Practice, Weekly, Monthly)"
+            required
+          />
+        </div>
         {/* Submit Button */}
         <div className="flex justify-center">
           <button
