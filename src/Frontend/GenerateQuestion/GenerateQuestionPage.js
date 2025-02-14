@@ -22,7 +22,6 @@ const GenerateQuestionPage = () => {
       return;
     }
 
-
     const fetchQuestionDetails = async () => {
       try {
         const originalQuestionUrl = `${process.env.REACT_APP_BACKEND_URL}/api/questions/question/${id}?subject=${subject}`;

@@ -400,10 +400,6 @@ console.log(newExtractId)
   });
 };
 
-
-
-
-
 module.exports = {
   generateRelatedQuestions,extractAndGenerateQuestions
 };

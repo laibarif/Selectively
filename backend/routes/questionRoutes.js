@@ -57,7 +57,7 @@ router.get('/question/:id', async (req, res) => {
     return res.status(400).json({ error: 'Missing required parameters' });
   }
   const tableMapping = {
-    Maths: 'original_mathsquestion',
+    Maths: 'original_maths',
     ThinkingSkills: 'original_thinkingskillsquestion',
     Writing: 'original_writingquestion',
     Reading: 'original_readingquestion',
@@ -91,9 +91,18 @@ router.get('/question/:id', async (req, res) => {
 router.get('/generated/:originalQuestionId', async (req, res) => {
   const { originalQuestionId } = req.params;
   const { subject } = req.query;
-
-  if (!originalQuestionId || !subject) {
-    return res.status(400).json({ error: 'Original question ID and subject are required' });
+  const tableMapping = {
+    Maths: 'original_maths',
+    ThinkingSkills: 'original_thinkingskillsquestion',
+    Writing: 'original_writingquestion',
+    Reading: 'original_readingquestion',
+  };
+  const table = tableMapping[subject];
+  if (!table) {
+    return res.status(400).json({ error: 'Invalid subject' });
+  }
+  if (!originalQuestionId) {
+    return res.status(400).json({ error: 'Original question ID are required' });
   }
 
   try {
@@ -122,7 +131,7 @@ router.get('/generated/:originalQuestionId', async (req, res) => {
     } else {
       query = `
         SELECT * 
-        FROM original_${subject.toLowerCase()}question 
+        FROM ${table} 
         WHERE parent_question_id = ? 
         AND type = 'Generated'
         ORDER BY id DESC
@@ -285,7 +294,7 @@ router.delete('/delete-question/:id', async (req, res) => {
 
   // Map subject to corresponding table
   const tableMapping = {
-    Maths: 'original_mathsquestion',
+    Maths: 'original_maths',
     ThinkingSkills: 'original_thinkingskillsquestion',
     Writing: 'original_writingquestion',
     Reading: 'original_readingquestion',
@@ -362,14 +371,6 @@ router.get('/get-question/:id', async (req, res) => {
     if (results.length > 0) {
       const question = results[0];
 
-      // Check if image_data exists and process it
-      // if (question.image_data) {
-      //   // Convert BLOB to Base64
-      //   const buffer = Buffer.from(question.image_data); // Use the BLOB field directly
-      //   question.image_data = `data:image/jpeg;base64,${buffer.toString('base64')}`;
-      //   console.log("url", question.image_data);
-      // }
-
       res.status(200).json(question);
     } else {
       res.status(404).json({ error: 'Question not found' });
@@ -379,86 +380,6 @@ router.get('/get-question/:id', async (req, res) => {
     res.status(500).json({ error: 'Error fetching question' });
   }
 });
-
-
-                //Controller to get text from extract table and quesition detail
-
-// router.get('/get-question/:id', async (req, res) => {
-//   const { id } = req.params;
-//   const { subject } = req.query; // Get the subject from the query
-//   if (!subject) {
-//     return res.status(400).json({ error: 'Subject is required' });
-//   }
-
-//   // Map subject to corresponding table
-//   const tableMapping = {
-//     Maths: 'selectively_mathsquestion',
-//     ThinkingSkills: 'selectively_thinkingskillsquestion',
-//     Writing: 'selectively_writingquestion',
-//     Reading: 'selectively_readingquestion',
-//   };
-
-//   const table = tableMapping[subject];
-//   if (!table) {
-//     return res.status(400).json({ error: 'Invalid subject' });
-//   }
-
-//   try {
-//     // Fetch question details from the corresponding table
-//     const [results] = await db.query(
-//       `SELECT * FROM ${table} WHERE id = ?`,
-//       [id]
-//     );
-
-//     if (results.length > 0) {
-//       const question = results[0];
-
-//       // Sanitize the question field
-//       const removeSpecialCharsQuestion = (text) => {
-//         if (!text) return ''; // Return an empty string if the text is undefined or null
-//         return text
-//           .replace(/&#x[0-9A-Fa-f]+;/g, '') // Remove HTML entities like &#xE2;
-//           .replace(/[^\w\s]/gi, ''); // Remove non-alphanumeric characters except spaces
-//       };
-//       question.question = removeSpecialCharsQuestion(question.question);
-
-//       // Process image_data if it exists
-//       if (question.image_data) {
-//         const buffer = Buffer.from(question.image_data); // Use the BLOB field directly
-//         question.image_data = `data:image/jpeg;base64,${buffer.toString('base64')}`;
-//       }
-
-//       // If subject is Reading, fetch extract data using extract_id
-//       if (subject === 'Reading' && question.extract_id) {
-//         const [extractResults] = await db.query(
-//           `SELECT * FROM selectively_extract WHERE id = ?`,
-//           [question.extract_id]
-//         );
-
-//         if (extractResults.length > 0) {
-//           // Sanitize the extract_text field
-//           extractResults[0].extract_text = removeSpecialCharsQuestion(
-//             extractResults[0].extract_text
-//           );
-//           question.extract = extractResults[0];
-//         } else {
-//           question.extract = null; // No extract found
-//         }
-//       }
-
-//       res.status(200).json(question);
-//     } else {
-//       res.status(404).json({ error: 'Question not found' });
-//     }
-//   } catch (error) {
-//     console.error('Error fetching question:', error);
-//     res.status(500).json({ error: 'Error fetching question' });
-//   }
-// });
-
-
-
-
 
  // Default memory storage
 
