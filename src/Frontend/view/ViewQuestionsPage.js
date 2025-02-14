@@ -321,7 +321,7 @@ const ViewQuestionsPage = () => {
               <form onSubmit={handleUpdate} className="space-y-4">
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
-                    Question:
+                    Question: {questionText.id || ""}
                   </label>
                   <textarea
                     rows="3"
@@ -387,6 +387,54 @@ const ViewQuestionsPage = () => {
                 </div>
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
+                  Topic(Category):
+                  </label>
+                  <input
+                    value={questionText.category || ""}
+                    onChange={(e) =>
+                      setQuestionText((prev) => ({
+                        ...prev,
+                        correct_answer: e.target.value
+                      }))
+                    }
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-lg font-semibold text-gray-700 mb-1">
+                  Exam Type:
+                  </label>
+                  <input
+                    value={questionText.exam_type || ""}
+                    onChange={(e) =>
+                      setQuestionText((prev) => ({
+                        ...prev,
+                        correct_answer: e.target.value
+                      }))
+                    }
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-lg font-semibold text-gray-700 mb-1">
+                  Level:
+                  </label>
+                  <input
+                    value={questionText.level || ""}
+                    onChange={(e) =>
+                      setQuestionText((prev) => ({
+                        ...prev,
+                        correct_answer: e.target.value
+                      }))
+                    }
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-lg font-semibold text-gray-700 mb-1">
                     Image Description:
                   </label>
                   <textarea
@@ -419,8 +467,8 @@ const ViewQuestionsPage = () => {
                   <button
                     type="button"
                     className={`px-4 py-2 rounded-md shadow ${selectedQuestionIndex > 0
-                        ? "bg-gray-500 hover:bg-gray-600 text-white"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? "bg-gray-500 hover:bg-gray-600 text-white"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       }`}
                     disabled={selectedQuestionIndex === 0}
                     onClick={() => {
@@ -453,8 +501,8 @@ const ViewQuestionsPage = () => {
                   <button
                     type="button"
                     className={`px-4 py-2 rounded-md shadow ${selectedQuestionIndex < filteredQuestions.length - 1
-                        ? "bg-blue-500 hover:bg-blue-600 text-white"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? "bg-blue-500 hover:bg-blue-600 text-white"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       }`}
                     disabled={selectedQuestionIndex === filteredQuestions.length - 1}
                     onClick={() => {
@@ -486,7 +534,14 @@ const ViewQuestionsPage = () => {
                   </p>
                 </div>
               )} */}
-
+              <div className="mb-4">
+                <p className="text-lg font-semibold text-black">
+                  ID:
+                  <span className="text-gray-500 ml-2">
+                    {viewQuestion.id}
+                  </span>
+                </p>
+              </div>
               {/* Conditionally render the Image Description */}
               {viewQuestion.image_description && (
                 <div className="mb-4">
@@ -517,7 +572,7 @@ const ViewQuestionsPage = () => {
 
               <div className="mb-4">
                 <p className="text-lg font-semibold text-black">
-                  Question:
+                  Question {viewQuestion.id}:
                   <span className="text-gray-500 ml-2">
                     {viewQuestion.question}
                   </span>
@@ -532,6 +587,7 @@ const ViewQuestionsPage = () => {
                   </span>
                 </p>
               </div>
+              
               {viewQuestion.mcq_options && (
                 <div className="mb-4">
                   <p className="text-lg font-semibold text-black">MCQs Options</p>
@@ -555,6 +611,30 @@ const ViewQuestionsPage = () => {
                   </p>
                 </div>
               )}
+              <div className="mb-4">
+                <p className="text-lg font-semibold text-black">
+                  Level:
+                  <span className="text-gray-500 ml-2">
+                    {viewQuestion.level}
+                  </span>
+                </p>
+              </div>
+              <div className="mb-4">
+                <p className="text-lg font-semibold text-black">
+                  Topic(Category):
+                  <span className="text-gray-500 ml-2">
+                  {viewQuestion.category ? viewQuestion.category : "Not added yet"}
+                  </span>
+                </p>
+              </div>
+              <div className="mb-4">
+                <p className="text-lg font-semibold text-black">
+                  Exam Type:
+                  <span className="text-gray-500 ml-2">
+                  {viewQuestion.exam_type ? viewQuestion.exam_type : "Not added yet"}
+                  </span>
+                </p>
+              </div>
               {viewQuestion.explanation && (
                 <div className="mb-6">
                   <p className="text-lg font-semibold text-black">
