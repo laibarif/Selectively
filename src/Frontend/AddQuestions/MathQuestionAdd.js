@@ -14,6 +14,8 @@ function MathQuestionAdd() {
     image_description: "",
     type: "",
     level: "",
+    category: "",
+    exam_type: "",
     parent_question_id: "",
   });
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,7 @@ function MathQuestionAdd() {
     e.preventDefault();
 
     const data = new FormData();
+    console.log("Data", formData)
     for (const key in formData) {
       if (key === "image_data" && formData[key]) {
         data.append(key, formData[key]);
@@ -45,9 +48,10 @@ function MathQuestionAdd() {
         data.append(key, formData[key]);
       }
     }
-    const mcqOptionsRegex = /^(A\s[^,]+,\sB\s[^,]+,\sC\s[^,]+,\sD\s[^,]+)$/;
+    // const mcqOptionsRegex = /^(A\s[^,]+,\sB\s[^,]+,\sC\s[^,]+,\sD\s[^,]+)$/;
+    const mcqOptionsRegex = /^((?:[A-Z]\s[^,]+,?\s*)+)$/;
 
-    const correctAnswerRegex = /^[A-D]$/;
+    const correctAnswerRegex = /^[A-Z]$/;
 
     if (!mcqOptionsRegex.test(formData.mcq_options.trim())) {
       alert(
@@ -81,6 +85,8 @@ function MathQuestionAdd() {
         image_description: "",
         type: "",
         level: "",
+        category: "",
+        exam_type: "",
       });
       navigate("/add-questionsBooks");
       // Handle the API response (e.g., display a success message)
@@ -257,8 +263,43 @@ function MathQuestionAdd() {
             <option value="">Select Type</option>
             <option value="Original">Original</option>
             <option value="Finalized">Finalized</option>
-            <option value="Generated">Generated</option>
           </select>
+        </div>
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-lg font-medium mb-2"
+            htmlFor="correctAnswer"
+          >
+            Topic(Category)
+          </label>
+          <input
+            type="text"
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter Topic(Category)"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-lg font-medium mb-2"
+            htmlFor="correctAnswer"
+          >
+            Exam Type
+          </label>
+          <input
+            type="text"
+            id="exam_type"
+            name="exam_type"
+            value={formData.exam_type}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter Exam Type"
+            required
+          />
         </div>
 
         {/* Submit Button */}

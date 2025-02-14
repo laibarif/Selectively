@@ -27,8 +27,10 @@ router.post('/addMathQuestions', async (req, res) => {
         image_description,
         level,
         type,
+        category,
+        exam_type
       } = req.body;
-  
+      console.log("Body",req.body)
       if (!question || !mcq_options || !correct_answer || !explanation || !level || !type || !subject) {
         return res.status(400).json({ message: 'All fields except image_description are required.' });
       }
@@ -69,8 +71,8 @@ router.post('/addMathQuestions', async (req, res) => {
         }
       }
   
-      const query = `INSERT INTO original_maths (subject, question, mcq_options, correct_answer, explanation, image_data, image_description, level, type)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      const query = `INSERT INTO original_maths (subject, question, mcq_options, correct_answer, explanation, image_data, image_description, level, type,category,exam_type)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   
       const [result] = await db.query(query, [
         subject, 
@@ -81,9 +83,24 @@ router.post('/addMathQuestions', async (req, res) => {
         imageUrl || null, 
         image_description || null,  
         level, 
-        type
+        type,
+        category,
+        exam_type
       ]);
-  
+      console.log('Inserting with:', {
+        subject, 
+        question, 
+        mcq_options, 
+        correct_answer, 
+        explanation, 
+        imageUrl, 
+        image_description,  
+        level, 
+        type,
+        category,
+        exam_type
+      });
+      
       res.status(201).json({
         message: 'Math question added successfully!',
         question: result, 
@@ -182,7 +199,9 @@ router.post('/addMathQuestions', async (req, res) => {
         explanation, 
         text, 
         level, 
-        type 
+        type,
+        category,
+        exam_type
       } = req.body;
  
       if (!question || !mcq_options || !correct_answer || !explanation || !level || !type || !subject) {
@@ -203,11 +222,11 @@ router.post('/addMathQuestions', async (req, res) => {
       // Insert into original_readingquestion table
       const insertQuestionQuery = `
         INSERT INTO original_readingquestion 
-        (subject, question, mcq_options, correct_answer, explanation, extract_id, level, type) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+        (subject, question, mcq_options, correct_answer, explanation, extract_id, level, type, category, exam_type) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
       `;
   
-      await db.query(insertQuestionQuery, [subject, question, mcq_options, correct_answer, explanation, extract_id, level, type]);
+      await db.query(insertQuestionQuery, [subject, question, mcq_options, correct_answer, explanation, extract_id, level, type,category ,exam_type]);
   
       res.status(201).json({ message: 'Math question added successfully!' }); 
   
