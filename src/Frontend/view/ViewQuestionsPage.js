@@ -121,10 +121,17 @@ const ViewQuestionsPage = () => {
       formData.append("correct_answer", questionText.correct_answer);
     if (questionText.explanation)
       formData.append("explanation", questionText.explanation);
+    if (questionText.category)
+      formData.append("category", questionText.category);
+    if (questionText.exam_type)
+      formData.append("exam_type", questionText.exam_type);
     if (questionText.image_description)
       formData.append("image_description", questionText.image_description);
-    if (questionText.image_data)
+    // if (questionText.image_data)
+    //   formData.append("image_data", questionText.image_data);
+    if (questionText.image_data instanceof File) {
       formData.append("image_data", questionText.image_data);
+    }    
 
     setLoading(true);
     try {
@@ -134,7 +141,10 @@ const ViewQuestionsPage = () => {
       await axios.put(
         `${process.env.REACT_APP_BACKEND_URL}/api/questions/update-questions/${selectedQuestion}?subject=${subject}`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" }
+      }
       );
       setMessage("Question updated successfully");
       setTimeout(() => setMessage(null), 3000);
@@ -394,7 +404,7 @@ const ViewQuestionsPage = () => {
                     onChange={(e) =>
                       setQuestionText((prev) => ({
                         ...prev,
-                        correct_answer: e.target.value
+                        category: e.target.value
                       }))
                     }
                     required
@@ -410,7 +420,7 @@ const ViewQuestionsPage = () => {
                     onChange={(e) =>
                       setQuestionText((prev) => ({
                         ...prev,
-                        correct_answer: e.target.value
+                        exam_type: e.target.value
                       }))
                     }
                     required

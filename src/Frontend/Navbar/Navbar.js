@@ -43,10 +43,13 @@ function Navbar() {
         {userRole === 'admin' ? (
           <>
             <li className="nav-item">
-              <Link className="nav-link" to="/admin-dashboard">Admin Dashboard</Link>
+              <Link className="nav-link" to="/admin-dashboard">Home</Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/add-questionsBooks">Add Questions</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/import-questions">Import Questions</Link>
             </li>
             <li className="nav-item">
               <button className="font-semibold bg-red-600 px-6 py-3 rounded-md text-center text-white hover:bg-red-500" onClick={handleLogout}>Logout</button>

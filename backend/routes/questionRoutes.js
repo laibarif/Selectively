@@ -1,10 +1,22 @@
 const db = require('../config/db.js');
 const express = require('express');
 const router = express.Router();
-const path = require('path');
 const multer = require('multer');
 const upload = multer();
+const ftp = require('basic-ftp');
+const fs = require('fs');
+const path = require('path');
+const fileUpload = require('express-fileupload'); 
+const stream = require('stream');
+const xlsx = require("xlsx");
 
+const ftpConfig = {
+  host: '92.112.189.84', 
+  user: 'u500774472.selectiveexam.com.au', 
+  password: 'Amy@2023@2023', 
+  secure: false, 
+  port: 21 
+};
 
 // Route to fetch all questions for a subject
 router.get('/:subject', async (req, res) => {
@@ -381,78 +393,114 @@ router.get('/get-question/:id', async (req, res) => {
   }
 });
 
- // Default memory storage
-
- const uploadImageData = (imageData) => {
-  if (imageData) {
-    const buffer = Buffer.from(imageData, 'base64');
-    return buffer;
-  }
-  return null; // Return null if no image is provided
+// Subject-to-Table Mapping
+const tableMapping = {
+  Maths: { table: 'original_maths', parentColumn: 'parent_question_id', folder: 'mathematical_reasoning' },
+  ThinkingSkills: { table: 'original_thinkingskillsquestion', parentColumn: 'parent_question_id', folder: 'thinking_skills' },
+  Writing: { table: 'original_writingquestion', parentColumn: 'parent_question_id', folder: null },
+  Reading: { table: 'original_readingquestion', parentColumn: 'extract_id', folder: null },
 };
 
-router.put('/update-questions/:id', upload.none(), async (req, res) => {
-  const { id } = req.params;
-  const { subject } = req.query; // Get the subject from query
-
-  const { question, mcq_options, correct_answer, explanation, image_description, parent_question_id, image_data } = req.body;
-
-  if (!subject) {
-    return res.status(400).json({ error: 'Subject is required' });
-  }
-
-  // Map subject to corresponding table
-  const tableMapping = {
-    Maths: { table: 'original_maths', parentColumn: 'parent_question_id' },
-    ThinkingSkills: { table: 'original_thinkingskillsquestion', parentColumn: 'parent_question_id' },
-    Writing: { table: 'original_writingquestion', parentColumn: 'parent_question_id' },
-    Reading: { table: 'original_readingquestion', parentColumn: 'extract_id' },
-  };
-
-  const tableInfo = tableMapping[subject];
-  if (!tableInfo) {
-    return res.status(400).json({ error: 'Invalid subject' });
-  }
-
-  const { table, parentColumn } = tableInfo;
-
-  // Validate required fields
-  if (!question || !mcq_options || !correct_answer) {
-    return res.status(400).json({ error: 'Question, options, and correct answer are required' });
-  }
-
-  // Handle image data: If image_data is provided, convert it to Buffer, else store as null
-  const imageBuffer = uploadImageData(image_data);
-
+// **Update Question API**
+router.put('/update-questions/:id', upload.single('image_data'), async (req, res) => {
   try {
-    // Dynamically build the update query
-    let updateQuery = `
-      UPDATE ${table} 
-      SET question = ?, mcq_options = ?, correct_answer = ?, explanation = ?
-    `;
-    const queryParams = [question, mcq_options, correct_answer, explanation || null];
+    const { id } = req.params;
+    const { subject } = req.query; // Subject from query
+    const { question, mcq_options, correct_answer, explanation, category, exam_type, image_description, parent_question_id } = req.body;
+    const imageFile = req.file; 
+    console.log("Uploaded file:", req.file);
 
-    // Add conditional columns for tables that support image and image_description
-    if (subject === 'Maths' || subject === 'ThinkingSkills') {
-      updateQuery += `, image_description = ?, image_data = ?`;
-      queryParams.push(image_description || null, imageBuffer || null);
+    // Validate Subject
+    if (!subject || !tableMapping[subject]) {
+      return res.status(400).json({ error: 'Invalid or missing subject' });
     }
 
-    // Finalize the query
+    const { table, parentColumn, folder } = tableMapping[subject];
+    let imageUrl = null;
+
+    // Upload Image if Provided
+    if (imageFile && folder) {
+      const imageName = `${Date.now()}-${imageFile.originalname}`;
+      const client = new ftp.Client();
+      client.ftp.verbose = true;
+    
+      try {
+        await client.access(ftpConfig);
+        const uploadPath = `/public_html/images/${folder}/${imageName}`;
+    
+        // Ensure directory exists
+        await client.ensureDir(`/public_html/images/${folder}`);
+    
+        // Convert buffer to stream
+        const bufferStream = new stream.PassThrough();
+        bufferStream.end(imageFile.buffer);
+        await client.uploadFrom(bufferStream, uploadPath);
+    
+        imageUrl = `selectiveexam.com.au/images/${folder}/${imageName}`;
+      } catch (error) {
+        console.error('FTP Upload Error:', error);
+        return res.status(500).json({ error: 'Failed to upload image to FTP' });
+      } finally {
+        client.close();
+      }
+    }
+
+    // Dynamically Build Update Query
+    let updateQuery = `UPDATE ${table} SET `;
+    const queryParams = [];
+
+    if (question) {
+      updateQuery += `question = ?, `;
+      queryParams.push(question);
+    }
+    if (mcq_options) {
+      updateQuery += `mcq_options = ?, `;
+      queryParams.push(mcq_options);
+    }
+    if (correct_answer) {
+      updateQuery += `correct_answer = ?, `;
+      queryParams.push(correct_answer);
+    }
+    if (explanation) {
+      updateQuery += `explanation = ?, `;
+      queryParams.push(explanation);
+    }
+    if (category) {
+      updateQuery += `category = ?, `;
+      queryParams.push(category);
+    }
+    if (exam_type) {
+      updateQuery += `exam_type = ?, `;
+      queryParams.push(exam_type);
+    }
+    if (image_description) {
+      updateQuery += `image_description = ?, `;
+      queryParams.push(image_description);
+    }
+    if (imageUrl) {
+      updateQuery += `image_data = ?, `;
+      queryParams.push(imageUrl);
+    }
+    if (parent_question_id && table !== 'original_readingquestion') {
+      updateQuery += `${parentColumn} = ?, `;
+      queryParams.push(parent_question_id);
+    }
+
+    updateQuery = updateQuery.slice(0, -2); // Remove trailing comma
     updateQuery += ` WHERE id = ?`;
     queryParams.push(id);
 
-    // Execute the query
+    // Execute Query
     const [results] = await db.query(updateQuery, queryParams);
 
     if (results.affectedRows > 0) {
-      res.status(200).json({ message: 'Question updated successfully' });
+      res.status(200).json({ message: 'Question updated successfully!' });
     } else {
       res.status(404).json({ error: 'Question not found or no changes made' });
     }
   } catch (error) {
     console.error('Error updating question:', error);
-    res.status(500).json({ error: 'Error updating question' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

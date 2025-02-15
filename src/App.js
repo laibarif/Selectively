@@ -22,7 +22,7 @@ import MathQuestionAdd from './Frontend/AddQuestions/MathQuestionAdd';
 import ReadingQuestiionAdd from './Frontend/AddQuestions/ReadingQuestiionAdd';
 import ThinkingSkillQuestionAdd from './Frontend/AddQuestions/ThinkingSkillQuestionAdd';
 import WritingQuestionAdd from './Frontend/AddQuestions/WritingQuestionAdd';
-
+import ImportQuestions from './Frontend/ImportQuestions/ImportQuestions';
 function App() {
   const location = useLocation();
 
@@ -56,6 +56,7 @@ function App() {
         <Route path="/landing" element={<LandingPage/>}/>
         <Route path="/free-assessment" element={<ProtectedRoute><FreeAssessment /></ProtectedRoute>} />
         <Route path='/add-questionsBooks' element={<ProtectedRoute><AddQuestionBooks/></ProtectedRoute>}/>
+        <Route path='/import-questions' element={<ProtectedRoute><ImportQuestions/></ProtectedRoute>}/>
         <Route path='/add-mathQuestions' element={<ProtectedRoute><MathQuestionAdd/></ProtectedRoute>}/>
         <Route path='/add-readingQuestions' element={<ProtectedRoute><ReadingQuestiionAdd/></ProtectedRoute>}/>
         <Route path='/add-thinkingskillQuestions' element={<ProtectedRoute><ThinkingSkillQuestionAdd/></ProtectedRoute>}/>
