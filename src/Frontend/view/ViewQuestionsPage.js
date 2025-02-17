@@ -131,7 +131,7 @@ const ViewQuestionsPage = () => {
     //   formData.append("image_data", questionText.image_data);
     if (questionText.image_data instanceof File) {
       formData.append("image_data", questionText.image_data);
-    }    
+    }
 
     setLoading(true);
     try {
@@ -141,10 +141,10 @@ const ViewQuestionsPage = () => {
       await axios.put(
         `${process.env.REACT_APP_BACKEND_URL}/api/questions/update-questions/${selectedQuestion}?subject=${subject}`,
         formData,
-      {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" }
-      }
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" }
+        }
       );
       setMessage("Question updated successfully");
       setTimeout(() => setMessage(null), 3000);
@@ -397,7 +397,7 @@ const ViewQuestionsPage = () => {
                 </div>
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
-                  Topic(Category):
+                    Topic(Category):
                   </label>
                   <input
                     value={questionText.category || ""}
@@ -413,7 +413,7 @@ const ViewQuestionsPage = () => {
                 </div>
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
-                  Exam Type:
+                    Exam Type:
                   </label>
                   <input
                     value={questionText.exam_type || ""}
@@ -429,7 +429,7 @@ const ViewQuestionsPage = () => {
                 </div>
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
-                  Level:
+                    Level:
                   </label>
                   <input
                     value={questionText.level || ""}
@@ -535,15 +535,7 @@ const ViewQuestionsPage = () => {
         {viewQuestion && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ">
             <div className="bg-white rounded-lg shadow-lg p-6 w-10/12 max-w-5xl max-h-[90vh] overflow-y-auto">
-              {/* Conditionally render the paragraph
-{viewQuestion.extract && (
-                <div className="mb-4">
-                  <p className="text-lg font-semibold text-gray-700">
-                    <strong className="mr-2">paragraph:</strong>
-                    <span className=""> {viewQuestion?.extract.text}</span>
-                  </p>
-                </div>
-              )} */}
+
               <div className="mb-4">
                 <p className="text-lg font-semibold text-black">
                   ID:
@@ -552,6 +544,18 @@ const ViewQuestionsPage = () => {
                   </span>
                 </p>
               </div>
+
+              {viewQuestion.text && (
+                <div className="mb-6">
+                  <p className="text-lg font-semibold text-black">
+                    Passage Text:
+                  </p>
+                  <span className="text-gray-700 whitespace-pre-line">
+                    {viewQuestion.text}
+                  </span>
+                </div>
+              )}
+
               {/* Conditionally render the Image Description */}
               {viewQuestion.image_description && (
                 <div className="mb-4">
@@ -597,7 +601,7 @@ const ViewQuestionsPage = () => {
                   </span>
                 </p>
               </div>
-              
+
               {viewQuestion.mcq_options && (
                 <div className="mb-4">
                   <p className="text-lg font-semibold text-black">MCQs Options</p>
@@ -633,7 +637,7 @@ const ViewQuestionsPage = () => {
                 <p className="text-lg font-semibold text-black">
                   Topic(Category):
                   <span className="text-gray-500 ml-2">
-                  {viewQuestion.category ? viewQuestion.category : "Not added yet"}
+                    {viewQuestion.category ? viewQuestion.category : "Not added yet"}
                   </span>
                 </p>
               </div>
@@ -641,7 +645,7 @@ const ViewQuestionsPage = () => {
                 <p className="text-lg font-semibold text-black">
                   Exam Type:
                   <span className="text-gray-500 ml-2">
-                  {viewQuestion.exam_type ? viewQuestion.exam_type : "Not added yet"}
+                    {viewQuestion.exam_type ? viewQuestion.exam_type : "Not added yet"}
                   </span>
                 </p>
               </div>

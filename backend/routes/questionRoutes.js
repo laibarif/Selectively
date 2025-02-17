@@ -38,16 +38,16 @@ router.get('/:subject', async (req, res) => {
     const [results] = await db.query(query); // Use async/await for the query
     
 
-    const removeSpecialCharsQuestion = (question) => {
-      return question
-        .replace(/&#x[0-9A-Fa-f]+;/g, "") 
-        .replace(/[^\w\s]/gi, ""); 
-    };
+    // const removeSpecialCharsQuestion = (question) => {
+    //   return question
+    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") 
+    //     .replace(/[^\w\s]/gi, ""); 
+    // };
 
-    // Sanitize the extract_text field
-    results.forEach((questions) => {
-      questions.question = removeSpecialCharsQuestion(questions.question);
-    });
+    // // Sanitize the extract_text field
+    // results.forEach((questions) => {
+    //   questions.question = removeSpecialCharsQuestion(questions.question);
+    // });
     
 
 
@@ -202,13 +202,11 @@ console.log("rows ", rows)
 });
 
 
-
-
   //  Show subjects detail on generated table to change its types
 
   router.get('/views-questions/:subject', async (req, res) => {
     const { subject } = req.params;
-    
+  
     // Map subject to corresponding table
     let tableName = '';
     switch (subject) {
@@ -229,23 +227,32 @@ console.log("rows ", rows)
     }
   
     try {
-      
-      
-      // Query to fetch entries where type is 'original' or 'finalized'
-      const [results] = await db.query(
-        `SELECT * FROM ${tableName}`
-      );
-     
-      const removeSpecialCharsQuestion = (question) => {
-        return question
-          .replace(/&#x[0-9A-Fa-f]+;/g, "") 
-          .replace(/[^\w\s]/gi, ""); 
-      };
+      let query = `SELECT * FROM ${tableName}`;
   
-      // Sanitize the extract_text field
-      results.forEach((questions) => {
-        questions.question = removeSpecialCharsQuestion(questions.question);
-      });
+      // If subject is Reading, join with the extract table
+      if (subject === 'Reading') {
+        query = `
+          SELECT q.*, e.text 
+          FROM original_readingquestion q
+          JOIN original_extract e ON q.extract_id = e.id
+        `;
+      }
+  
+      // Query to fetch questions
+      const [results] = await db.query(query);
+  
+      // Function to remove special characters from question text
+      // const removeSpecialCharsQuestion = (question) => {
+      //   return question
+      //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+      //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+      // };
+  
+      // // Sanitize the question text
+      // results.forEach((question) => {
+      //   question.question = removeSpecialCharsQuestion(question.question);
+      // });
+  
       // Send the filtered questions data as a response
       res.json({ questions: results });
     } catch (err) {
@@ -253,6 +260,7 @@ console.log("rows ", rows)
       return res.status(500).json({ error: 'Error fetching questions' });
     }
   });
+  
 
   
   
@@ -344,6 +352,7 @@ router.delete('/delete-question/:id', async (req, res) => {
 });
 
 //question detail from db on the basis of id and subject
+// Question detail from db on the basis of id and subject
 router.get('/get-question/:id', async (req, res) => {
   const { id } = req.params;
   const { subject } = req.query; // Get the subject from the query
@@ -365,21 +374,33 @@ router.get('/get-question/:id', async (req, res) => {
   }
 
   try {
-    // Fetch question details from the corresponding table
-    const [results] = await db.query(
-      `SELECT * FROM ${table} WHERE id = ?`,
-      [id]
-    );
-    const removeSpecialCharsQuestion = (question) => {
-      return question
-        .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
-        .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
-    };
+    let query = `SELECT * FROM ${table} WHERE id = ?`;
+    let queryParams = [id];
 
-    // Sanitize the extract_text field
-    results.forEach((questions) => {
-      questions.question = removeSpecialCharsQuestion(questions.question);
-    });
+    // Modify query if the subject is Reading to join with original_extract
+    if (subject === 'Reading') {
+      query = `
+        SELECT q.*, e.text 
+        FROM original_readingquestion q
+        JOIN original_extract e ON q.extract_id = e.id
+        WHERE q.id = ?
+      `;
+    }
+
+    // Fetch question details from the corresponding table
+    const [results] = await db.query(query, queryParams);
+
+    // const removeSpecialCharsQuestion = (question) => {
+    //   return question
+    //     .replace(/&#x[0-9A-Fa-f]+;/g, "") // Remove HTML entities like &#xE2;
+    //     .replace(/[^\w\s]/gi, ""); // Remove non-alphanumeric characters except spaces
+    // };
+
+    // // Sanitize the question text field
+    // results.forEach((questions) => {
+    //   questions.question = removeSpecialCharsQuestion(questions.question);
+    // });
+
     if (results.length > 0) {
       const question = results[0];
 
@@ -392,6 +413,7 @@ router.get('/get-question/:id', async (req, res) => {
     res.status(500).json({ error: 'Error fetching question' });
   }
 });
+
 
 // Subject-to-Table Mapping
 const tableMapping = {
