@@ -428,7 +428,7 @@ router.put('/update-questions/:id', upload.single('image_data'), async (req, res
   try {
     const { id } = req.params;
     const { subject } = req.query; // Subject from query
-    const { question, mcq_options, correct_answer, explanation, category, exam_type, image_description, parent_question_id } = req.body;
+    const { question, mcq_options, correct_answer, explanation, category,level, exam_type, image_description, parent_question_id } = req.body;
     const imageFile = req.file; 
     console.log("Uploaded file:", req.file);
 
@@ -490,6 +490,10 @@ router.put('/update-questions/:id', upload.single('image_data'), async (req, res
     if (category) {
       updateQuery += `category = ?, `;
       queryParams.push(category);
+    }
+    if (level) {
+      updateQuery += `level = ?, `;
+      queryParams.push(level);
     }
     if (exam_type) {
       updateQuery += `exam_type = ?, `;

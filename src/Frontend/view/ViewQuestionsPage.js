@@ -20,7 +20,7 @@ const ViewQuestionsPage = () => {
   const [filter, setFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(null);
-
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(null);
   const handleFilterChange = (e) => {
     setFilter(e.target.value); // Update filter with selected value
   };
@@ -123,6 +123,8 @@ const ViewQuestionsPage = () => {
       formData.append("explanation", questionText.explanation);
     if (questionText.category)
       formData.append("category", questionText.category);
+    if (questionText.level)
+      formData.append("level", questionText.level);
     if (questionText.exam_type)
       formData.append("exam_type", questionText.exam_type);
     if (questionText.image_description)
@@ -166,7 +168,13 @@ const ViewQuestionsPage = () => {
         { params: { subject } }
       );
       console.log('image', response.image_data);
-      setViewQuestion(response.data); // Set the question details for viewing
+      const index = filteredQuestions.findIndex((q) => q.id === id);
+      if (index !== -1) {
+        setCurrentQuestionIndex(index);
+        setViewQuestion(response.data);
+      } else {
+        setError("Question not found in the filtered list.");
+      }
     } catch (error) {
       setError("Error fetching question details");
     }
@@ -397,6 +405,22 @@ const ViewQuestionsPage = () => {
                 </div>
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
+                    Type:
+                  </label>
+                  <input
+                    value={questionText.type || ""}
+                    onChange={(e) =>
+                      setQuestionText((prev) => ({
+                        ...prev,
+                        type: e.target.value
+                      }))
+                    }
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-lg font-semibold text-gray-700 mb-1">
                     Topic(Category):
                   </label>
                   <input
@@ -436,7 +460,7 @@ const ViewQuestionsPage = () => {
                     onChange={(e) =>
                       setQuestionText((prev) => ({
                         ...prev,
-                        correct_answer: e.target.value
+                        level: e.target.value
                       }))
                     }
                     required
@@ -546,13 +570,12 @@ const ViewQuestionsPage = () => {
               </div>
 
               {viewQuestion.text && (
-                <div className="mb-6">
+                <div className="mb-4">
                   <p className="text-lg font-semibold text-black">
                     Passage Text:
-                  </p>
-                  <span className="text-gray-700 whitespace-pre-line">
-                    {viewQuestion.text}
-                  </span>
+                    <span className="text-gray-500 ml-2">
+                      {viewQuestion.text}
+                    </span></p>
                 </div>
               )}
 
@@ -664,6 +687,37 @@ const ViewQuestionsPage = () => {
                   </p>
                 </div>
               )}
+              <div className="flex justify-between items-center mt-6">
+                <button
+                  className={`px-4 py-2 rounded-md shadow ${currentQuestionIndex > 0
+                    ? "bg-gray-500 hover:bg-gray-600 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  disabled={currentQuestionIndex === 0}
+                  onClick={() => {
+                    const prevIndex = currentQuestionIndex - 1;
+                    setViewQuestion(filteredQuestions[prevIndex]);
+                    setCurrentQuestionIndex(prevIndex);
+                  }}
+                >
+                  Previous
+                </button>
+
+                <button
+                  className={`px-4 py-2 rounded-md shadow ${currentQuestionIndex < filteredQuestions.length - 1
+                    ? "bg-blue-500 hover:bg-blue-600 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  disabled={currentQuestionIndex === filteredQuestions.length - 1}
+                  onClick={() => {
+                    const nextIndex = currentQuestionIndex + 1;
+                    setViewQuestion(filteredQuestions[nextIndex]);
+                    setCurrentQuestionIndex(nextIndex);
+                  }}
+                >
+                  Next
+                </button>
+              </div>
               <div className="mt-6 flex justify-end">
                 <button
                   className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-orange-400"
