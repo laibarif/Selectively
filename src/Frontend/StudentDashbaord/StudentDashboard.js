@@ -31,7 +31,7 @@ const StudentDashboard = () => {
       
       {/* Subject Selection */}
       <div className="subject-cards">
-        {["Maths", "Thinking Skills", "Writing", "Reading"].map((subject) => (
+        {["Maths", "ThinkingSkills", "Writing", "Reading"].map((subject) => (
           <div key={subject} className="subject-card">
             <h3>{subject}</h3>
             <button onClick={() => startTest("subject-test", subject.toLowerCase())}>
