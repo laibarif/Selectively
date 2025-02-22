@@ -487,7 +487,7 @@ router.put('/update-questions/:id', upload.single('image_data'), async (req, res
       updateQuery += `explanation = ?, `;
       queryParams.push(explanation);
     }
-    if (category) {
+    if ((subject === "Maths" || subject === "Reading") && category) {
       updateQuery += `category = ?, `;
       queryParams.push(category);
     }

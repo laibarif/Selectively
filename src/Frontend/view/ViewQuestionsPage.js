@@ -420,20 +420,24 @@ const ViewQuestionsPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">
-                    Topic(Category):
-                  </label>
-                  <input
-                    value={questionText.category || ""}
-                    onChange={(e) =>
-                      setQuestionText((prev) => ({
-                        ...prev,
-                        category: e.target.value
-                      }))
-                    }
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
+                  {(subject === "Maths" || subject === "Reading") && (
+                    <div>
+                      <label className="block text-lg font-semibold text-gray-700 mb-1">
+                        Topic (Category):
+                      </label>
+                      <input
+                        value={questionText.category || ""}
+                        onChange={(e) =>
+                          setQuestionText((prev) => ({
+                            ...prev,
+                            category: e.target.value
+                          }))
+                        }
+                        required
+                        className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
