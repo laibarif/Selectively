@@ -24,45 +24,6 @@ app.get("/", (req, res) => {
   res.send("Hello World selectively");
 });
 
-// app.post('/api/generate-questions', async (req, res) => {
-//   console.log('Request Body:', req.body);
-
-//   const { originalQuestionId, subject } = req.body;
-
-//   if (!originalQuestionId || !subject) {
-//     return res.status(400).send('originalQuestionId and subject are required');
-//   }
-//   console.log('Request Body:', req.body);
-
-
-//   try {
-//     const generatedQuestions = await generateRelatedQuestions(originalQuestionId, subject);
-//     res.json({ success: true, questions: generatedQuestions });
-//   } catch (error) {
-//     res.status(500).send('Failed to generate questions');
-//   }
-// });
-
-
-
-// // Route for generating questions based on extraction from the database
-// app.post('/api/extract-generate-questions', async (req, res) => {
-//   console.log('Request Body:', req.body);
-
-//   const { extractId, subject } = req.body;
-
-//   if (!extractId || !subject) {
-//     return res.status(400).send('extractId and subject are required');
-//   }
-
-//   try {
-//     const generatedQuestions = await extractAndGenerateQuestions(extractId, subject);
-//     res.json({ success: true, questions: generatedQuestions });
-//   } catch (error) {
-//     res.status(500).send('Failed to extract and generate questions');
-//   }
-// });
-
 app.post('/api/generate-questions', generateRelatedQuestions);
 app.post('/api/extract-generate-questions', extractAndGenerateQuestions);
 

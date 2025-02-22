@@ -1,53 +1,53 @@
-// LearningSection.js
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./StudentDashboard.css";
 
 const StudentDashboard = () => {
   const [firstname, setFirstName] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Get user data from localStorage
     const userData = localStorage.getItem("user");
     if (userData) {
       const user = JSON.parse(userData);
-      console.log(JSON.parse(localStorage.getItem("user")));
-
-      // Check if first_name exists in the user object
       if (user.firstName) {
         setFirstName(user.firstName);
       } else {
-        // Fallback: Extract first word from full username
-        const nameParts = user.username.split(" ");
-        setFirstName(nameParts[0]);
+        setFirstName(user.username.split(" ")[0]);
       }
     }
   }, []);
+
+  const startTest = (testType, category) => {
+    navigate(`/test/${testType}/${category}`);
+  };
+
   return (
     <div className="learning-section">
       <h2>
-        <span className="emoji">📘</span> Hi <span className="font-bold ml-2 text-orange-500"> {firstname || "Student"}</span>, Happy Learning.
+        <span className="emoji">📘</span> Hi{" "}
+        <span className="font-bold ml-2 text-orange-500">{firstname || "Student"}</span>, Happy Learning.
       </h2>
+      
+      {/* Subject Selection */}
       <div className="subject-cards">
-        <div className="subject-card">
-          <h3>Maths</h3>
-          <button>Start Maths Test</button>
-        </div>
-        <div className="subject-card active">
-          <h3>Thinking Skills</h3>
-          <button>Start Thinking...</button>
-        </div>
-        <div className="subject-card">
-          <h3>Writing</h3>
-          <button>Start Writing...</button>
-        </div>
-        <div className="subject-card">
-          <h3>Reading</h3>
-          <button>Start Reading...</button>
-        </div>
+        {["Maths", "Thinking Skills", "Writing", "Reading"].map((subject) => (
+          <div key={subject} className="subject-card">
+            <h3>{subject}</h3>
+            <button onClick={() => startTest("subject-test", subject.toLowerCase())}>
+              Start {subject} Test
+            </button>
+          </div>
+        ))}
       </div>
+
+      {/* Test Type Selection */}
       <div className="test-buttons">
-        <button className="test-button">Practice Test</button>
-        <button className="test-button">Mega Test</button>
+        {["practice-test", "weekly-test", "mega-test"].map((test) => (
+          <button key={test} className="test-button" onClick={() => startTest(test, "maths")}>
+            {test.replace("-", " ").toUpperCase()}
+          </button>
+        ))}
       </div>
     </div>
   );

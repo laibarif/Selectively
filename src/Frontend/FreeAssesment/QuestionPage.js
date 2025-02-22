@@ -282,36 +282,6 @@ function QuestionPage() {
     }
   };
 
-  // Function to format the text
-
-  // const formatExtractText = (text) => {
-  //   if (!text) return '';
-
-  //   // Regex to match "Extract A", "Extract B", "Extract C", etc.
-  //   const extractRegex = /\b(Extract\s+[A-Z]|Text\s+[A-Z])\b/g;
-
-  //   // Format Extract/Text
-  //   const formattedText = text.replace(extractRegex, (match) => `<br><br><b>${match}</b><br>`);
-
-  //   // Split the text by new lines to handle poem structure
-  //   const lines = formattedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-
-  //   // The first part should be "Read the poem and answer the questions", which should be bold and on one line
-  //   const introText = `<p><strong>${lines[0]}</strong></p>`;
-
-  //   // Check if the second line contains "Poem", and if so, format it correctly
-  //   let poemLabel = '';
-  //   if (lines[1].toLowerCase().startsWith('poem')) {
-  //     poemLabel = `<p><strong>${lines[1]}</strong></p>`; // Only format "Poem" if it's in the second line
-  //   }
-
-  //   // The remaining part is the poem text, which should be split into individual lines
-  //   const poemContent = lines.slice(poemLabel ? 2 : 1).map(line => `<p>${line}</p>`).join('');
-
-  //   // Return the formatted text with Extract/Text formatted and poem properly structured
-  //   return introText + poemLabel + poemContent;
-  // };
-
   const formatExtractText = (text) => {
     if (!text) return "";
 
