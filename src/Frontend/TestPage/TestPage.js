@@ -17,6 +17,10 @@ function TestPage() {
     const isResizing = useRef(false);
     const startX = useRef(0);
 
+    const user = JSON.parse(localStorage.getItem('user'));
+    const childId = user?.id || "";
+    console.log("childId", childId)
+
     const testTimers = {
         "practice-test": 10 * 60,
         "weekly-test": 20 * 60,
@@ -68,40 +72,40 @@ function TestPage() {
 
     const formatExtractText = (text) => {
         if (!text) return "";
-    
+
         // Regex to match "Extract A", "Text A", "Extract B", "Text B", etc.
         const extractRegex = /\b(Extract\s+[A-Z]|Text\s+[A-Z])\b/g;
-    
+
         // Format the Extract/Text but keep punctuation marks intact
         const formattedText = text.replace(
-          extractRegex,
-          (match) => `<br><br><b>${match}</b><br>`
+            extractRegex,
+            (match) => `<br><br><b>${match}</b><br>`
         );
-    
+
         // Split the text by new lines to handle poem structure
         const lines = formattedText
-          .split("\n")
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0);
-    
+            .split("\n")
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0);
+
         // The first part should be "Read the poem and answer the questions", which should be bold and on one line
         const introText = `<p><strong>${lines[0]}</strong></p>`;
-    
+
         // Ensure there is a second line before checking for "Poem"
         let poemLabel = "";
         if (lines.length > 1 && lines[1].toLowerCase().startsWith("poem")) {
-          poemLabel = `<p><strong>${lines[1]}</strong></p>`; // Only format "Poem" if it's in the second line
+            poemLabel = `<p><strong>${lines[1]}</strong></p>`; // Only format "Poem" if it's in the second line
         }
-    
+
         // The remaining part is the poem text, which should be split into individual lines
         const poemContent = lines
-          .slice(poemLabel ? 2 : 1)
-          .map((line) => `<p><strong>${line}</strong></p>`)
-          .join("");
-    
+            .slice(poemLabel ? 2 : 1)
+            .map((line) => `<p><strong>${line}</strong></p>`)
+            .join("");
+
         // Return the formatted text with Extract/Text formatted and poem properly structured
         return introText + poemLabel + poemContent;
-      };
+    };
 
     useEffect(() => {
         if (testType !== "subject-test" && timer > 0) {
@@ -121,6 +125,16 @@ function TestPage() {
         }
     }, [timer, testType]);
 
+    const handleSelectAnswer = (value) => {
+        const updatedAnswers = [...answers];
+        updatedAnswers[currentIndex] = {
+            questionId: questions[currentIndex].id,
+            selectedAnswer: value,
+        };
+        setAnswers(updatedAnswers);
+    };
+
+    // ✅ Correct API request with structured responses
     const handleSubmit = async () => {
         if (!questions.length) {
             toast.error("No questions to submit.");
@@ -132,31 +146,37 @@ function TestPage() {
             status: answers[index] ? "attempted" : "unattempted",
         }));
 
-        const score = questionStatus.reduce((acc, item, index) => {
-            return answers[index]?.charAt(0) === questions[index]?.correct_answer?.charAt(0)
-                ? acc + 1
-                : acc;
+        const score = answers.reduce((acc, ans, index) => {
+            return ans?.selectedAnswer?.charAt(0) === questions[index]?.correct_answer?.charAt(0) ? acc + 1 : acc;
         }, 0);
 
-        try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/test/submit`, {
-                testType,
-                category,
-                score,
-                questionStatus,
-            });
+        const payload = {
+            childId,
+            category,
+            testType,
+            score,
+            questionStatus,
+            responses: answers.filter(ans => ans !== null) // Ensure responses are sent
+        };
 
-            navigate("/student-dashboard");
+        console.log("Submitting payload:", payload); // ✅ Log to check before API call
+
+        try {
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/test/subject-test/submit`, payload);
+            toast.success("Test submitted successfully!");
+            setTimeout(() => navigate("/student-dashboard"), 2000);
         } catch (error) {
             toast.error("Error submitting test.");
+            console.error("Submission Error:", error);
         }
     };
 
-    const handleSelectAnswer = (value, label) => {
-        const updatedAnswers = [...answers];
-        updatedAnswers[currentIndex] = `${label}: ${value}`;
-        setAnswers(updatedAnswers);
-    };
+
+    // const handleSelectAnswer = (value, label) => {
+    //     const updatedAnswers = [...answers];
+    //     updatedAnswers[currentIndex] = `${label}: ${value}`;
+    //     setAnswers(updatedAnswers);
+    // };
 
     const handleNext = () => {
         if (currentIndex < questions.length - 1) {
@@ -173,7 +193,13 @@ function TestPage() {
     if (loading) {
         return (
             <div className="h-screen flex items-center justify-center">
-                <div className="loadingspinner"></div>
+                <div className="loadingspinner">
+                    <div id="square1"></div>
+                    <div id="square2"></div>
+                    <div id="square3"></div>
+                    <div id="square4"></div>
+                    <div id="square5"></div>
+                </div>
             </div>
         );
     }
@@ -266,7 +292,7 @@ function TestPage() {
                                         value={option}
                                         className="peer h-8 w-8 focus:ring-yellow-600 border-gray-300"
                                         onChange={() => handleSelectAnswer(option, String.fromCharCode(65 + index))}
-                                        checked={answers[currentIndex]?.startsWith(String.fromCharCode(65 + index))}
+                                        checked={answers[currentIndex]?.selectedAnswer === option}
                                     />
                                     <span className="text-black text-lg font-semibold">{option}</span>
                                 </label>
@@ -292,6 +318,12 @@ function TestPage() {
                     disabled={currentIndex === questions.length - 1}
                 >
                     NEXT &gt;&gt;
+                </button>
+                <button
+                    onClick={handleSubmit}
+                    className="bg-black text-white font-bold p-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+                >
+                    Submit! Go to Test Assessment Books
                 </button>
             </div>
 
