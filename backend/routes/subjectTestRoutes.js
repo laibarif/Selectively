@@ -69,15 +69,12 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// ✅ Submit Test & Send Report Email
 router.post("/submit", async (req, res) => {
   try {
-    console.log("Received data from frontend:", JSON.stringify(req.body, null, 2));
-    const { childId, category, testType, score, questionStatus, responses } = req.body;
-    console.log("Extracted Values:", { childId, category, testType, score, questionStatus, responses });
+    const { childId, category, testType, questionStatus, responses } = req.body;
 
     if (!childId || !category || !testType || !questionStatus || !responses) {
-      console.log("❌ Missing required fields:", { childId, category, testType, score, questionStatus, responses });
+      console.log("❌ Missing required fields:", { childId, category, testType, questionStatus, responses });
       return res.status(400).json({ message: "Invalid request data" });
     }
 
@@ -93,30 +90,68 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ message: "Child not found." });
     }
 
-    const { child_name, child_email, parent_email } = childData[0];
+    const { child_name, parent_email } = childData[0];
 
-    // ✅ Insert Test Result in DB
-    const query = `
-      INSERT INTO subject_test_results (child_id, category, test_type, score, question_status, responses)
-      VALUES (?, ?, ?, ?, ?, ?);
-    `;
-
-    await db.query(query, [
-      childId,
-      category,
-      testType,
-      score,
-      JSON.stringify(questionStatus),
-      JSON.stringify(responses)
-    ]);
-
-    // ✅ Calculate Attempted & Correct Answers
+    // ✅ Calculate Attempted & Unattempted Questions
     const attempted = questionStatus.filter(q => q.status === "attempted").length;
     const unattempted = questionStatus.length - attempted;
-    const correctAnswers = responses.filter(ans => ans.correct === true).length;
-    const wrongAnswers = attempted - correctAnswers;
 
-    // ✅ Generate Formatted HTML Report
+    // ✅ Determine correct table for fetching answers
+    const categoryTableMap = {
+      maths: "original_maths",
+      thinkingskills: "original_thinkingskillsquestion",
+      reading: "original_readingquestion",
+    };
+    const tableName = categoryTableMap[category.toLowerCase()] || "original_maths"; // Default to maths
+
+    // ✅ Fetch correct answers
+    const questionIds = responses.map(ans => ans.questionId).filter(id => id);
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+
+    if (questionIds.length > 0) {
+      const [correctAnswersData] = await db.query(
+        `SELECT id, correct_answer FROM ${tableName} WHERE id IN (${questionIds.map(() => '?').join(",")})`,
+        questionIds
+      );
+
+      const correctAnswersMap = {};
+      correctAnswersData.forEach(q => {
+        correctAnswersMap[q.id] = q.correct_answer.trim().toLowerCase(); // Convert to lowercase for case-insensitive comparison
+      });
+
+      // ✅ Calculate correct & wrong answers
+      responses.forEach(ans => {
+        const submittedAnswer = ans.selectedAnswer.trim().toLowerCase();
+        const correctAnswer = correctAnswersMap[ans.questionId];
+
+        console.log(`🔍 Checking Question ID: ${ans.questionId}`);
+        console.log(`User Answer: "${submittedAnswer}" | Correct Answer: "${correctAnswer}"`);
+
+        if (correctAnswer) {
+          // Compare only the first letter for MCQs
+          if (submittedAnswer.charAt(0) === correctAnswer.charAt(0)) {
+            correctAnswers++;
+            console.log(`✅ Correct Answer for Question ID: ${ans.questionId}`);
+          } else {
+            wrongAnswers++;
+            console.log(`❌ Wrong Answer for Question ID: ${ans.questionId}`);
+          }
+        }
+      });
+    }
+
+    // ✅ Final Score Calculation
+    const finalScore = correctAnswers;
+
+    // ✅ Insert Test Result in DB
+    await db.query(
+      `INSERT INTO subject_test_results (child_id, category, test_type, score, question_status, responses)
+       VALUES (?, ?, ?, ?, ?, ?);`,
+      [childId, category, testType, finalScore, JSON.stringify(questionStatus), JSON.stringify(responses)]
+    );
+
+    // ✅ Generate Email Report
     const emailContent = `
       <html>
         <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
@@ -126,16 +161,16 @@ router.post("/submit", async (req, res) => {
             <div style="text-align: center; margin-bottom: 20px;">
               <img src="cid:logo@unique.id" alt="School Logo" style="width: 150px;">
             </div>
-    
+
             <!-- Heading Section -->
             <h2 style="text-align: center; color: #333;">Your Assessment Result</h2>
             
             <!-- User Information -->
             <p style="color: #555; font-size: 16px;">
-              Dear ${child_name},<br><br>
-              We are pleased to share the results of your recent assessment in <b>${category}</b>. Please find the details below:
+              Dear Parent of ${child_name},<br><br>
+              We are pleased to share the results of your child's recent assessment in <b>${category.toUpperCase()}</b>. Please find the details below:
             </p>
-    
+
             <!-- Result Table -->
             <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
               <tr>
@@ -144,11 +179,11 @@ router.post("/submit", async (req, res) => {
               </tr>
               <tr>
                 <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Category</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${category}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${category.toUpperCase()}</td>
               </tr>
               <tr>
                 <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Score</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${score}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${finalScore}</td>
               </tr>
               <tr>
                 <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Attempted Questions</td>
@@ -168,6 +203,10 @@ router.post("/submit", async (req, res) => {
               </tr>
             </table>
 
+            <p style="color: #555; font-size: 16px;">
+              If you have any questions about ${child_name}'s performance or need further guidance, please don't hesitate to contact us.
+            </p>
+
             <div style="text-align: center; margin-top: 20px;">
               <a href="https://selectiveexam.com.au/signup" style="text-decoration: none;">
                 <div style="background-color: #fbbf24; padding: 10px 20px; border-radius: 5px; display: inline-block; color: #fff; font-weight: bold;">Sign up</div>
@@ -185,7 +224,7 @@ router.post("/submit", async (req, res) => {
     // ✅ Send Email to Child & Parent
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: `${child_email}, ${parent_email}`,
+      to: `${parent_email}`,
       subject: `Exam Report: ${category} - ${child_name}`,
       html: emailContent,
       attachments: [

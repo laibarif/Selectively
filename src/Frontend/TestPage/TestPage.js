@@ -13,6 +13,9 @@ function TestPage() {
     const [loading, setLoading] = useState(true);
     const [timerEnded, setTimerEnded] = useState(false);
     const [answers, setAnswers] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
+
     const navigate = useNavigate();
     const isResizing = useRef(false);
     const startX = useRef(0);
@@ -69,6 +72,18 @@ function TestPage() {
 
         fetchQuestions();
     }, [category]);
+
+    const handleCancel = () => {
+        setShowPopup(false); // Close the popup without doing anything
+    };
+
+    const handleConfirm = () => {
+        setShowPopup(false); // Close the popup
+        handleSubmit(); // Call the submit function
+    };
+    const handleButtonClick = () => {
+        setShowPopup(true); // Show the confirmation popup
+    };
 
     const formatExtractText = (text) => {
         if (!text) return "";
@@ -136,6 +151,7 @@ function TestPage() {
 
     // ✅ Correct API request with structured responses
     const handleSubmit = async () => {
+        setIsLoading(true);
         if (!questions.length) {
             toast.error("No questions to submit.");
             return;
@@ -147,8 +163,12 @@ function TestPage() {
         }));
 
         const score = answers.reduce((acc, ans, index) => {
-            return ans?.selectedAnswer?.charAt(0) === questions[index]?.correct_answer?.charAt(0) ? acc + 1 : acc;
+            const submittedAnswer = ans?.selectedAnswer?.trim().charAt(0); // Remove spaces & get first letter
+            const correctAnswer = questions[index]?.correct_answer?.trim().charAt(0);
+
+            return submittedAnswer === correctAnswer ? acc + 1 : acc;
         }, 0);
+
 
         const payload = {
             childId,
@@ -163,11 +183,12 @@ function TestPage() {
 
         try {
             await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/test/subject-test/submit`, payload);
-            toast.success("Test submitted successfully!");
             setTimeout(() => navigate("/student-dashboard"), 2000);
         } catch (error) {
             toast.error("Error submitting test.");
             console.error("Submission Error:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -319,13 +340,117 @@ function TestPage() {
                 >
                     NEXT &gt;&gt;
                 </button>
-                <button
-                    onClick={handleSubmit}
-                    className="bg-black text-white font-bold p-2 px-6 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+                {(currentIndex === questions.length - 1) &&
+                    (<button
+                    onClick={handleButtonClick}
+                    className="bg-black text-white font-bold p-2 px-6 mr-3 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
                 >
-                    Submit! Go to Test Assessment Books
+                    Submit Test!
                 </button>
+                )}
             </div>
+
+            {/* Popup for confirmation */}
+            {showPopup && (
+                <div
+                    id="YOUR_ID"
+                    className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                >
+                    <div
+                        className="relative bg-white rounded-lg shadow-lg overflow-hidden transform transition-all w-full max-w-md sm:mx-auto"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="modal-headline"
+                    >
+                        {/* Close Button */}
+                        <button
+                            onClick={handleCancel}
+                            type="button"
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                            aria-label="Close"
+                        >
+                            <svg
+                                className="w-5 h-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+
+                        {/* Modal Content */}
+                        <div className="px-6 py-8">
+                            {/* Icon and Header */}
+                            <div className="flex items-center space-x-4">
+                                <div className="flex-shrink-0">
+                                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                        <svg
+                                            className="h-6 w-6 text-green-600"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M5 13l4 4L19 7"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <h3
+                                    className="text-lg font-semibold text-gray-900"
+                                    id="modal-headline"
+                                >
+                                    Confirm Submission
+                                </h3>
+                            </div>
+
+                            {/* Message */}
+                            <div className="mt-4 text-gray-700">
+                                Are you sure you want to submit the result? Please confirm
+                                your action below.
+                            </div>
+
+                            {/* Buttons */}
+                            <div className="mt-6 flex justify-end space-x-3">
+                                <button
+                                    onClick={handleCancel}
+                                    type="button"
+                                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirm}
+                                    type="button"
+                                    className="px-4 py-2 text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isLoading && (
+                <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-50 z-50">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+                    <span className="ml-4 text-white">
+                        Sending Result on Parent email address...
+                    </span>
+                </div>
+            )}
 
             <ToastContainer />
         </div>
