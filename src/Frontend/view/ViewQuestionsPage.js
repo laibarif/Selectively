@@ -355,54 +355,60 @@ const ViewQuestionsPage = () => {
                     className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">
-                    Options:
-                  </label>
-                  <input
-                    value={questionText.mcq_options || ""}
-                    onChange={(e) =>
-                      setQuestionText((prev) => ({
-                        ...prev,
-                        mcq_options: e.target.value
-                      }))
-                    }
-                    placeholder="Enter options separated by commas"
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">
-                    Correct Answer:
-                  </label>
-                  <input
-                    value={questionText.correct_answer || ""}
-                    onChange={(e) =>
-                      setQuestionText((prev) => ({
-                        ...prev,
-                        correct_answer: e.target.value
-                      }))
-                    }
-                    required
-                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">
-                    Explanation:
-                  </label>
-                  <textarea
-                    value={questionText.explanation || ""}
-                    onChange={(e) =>
-                      setQuestionText((prev) => ({
-                        ...prev,
-                        explanation: e.target.value
-                      }))
-                    }
-                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
+                {subject !== "Writing" && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">
+                      Options:
+                    </label>
+                    <input
+                      value={questionText.mcq_options || ""}
+                      onChange={(e) =>
+                        setQuestionText((prev) => ({
+                          ...prev,
+                          mcq_options: e.target.value
+                        }))
+                      }
+                      placeholder="Enter options separated by commas"
+                      required
+                      className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
+                )}
+                {subject !== "Writing" && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">
+                      Correct Answer:
+                    </label>
+                    <input
+                      value={questionText.correct_answer || ""}
+                      onChange={(e) =>
+                        setQuestionText((prev) => ({
+                          ...prev,
+                          correct_answer: e.target.value
+                        }))
+                      }
+                      required
+                      className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
+                )}
+                {subject !== "Writing" && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">
+                      Explanation:
+                    </label>
+                    <textarea
+                      value={questionText.explanation || ""}
+                      onChange={(e) =>
+                        setQuestionText((prev) => ({
+                          ...prev,
+                          explanation: e.target.value
+                        }))
+                      }
+                      className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-1">
                     Type:
@@ -471,36 +477,40 @@ const ViewQuestionsPage = () => {
                     className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">
-                    Image Description:
-                  </label>
-                  <textarea
-                    value={questionText.image_description || ""}
-                    onChange={(e) =>
-                      setQuestionText((prev) => ({
-                        ...prev,
-                        image_description: e.target.value
-                      }))
-                    }
-                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">
-                    Image:
-                  </label>
-                  <input
-                    type="file"
-                    onChange={(e) =>
-                      setQuestionText((prev) => ({
-                        ...prev,
-                        image_data: e.target.files[0]
-                      }))
-                    }
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
-                  />
-                </div>
+                {subject !== "Writing" && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">
+                      Image Description:
+                    </label>
+                    <textarea
+                      value={questionText.image_description || ""}
+                      onChange={(e) =>
+                        setQuestionText((prev) => ({
+                          ...prev,
+                          image_description: e.target.value
+                        }))
+                      }
+                      className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
+                )}
+                {subject !== "Writing" && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">
+                      Image:
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) =>
+                        setQuestionText((prev) => ({
+                          ...prev,
+                          image_data: e.target.files[0]
+                        }))
+                      }
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+                    />
+                  </div>
+                )}
                 <div className="flex justify-between items-center space-x-4">
                   <button
                     type="button"
@@ -660,6 +670,7 @@ const ViewQuestionsPage = () => {
                   </span>
                 </p>
               </div>
+              {subject !== "Writing" && (
               <div className="mb-4">
                 <p className="text-lg font-semibold text-black">
                   Topic(Category):
@@ -668,6 +679,7 @@ const ViewQuestionsPage = () => {
                   </span>
                 </p>
               </div>
+              )}
               <div className="mb-4">
                 <p className="text-lg font-semibold text-black">
                   Exam Type:
