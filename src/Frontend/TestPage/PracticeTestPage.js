@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -7,32 +7,44 @@ import "../FreeAssesment/loader.css";
 import logo from "../../assets/Logo_White - Complete.svg";
 
 function PracticeTestPage() {
-    const [questions, setQuestions] = useState({
-        reading: [],
-        maths: [],
-        thinkingskills: [],
-        writing: null
-    });
+    const [questions, setQuestions] = useState([]); // ✅ Ensure default is an empty array
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState({});
     const [showPopup, setShowPopup] = useState(false);
     const navigate = useNavigate();
+    const isResizing = useRef(false);
+    const startX = useRef(0);
 
-    // ✅ Fetch Practice Test Questions
+    // ✅ Shuffle function to randomize subjects
+    const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
+
+    // ✅ Fetch and shuffle questions
     useEffect(() => {
         const fetchPracticeTest = async () => {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/test/practice-test`);
-                if (!response.data) throw new Error("Invalid response from backend.");
 
-                setQuestions({
-                    reading: response.data.reading,
-                    maths: response.data.maths,
-                    thinkingskills: response.data.thinkingskills,
-                    writing: response.data.writing
-                });
+                if (!response.data) {
+                    throw new Error("Invalid API response structure.");
+                }
 
+                // ✅ Shuffle subjects order
+                let subjects = [
+                    { category: "reading", questions: response.data.reading || [] },
+                    { category: "maths", questions: response.data.maths || [] },
+                    { category: "thinkingskills", questions: response.data.thinkingskills || [] },
+                ];
+
+                subjects = shuffleArray(subjects);
+                subjects.push({ category: "writing", questions: [response.data.writing] }); // ✅ Writing always at the end
+
+                // ✅ Flatten questions while preserving the shuffled subject order
+                const flattenedQuestions = subjects.flatMap((subject) =>
+                    subject.questions.map((q) => ({ ...q, category: subject.category }))
+                );
+
+                setQuestions(flattenedQuestions);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching practice test questions:", error);
@@ -44,13 +56,31 @@ function PracticeTestPage() {
         fetchPracticeTest();
     }, []);
 
+    // ✅ Prevent accessing questions before data is ready
+    if (loading || questions.length === 0) {
+        return (
+            <div className="h-screen flex items-center justify-center">
+                <div className="loadingspinner">
+                    <div id="square1"></div>
+                    <div id="square2"></div>
+                    <div id="square3"></div>
+                    <div id="square4"></div>
+                    <div id="square5"></div>
+                </div>
+            </div>
+        );
+    }
+
+    const totalQuestions = questions.length;
+    const currentQuestion = questions[currentIndex];
+
     // ✅ Handle Answer Selection
-    const handleSelectAnswer = (category, index, selectedAnswer) => {
+    const handleSelectAnswer = (selectedAnswer) => {
         setAnswers((prev) => ({
             ...prev,
-            [category]: {
-                ...(prev[category] || {}),
-                [index]: selectedAnswer
+            [currentQuestion.category]: {
+                ...(prev[currentQuestion.category] || {}),
+                [currentIndex]: selectedAnswer
             }
         }));
     };
@@ -63,31 +93,11 @@ function PracticeTestPage() {
         }));
     };
 
-    // ✅ Submit Practice Test
-    const handleSubmitPracticeTest = () => {
-        console.log("Practice Test Completed. Answers:", answers);
-        toast.success("Practice Test Submitted!");
-        navigate("/student-dashboard");
+    const handleMouseDown = (e) => {
+        isResizing.current = true;
+        startX.current = e.clientX;
+        document.body.style.cursor = "col-resize";
     };
-
-    if (loading) return (
-        <div className="h-screen flex items-center justify-center">
-            <div className="loadingspinner">
-                <div id="square1"></div>
-                <div id="square2"></div>
-                <div id="square3"></div>
-                <div id="square4"></div>
-                <div id="square5"></div>
-            </div>
-        </div>
-    );
-
-    const categories = Object.keys(questions);
-    const totalQuestions = questions.reading.length + questions.maths.length + questions.thinkingskills.length + 1; // +1 for writing
-    const currentCategory = categories[Math.floor(currentIndex / 10)] || "writing";
-    const categoryQuestions = questions[currentCategory] || [];
-    const questionIndex = currentIndex % 10;
-    const currentQuestion = categoryQuestions[questionIndex] || questions.writing;
 
     return (
         <div className="h-screen bg-white flex flex-col">
@@ -98,9 +108,9 @@ function PracticeTestPage() {
             <div className="flex-grow flex flex-col md:flex-row pt-20 overflow-hidden">
                 <div className="w-full md:w-1/2 bg-white p-6 overflow-y-auto max-h-[calc(100vh-120px)]">
                     <p className="text-2xl font-bold text-gray-800 mb-4">
-                        <span>Question {currentIndex + 1} of {totalQuestions}</span>
+                        <span>Question {currentIndex + 1}</span>
                         <br />
-                        {currentQuestion?.question}
+                        {currentQuestion?.question || "No question available"}
                     </p>
 
                     {currentQuestion?.extract_text && (
@@ -115,7 +125,7 @@ function PracticeTestPage() {
                         </div>
                     )}
 
-                    {currentCategory === "writing" && (
+                    {currentQuestion.category === "writing" && (
                         <textarea
                             className="w-full p-2 border rounded"
                             rows="5"
@@ -124,9 +134,19 @@ function PracticeTestPage() {
                         ></textarea>
                     )}
                 </div>
+                <div
+                    className="resize-handle hidden md:block"
+                    onMouseDown={handleMouseDown}
+                    style={{
+                        cursor: "col-resize",
+                        backgroundColor: "gray",
+                        width: "3px",
+                        height: "auto",
+                    }}
+                ></div>
 
                 {/* ✅ MCQ Options */}
-                {currentCategory !== "writing" && (
+                {currentQuestion.category !== "writing" && (
                     <div className="w-full md:w-1/2 bg-white pb-32 md:p-6">
                         <div className="space-y-6">
                             {currentQuestion?.mcq_options?.split(/,\s*|\r\n|\n/).map((option, index) => (
@@ -136,8 +156,8 @@ function PracticeTestPage() {
                                         name={`question-${currentIndex}`}
                                         value={option}
                                         className="peer h-8 w-8"
-                                        onChange={() => handleSelectAnswer(currentCategory, questionIndex, option)}
-                                        checked={answers[currentCategory]?.[questionIndex] === option}
+                                        onChange={() => handleSelectAnswer(option)}
+                                        checked={answers[currentQuestion.category]?.[currentIndex] === option}
                                     />
                                     <span className="text-black text-lg font-semibold">{option}</span>
                                 </label>
@@ -182,7 +202,9 @@ function PracticeTestPage() {
                         <p className="mt-2">Are you sure you want to submit the test?</p>
                         <div className="mt-4 flex justify-end">
                             <button onClick={() => setShowPopup(false)} className="mr-2">Cancel</button>
-                            <button onClick={handleSubmitPracticeTest} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Submit</button>
+                            <button onClick={() => toast.success("Practice Test Submitted!")} className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+                                Submit
+                            </button>
                         </div>
                     </div>
                 </div>
