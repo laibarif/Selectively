@@ -24,12 +24,13 @@ import ThinkingSkillQuestionAdd from './Frontend/AddQuestions/ThinkingSkillQuest
 import WritingQuestionAdd from './Frontend/AddQuestions/WritingQuestionAdd';
 import ImportQuestions from './Frontend/ImportQuestions/ImportQuestions';
 import TestPage from './Frontend/TestPage/TestPage';
+import PracticeTestPage from './Frontend/TestPage/PracticeTestPage';
 
 function App() {
   const location = useLocation();
 
   // List of routes where Navbar should not be displayed
-  const noNavbarRoutes = ["/questions-page/:category","/test/:testType/:category"];
+  const noNavbarRoutes = ["/questions-page/:category","/practice-test", "/test/:testType/:category"];
 
   // Determine if the current route matches any in the list
   const isNavbarHidden = noNavbarRoutes.some((route) => 
@@ -48,6 +49,7 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/student-dashboard" element={<StudentDashboard />} />
         <Route path="/test/:testType/:category" element={<TestPage />} />
+        <Route path="/practice-test" element={<PracticeTestPage />} />
         <Route path="/select_question/:subject" element={<SelectQuestionPage />} />
         <Route path="/freeassesment" element={<FreeAssesment />} />
         <Route path="/test-assesment-books" element={<TestAssesmentBooks />} />

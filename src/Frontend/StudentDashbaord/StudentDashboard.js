@@ -19,7 +19,11 @@ const StudentDashboard = () => {
   }, []);
 
   const startTest = (testType, category) => {
-    navigate(`/test/${testType}/${category}`);
+    if (testType === "practice-test") {
+      navigate("/practice-test");  // ✅ Open Practice Test Page
+    } else {
+      navigate(`/test/${testType}/${category}`);
+    }
   };
 
   return (
@@ -43,11 +47,15 @@ const StudentDashboard = () => {
 
       {/* Test Type Selection */}
       <div className="test-buttons">
-        {["practice-test", "weekly-test", "mega-test"].map((test) => (
-          <button key={test} className="test-button" onClick={() => startTest(test, "maths")}>
-            {test.replace("-", " ").toUpperCase()}
-          </button>
-        ))}
+        <button className="test-button" onClick={() => startTest("practice-test")}>
+          PRACTICE TEST
+        </button>
+        <button className="test-button" onClick={() => startTest("weekly-test", "maths")}>
+          WEEKLY TEST
+        </button>
+        <button className="test-button" onClick={() => startTest("mega-test", "maths")}>
+          MEGA TEST
+        </button>
       </div>
     </div>
   );

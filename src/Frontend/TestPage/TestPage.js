@@ -73,6 +73,10 @@ function TestPage() {
         fetchQuestions();
     }, [category]);
 
+    const handlePracticeTestClick = () => {
+        navigate("/practice-test");
+      };
+
     const handleCancel = () => {
         setShowPopup(false); // Close the popup without doing anything
     };
@@ -191,13 +195,6 @@ function TestPage() {
             setIsLoading(false);
         }
     };
-
-
-    // const handleSelectAnswer = (value, label) => {
-    //     const updatedAnswers = [...answers];
-    //     updatedAnswers[currentIndex] = `${label}: ${value}`;
-    //     setAnswers(updatedAnswers);
-    // };
 
     const handleNext = () => {
         if (currentIndex < questions.length - 1) {
