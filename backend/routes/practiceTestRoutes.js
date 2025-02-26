@@ -44,10 +44,18 @@ router.get("/practice-test", async (req, res) => {
     `);
 
     // ✅ Ensure all sections have questions
-    if (!readingQuestions.length || !mathQuestions.length || !thinkingSkillsQuestions.length || !writingTopic.length) {
-      return res.status(404).json({ message: "Some practice test questions are missing." });
+    if (!readingQuestions.length ) {
+      return res.status(404).json({ message: "Reading test questions are missing." });
     }
-
+    if (!mathQuestions.length ) {
+      return res.status(404).json({ message: "Math test questions are missing." });
+    }
+    if (!writingTopic.length) {
+      return res.status(404).json({ message: "writing test questions are missing." });
+    }
+    if (!thinkingSkillsQuestions.length ) {
+      return res.status(404).json({ message: "Thinking SKill test questions are missing." });
+    }
     res.status(200).json({
       reading: readingQuestions,
       maths: mathQuestions,

@@ -73,20 +73,16 @@ function TestPage() {
         fetchQuestions();
     }, [category]);
 
-    const handlePracticeTestClick = () => {
-        navigate("/practice-test");
-      };
-
     const handleCancel = () => {
-        setShowPopup(false); // Close the popup without doing anything
+        setShowPopup(false);
     };
 
     const handleConfirm = () => {
-        setShowPopup(false); // Close the popup
-        handleSubmit(); // Call the submit function
+        setShowPopup(false); 
+        handleSubmit(); 
     };
     const handleButtonClick = () => {
-        setShowPopup(true); // Show the confirmation popup
+        setShowPopup(true); 
     };
 
     const formatExtractText = (text) => {
@@ -153,7 +149,15 @@ function TestPage() {
         setAnswers(updatedAnswers);
     };
 
-    // ✅ Correct API request with structured responses
+    // Handle Writing Answer
+    const handleWritingAnswer = (event) => {
+        setAnswers((prev) => ({
+            ...prev,
+            writing: event.target.value
+        }));
+    };
+
+    // Correct API request with structured responses
     const handleSubmit = async () => {
         setIsLoading(true);
         if (!questions.length) {
@@ -296,8 +300,16 @@ function TestPage() {
 
 
                 <div className="w-full md:w-1/2 bg-white pb-32 md:p-6">
-                    <div className="space-y-6">
-                        {currentQuestion.mcq_options
+                    <div className="space-y-6 mt-10">
+                        {currentQuestion.subject === "Writing" ? (
+                            // ✅ Show writing input instead of MCQs
+                            <textarea
+                                className="w-full p-2 border rounded"
+                                rows="5"
+                                placeholder="Write your answer here..."
+                                onChange={handleWritingAnswer}
+                            ></textarea>
+                        ) : (currentQuestion.mcq_options
                             ?.split(/,\s*|\r\n|\n/)
                             .map((option, index) => (
                                 <label
@@ -314,7 +326,8 @@ function TestPage() {
                                     />
                                     <span className="text-black text-lg font-semibold">{option}</span>
                                 </label>
-                            ))}
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
@@ -339,12 +352,12 @@ function TestPage() {
                 </button>
                 {(currentIndex === questions.length - 1) &&
                     (<button
-                    onClick={handleButtonClick}
-                    className="bg-black text-white font-bold p-2 px-6 mr-3 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
-                >
-                    Submit Test!
-                </button>
-                )}
+                        onClick={handleButtonClick}
+                        className="bg-black text-white font-bold p-2 px-6 mr-3 rounded-md shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out"
+                    >
+                        Submit Test!
+                    </button>
+                    )}
             </div>
 
             {/* Popup for confirmation */}

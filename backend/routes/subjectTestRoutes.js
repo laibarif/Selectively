@@ -33,8 +33,15 @@ router.get("/:category", async (req, res) => {
         ORDER BY RAND()
         LIMIT 35;
       `;
+    } else if (category === "writing") {
+      query = `
+          SELECT * 
+          FROM ${tableName} 
+          WHERE type = "finalized"
+          ORDER BY RAND()
+          LIMIT 1;
+      `;
     } else {
-      // Query for other subjects
       query = `
         SELECT * 
         FROM ${tableName} 

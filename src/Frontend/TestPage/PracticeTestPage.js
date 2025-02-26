@@ -85,7 +85,7 @@ function PracticeTestPage() {
         }));
     };
 
-    // ✅ Handle Writing Answer
+    // Handle Writing Answer
     const handleWritingAnswer = (event) => {
         setAnswers((prev) => ({
             ...prev,
