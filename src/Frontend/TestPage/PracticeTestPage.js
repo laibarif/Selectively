@@ -121,17 +121,16 @@ function PracticeTestPage() {
 
                     {currentQuestion?.image_data && (
                         <div className="mt-4">
-                            <img src={currentQuestion.image_data} alt="Question" className="max-w-full rounded-md shadow-lg" />
+                            <img
+                                src={
+                                    currentQuestion.image_data.startsWith("http")
+                                        ? currentQuestion.image_data
+                                        : `http://${currentQuestion.image_data}`
+                                }
+                                alt="Question Image"
+                                className="max-w-full rounded-md shadow-lg"
+                            />
                         </div>
-                    )}
-
-                    {currentQuestion.category === "writing" && (
-                        <textarea
-                            className="w-full p-2 border rounded"
-                            rows="5"
-                            placeholder="Write your answer here..."
-                            onChange={handleWritingAnswer}
-                        ></textarea>
                     )}
                 </div>
                 <div
@@ -146,10 +145,19 @@ function PracticeTestPage() {
                 ></div>
 
                 {/* ✅ MCQ Options */}
-                {currentQuestion.category !== "writing" && (
-                    <div className="w-full md:w-1/2 bg-white pb-32 md:p-6">
-                        <div className="space-y-6">
-                            {currentQuestion?.mcq_options?.split(/,\s*|\r\n|\n/).map((option, index) => (
+                <div className="w-full md:w-1/2 bg-white pb-32 md:p-6">
+                    <div className="space-y-6 mt-10">
+                        {currentQuestion.category === "writing" ? (
+                            // ✅ Show writing input instead of MCQs
+                            <textarea
+                                className="w-full p-2 border rounded"
+                                rows="5"
+                                placeholder="Write your answer here..."
+                                onChange={handleWritingAnswer}
+                            ></textarea>
+                        ) : (
+                            // ✅ Show MCQs
+                            currentQuestion?.mcq_options?.split(/,\s*|\r\n|\n/).map((option, index) => (
                                 <label key={index} className="flex items-center space-x-2 py-4 px-2 bg-gray-200 border border-gray-300 rounded-lg">
                                     <input
                                         type="radio"
@@ -161,10 +169,10 @@ function PracticeTestPage() {
                                     />
                                     <span className="text-black text-lg font-semibold">{option}</span>
                                 </label>
-                            ))}
-                        </div>
+                            ))
+                        )}
                     </div>
-                )}
+                </div>
             </div>
 
             {/* ✅ Navigation Buttons */}
