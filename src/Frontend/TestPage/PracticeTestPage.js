@@ -12,13 +12,29 @@ function PracticeTestPage() {
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState({});
     const [showPopup, setShowPopup] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const isResizing = useRef(false);
     const startX = useRef(0);
 
+    const user = JSON.parse(localStorage.getItem('user'));
+    const childId = user?.id || "";
+    console.log("childId", childId)
+
     // ✅ Shuffle function to randomize subjects
     const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
+    const handleButtonClick = () => {
+        setShowPopup(true);
+    };
+    const handleCancel = () => {
+        setShowPopup(false);
+    };
+
+    const handleConfirm = () => {
+        setShowPopup(false);
+        handleSubmit();
+    };
     // ✅ Fetch and shuffle questions
     useEffect(() => {
         const fetchPracticeTest = async () => {
@@ -56,7 +72,86 @@ function PracticeTestPage() {
         fetchPracticeTest();
     }, []);
 
-    // ✅ Prevent accessing questions before data is ready
+    const handleSubmit = async () => {
+        setIsLoading(true);
+
+        if (!questions.length) {
+            toast.error("No questions to submit.");
+            return;
+        }
+
+        if (!answers || typeof answers !== "object") {
+            console.error("Invalid answers format:", answers);
+            toast.error("Unexpected error occurred. Please refresh and try again.");
+            setIsLoading(false);
+            return;
+        }
+
+        let scoreReading = 0, scoreMaths = 0, scoreThinkingSkills = 0, finalWritingScore = 0;
+
+        try {
+            // ✅ Fetch correct answers from backend
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/practice-test/get-correct-answers`, {
+                questionIds: questions.map(q => q.id),
+            });
+
+            const correctAnswersMap = response.data.correctAnswers; // { questionId: correct_answer }
+
+            // ✅ Evaluate MCQ answers
+            questions.forEach((question, index) => {
+                const submittedAnswer = answers[index]?.selectedAnswer?.trim().charAt(0);
+                const correctAnswer = correctAnswersMap[question.id]?.trim().charAt(0);
+
+                if (submittedAnswer === correctAnswer) {
+                    if (question.subject === "Reading") scoreReading++;
+                    if (question.subject === "Maths") scoreMaths++;
+                    if (question.subject === "Thinking Skills") scoreThinkingSkills++;
+                }
+            });
+
+            // ✅ Evaluate Writing Test
+            if (questions.some(q => q.subject === "Writing")) {
+                const writingResponse = answers.writing?.trim() || "";
+
+                if (writingResponse.length < 50) {
+                    toast.error("Writing response is too short. Minimum 50 words required.");
+                    setIsLoading(false);
+                    return;
+                }
+
+                const writingFeedback = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/practice-test/evaluate-writing`, {
+                    question: questions.find(q => q.subject === "Writing")?.question_text,
+                    response: writingResponse
+                });
+
+                finalWritingScore = writingFeedback.data.score || 0;
+            }
+
+            // ✅ Calculate Final Weighted Score (Each Section 25%)
+            const totalWeighting = 25;
+            const finalScore = ((scoreReading / 10) * totalWeighting) +
+                               ((scoreMaths / 10) * totalWeighting) +
+                               ((scoreThinkingSkills / 10) * totalWeighting) +
+                               ((finalWritingScore / 10) * totalWeighting);
+
+            // ✅ Submit results to backend
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/practice-test/submit`, {
+                childId,
+                finalScore,
+                sectionScores: { Reading: scoreReading, Maths: scoreMaths, ThinkingSkills: scoreThinkingSkills, Writing: finalWritingScore },
+                responses: answers
+            });
+
+            navigate("/student-dashboard");
+
+        } catch (error) {
+            toast.error("Error submitting test.");
+            console.error("Submission Error:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     if (loading || questions.length === 0) {
         return (
             <div className="h-screen flex items-center justify-center">
@@ -87,9 +182,17 @@ function PracticeTestPage() {
 
     // Handle Writing Answer
     const handleWritingAnswer = (event) => {
+        const inputText = event.target.value;
+        const wordCount = inputText.trim().split(/\s+/).length;
+
+        if (wordCount > 300) {
+            toast.error("Your response is too long. Please limit to 300 words.");
+            return;
+        }
+
         setAnswers((prev) => ({
             ...prev,
-            writing: event.target.value
+            writing: inputText
         }));
     };
 
@@ -194,7 +297,7 @@ function PracticeTestPage() {
                     </button>
                 ) : (
                     <button
-                        onClick={() => setShowPopup(true)}
+                        onClick={handleButtonClick}
                         className="bg-black text-white font-bold p-2 px-6 mr-3 rounded-md"
                     >
                         Submit Practice Test!
@@ -204,17 +307,102 @@ function PracticeTestPage() {
 
             {/* ✅ Submission Confirmation Popup */}
             {showPopup && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg shadow-lg p-6">
-                        <h3 className="text-lg font-semibold">Confirm Submission</h3>
-                        <p className="mt-2">Are you sure you want to submit the test?</p>
-                        <div className="mt-4 flex justify-end">
-                            <button onClick={() => setShowPopup(false)} className="mr-2">Cancel</button>
-                            <button onClick={() => toast.success("Practice Test Submitted!")} className="bg-blue-600 text-white px-4 py-2 rounded-lg">
-                                Submit
-                            </button>
+                <div
+                    id="YOUR_ID"
+                    className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                >
+                    <div
+                        className="relative bg-white rounded-lg shadow-lg overflow-hidden transform transition-all w-full max-w-md sm:mx-auto"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="modal-headline"
+                    >
+                        {/* Close Button */}
+                        <button
+                            onClick={handleCancel}
+                            type="button"
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                            aria-label="Close"
+                        >
+                            <svg
+                                className="w-5 h-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+
+                        {/* Modal Content */}
+                        <div className="px-6 py-8">
+                            {/* Icon and Header */}
+                            <div className="flex items-center space-x-4">
+                                <div className="flex-shrink-0">
+                                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                        <svg
+                                            className="h-6 w-6 text-green-600"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M5 13l4 4L19 7"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <h3
+                                    className="text-lg font-semibold text-gray-900"
+                                    id="modal-headline"
+                                >
+                                    Confirm Submission
+                                </h3>
+                            </div>
+
+                            {/* Message */}
+                            <div className="mt-4 text-gray-700">
+                                Are you sure you want to submit the result? Please confirm
+                                your action below.
+                            </div>
+
+                            {/* Buttons */}
+                            <div className="mt-6 flex justify-end space-x-3">
+                                <button
+                                    onClick={handleCancel}
+                                    type="button"
+                                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirm}
+                                    type="button"
+                                    className="px-4 py-2 text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    Confirm
+                                </button>
+                            </div>
                         </div>
                     </div>
+                </div>
+            )}
+            {isLoading && (
+                <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-50 z-50">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+                    <span className="ml-4 text-white">
+                        Sending Result on Parent email address...
+                    </span>
                 </div>
             )}
 
