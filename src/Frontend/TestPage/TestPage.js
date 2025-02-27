@@ -78,11 +78,11 @@ function TestPage() {
     };
 
     const handleConfirm = () => {
-        setShowPopup(false); 
-        handleSubmit(); 
+        setShowPopup(false);
+        handleSubmit();
     };
     const handleButtonClick = () => {
-        setShowPopup(true); 
+        setShowPopup(true);
     };
 
     const formatExtractText = (text) => {
@@ -151,6 +151,13 @@ function TestPage() {
 
     // Handle Writing Answer
     const handleWritingAnswer = (event) => {
+        const inputText = event.target.value;
+        const wordCount = inputText.trim().split(/\s+/).length;
+    
+        if (wordCount > 300) {
+            toast.error("Your response is too long. Please limit to 300 words.");
+            return;
+        }    
         setAnswers((prev) => ({
             ...prev,
             writing: event.target.value
@@ -160,34 +167,57 @@ function TestPage() {
     // Correct API request with structured responses
     const handleSubmit = async () => {
         setIsLoading(true);
+
         if (!questions.length) {
             toast.error("No questions to submit.");
             return;
         }
 
-        const questionStatus = questions.map((_, index) => ({
+        // ✅ Ensure answers is an array OR handle writing responses separately
+        if (!answers || typeof answers !== "object") {
+            console.error("Error: Invalid answers format", answers);
+            toast.error("Unexpected error occurred. Please refresh and try again.");
+            setIsLoading(false);
+            return;
+        }
+
+        const questionStatus = questions.map((question, index) => ({
             questionNumber: index + 1,
             status: answers[index] ? "attempted" : "unattempted",
         }));
 
-        const score = answers.reduce((acc, ans, index) => {
-            const submittedAnswer = ans?.selectedAnswer?.trim().charAt(0); // Remove spaces & get first letter
-            const correctAnswer = questions[index]?.correct_answer?.trim().charAt(0);
+        let score = 0; // Default score (used only for MCQs)
 
-            return submittedAnswer === correctAnswer ? acc + 1 : acc;
-        }, 0);
+        const isWritingTest = questions[0]?.subject === "Writing";
 
+        // Validate writing response
+        if (isWritingTest) {
+            if (!answers.writing || answers.writing.trim() === "") {
+                toast.error("You must provide a written response.");
+                setIsLoading(false);
+                return;
+            }
+        }else {
+            // ✅ For MCQ tests, calculate the score
+            score = answers.reduce((acc, ans, index) => {
+                const submittedAnswer = ans?.selectedAnswer?.trim().charAt(0);
+                const correctAnswer = questions[index]?.correct_answer?.trim().charAt(0);
+                return submittedAnswer === correctAnswer ? acc + 1 : acc;
+            }, 0);
+        }
 
         const payload = {
             childId,
             category,
             testType,
-            score,
+            score: isWritingTest ? null : score, // Will be `null` for writing tests
             questionStatus,
-            responses: answers.filter(ans => ans !== null) // Ensure responses are sent
+            responses: questions[0]?.subject === "Writing"
+                ? { writing: answers.writing } // Store writing response as an object
+                : answers.filter(ans => ans !== null) // Keep MCQ responses as an array
         };
 
-        console.log("Submitting payload:", payload); // ✅ Log to check before API call
+        console.log("Submitting payload:", payload);
 
         try {
             await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/test/subject-test/submit`, payload);
@@ -302,13 +332,19 @@ function TestPage() {
                 <div className="w-full md:w-1/2 bg-white pb-32 md:p-6">
                     <div className="space-y-6 mt-10">
                         {currentQuestion.subject === "Writing" ? (
-                            // ✅ Show writing input instead of MCQs
+                            <div>
                             <textarea
                                 className="w-full p-2 border rounded"
-                                rows="5"
+                                rows="10"
                                 placeholder="Write your answer here..."
                                 onChange={handleWritingAnswer}
+                                value={answers.writing || ""}
                             ></textarea>
+                            <p className="text-gray-600 mt-2">
+                                Word Count: {answers.writing ? answers.writing.trim().split(/\s+/).length : 0} / 300
+                            </p>
+                        </div>
+                            
                         ) : (currentQuestion.mcq_options
                             ?.split(/,\s*|\r\n|\n/)
                             .map((option, index) => (
