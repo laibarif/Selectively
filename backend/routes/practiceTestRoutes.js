@@ -2,6 +2,7 @@ const express = require("express");
 const db = require("../config/db");
 const router = express.Router();
 const OpenAI = require("openai");
+const path = require("path");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
@@ -85,8 +86,8 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
+    user: process.env.EMAIL_USER, // Your Hostinger email
+    pass: process.env.EMAIL_PASSWORD // Your Hostinger password
   }
 });
 
@@ -176,6 +177,7 @@ router.post("/submitPracticeTest", async (req, res) => {
     }
 
     const { child_name, parent_email } = childData[0];
+    console.log("✅ Extracted Data:", { child_name, parent_email });
     const sectionScores = { reading: 0, maths: 0, thinkingskills: 0, writing: 0 };
     let detailedFeedback = null;
 
@@ -278,7 +280,7 @@ router.post("/submitPracticeTest", async (req, res) => {
       Writing: sectionScores.writing,
       FinalScore: finalScore
     });
-
+    const totalScore = 100;
     // Store final score in `practice_test_table`
     await db.query(`
       INSERT INTO practice_test_table 
@@ -296,6 +298,7 @@ router.post("/submitPracticeTest", async (req, res) => {
       sectionScores.reading, sectionScores.maths, sectionScores.thinkingskills, sectionScores.writing,
       finalScore, "Final feedback"
     ]);
+    await sendReportEmail(parent_email, child_name, sectionScores,finalScore, totalScore);
 
     res.status(200).json({ message: `Test submitted successfully for Test ${testId}.`, finalScore });
   } catch (error) {
@@ -303,5 +306,88 @@ router.post("/submitPracticeTest", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+async function sendReportEmail(parentEmail, childName, sectionScores, finalScore, totalScore) {
+ 
+  console.log("✅ Extracted Data:", { childName, parentEmail });
 
+  let subjectScoreRows = Object.entries(sectionScores)
+    .map(([subject, score]) => `<tr>
+      <td style="padding: 10px; border: 1px solid #ddd;">${subject}</td>
+      <td style="padding: 10px; border: 1px solid #ddd;">${score}</td>
+    </tr>`)
+    .join("");
+
+  const emailContent = `
+    <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Logo Section -->
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="cid:logo@unique.id" alt="School Logo" style="width: 150px;">
+          </div>
+
+          <!-- Heading Section -->
+          <h2 style="text-align: center; color: #333;">Your Assessment Result</h2>
+          
+          <p style="color: #555; font-size: 16px;">
+            Dear Parent of ${childName},<br><br>
+            We are pleased to share the results of your child's recent Practice Exam Test</b>. Please find the details below:
+          </p>
+          <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
+            <tr>
+              <th style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Subject</th>
+              <th style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Score</th>
+            </tr>
+            ${subjectScoreRows}
+            <tr>
+              <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Gained Score</td>
+              <td style="padding: 10px; border: 1px solid #ddd;">${finalScore}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Total Score</td>
+              <td style="padding: 10px; border: 1px solid #ddd;">${totalScore}</td>
+            </tr>
+          </table><p style="color: #555; font-size: 16px;">
+            If you have any questions about ${childName}'s performance or need further guidance, please don't hesitate to contact us.
+          </p>
+
+          <div style="text-align: center; margin-top: 20px;">
+            <a href="https://selectiveexam.com.au/signup" style="text-decoration: none;">
+              <div style="background-color: #fbbf24; padding: 10px 20px; border-radius: 5px; display: inline-block; color: #fff; font-weight: bold;">Sign up</div>
+            </a>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <p style="font-size: 12px; color: #aaa;">Thank you for using our service!</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+  const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: `${parentEmail} `,
+        subject: `Exam Report for ${childName}`,
+        html: emailContent,
+        attachments: [
+          {
+            filename: "logo.png",
+            path: path.join(__dirname, "../assests/Logo_White-Complete.jpg"),
+            cid: "logo@unique.id"
+          }
+        ]
+      };
+  
+  await transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending email:", error);
+      return res.status(500).json({ message: "Test submitted, but email failed to send." });
+    }
+    console.log("Email sent:", info.response);
+    res.status(200).json({ message: "Test submitted successfully, and report sent via email!" });
+  });
+
+  console.log("Email sent successfully to", parentEmail);
+}
 module.exports = router;
