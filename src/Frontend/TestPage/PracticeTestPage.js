@@ -39,7 +39,7 @@ function PracticeTestPage() {
     useEffect(() => {
         const fetchPracticeTest = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/test/practice-test`);
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/practice-test/getTestQuestions`);
 
                 if (!response.data) {
                     throw new Error("Invalid API response structure.");
@@ -80,70 +80,59 @@ function PracticeTestPage() {
             return;
         }
 
-        if (!answers || typeof answers !== "object") {
-            console.error("Invalid answers format:", answers);
-            toast.error("Unexpected error occurred. Please refresh and try again.");
-            setIsLoading(false);
-            return;
-        }
-
-        let scoreReading = 0, scoreMaths = 0, scoreThinkingSkills = 0, finalWritingScore = 0;
+        console.log("Submitting Answers:", answers);
 
         try {
-            // ✅ Fetch correct answers from backend
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/practice-test/get-correct-answers`, {
-                questionIds: questions.map(q => q.id),
-            });
+            const categories = ["reading", "maths", "thinkingskills", "writing"];
+            const sections = [];
 
-            const correctAnswersMap = response.data.correctAnswers; // { questionId: correct_answer }
+            for (const category of categories) {
+                const categoryQuestions = questions.filter(q => q.category === category);
 
-            // ✅ Evaluate MCQ answers
-            questions.forEach((question, index) => {
-                const submittedAnswer = answers[index]?.selectedAnswer?.trim().charAt(0);
-                const correctAnswer = correctAnswersMap[question.id]?.trim().charAt(0);
+                if (categoryQuestions.length === 0) continue; // Skip if no questions exist for this category
 
-                if (submittedAnswer === correctAnswer) {
-                    if (question.subject === "Reading") scoreReading++;
-                    if (question.subject === "Maths") scoreMaths++;
-                    if (question.subject === "Thinking Skills") scoreThinkingSkills++;
-                }
-            });
+                let responses = [];
+                if (category === "writing") {
+                    const writingResponse = answers.writing?.trim() || "";
+                    if (!writingResponse.trim()) {
+                        toast.error("Writing response is empty.");
+                        continue;
+                    }
 
-            // ✅ Evaluate Writing Test
-            if (questions.some(q => q.subject === "Writing")) {
-                const writingResponse = answers.writing?.trim() || "";
-
-                if (writingResponse.length < 50) {
-                    toast.error("Writing response is too short. Minimum 50 words required.");
-                    setIsLoading(false);
-                    return;
+                    responses.push({
+                        questionId: categoryQuestions[0]?.id || 1, // Default to 1 if no ID
+                        writingResponse: writingResponse
+                    });
+                } else {
+                    responses = categoryQuestions.map(q => ({
+                        questionId: q.id,
+                        selectedAnswer: answers[category]?.[q.id] || ""
+                    }));
                 }
 
-                const writingFeedback = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/practice-test/evaluate-writing`, {
-                    question: questions.find(q => q.subject === "Writing")?.question_text,
-                    response: writingResponse
+                sections.push({
+                    category,
+                    questionStatus: categoryQuestions.map(q => ({
+                        questionId: q.id,
+                        status: answers[category]?.[q.id] ? "attempted" : "unattempted"
+                    })),
+                    responses
                 });
-
-                finalWritingScore = writingFeedback.data.score || 0;
             }
 
-            // ✅ Calculate Final Weighted Score (Each Section 25%)
-            const totalWeighting = 25;
-            const finalScore = ((scoreReading / 10) * totalWeighting) +
-                               ((scoreMaths / 10) * totalWeighting) +
-                               ((scoreThinkingSkills / 10) * totalWeighting) +
-                               ((finalWritingScore / 10) * totalWeighting);
-
-            // ✅ Submit results to backend
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/practice-test/submit`, {
+            const payload = {
                 childId,
-                finalScore,
-                sectionScores: { Reading: scoreReading, Maths: scoreMaths, ThinkingSkills: scoreThinkingSkills, Writing: finalWritingScore },
-                responses: answers
+                testType: "Practice",
+                sections
+            };
+
+            console.log("Submitting Payload:", payload);
+
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/practice-test/submitPracticeTest`, payload, {
+                headers: { "Content-Type": "application/json" }
             });
 
             navigate("/student-dashboard");
-
         } catch (error) {
             toast.error("Error submitting test.");
             console.error("Submission Error:", error);
@@ -170,14 +159,29 @@ function PracticeTestPage() {
     const currentQuestion = questions[currentIndex];
 
     // ✅ Handle Answer Selection
-    const handleSelectAnswer = (selectedAnswer) => {
-        setAnswers((prev) => ({
-            ...prev,
-            [currentQuestion.category]: {
-                ...(prev[currentQuestion.category] || {}),
-                [currentIndex]: selectedAnswer
+    // const handleSelectAnswer = (selectedAnswer) => {
+    //     setAnswers((prev) => ({
+    //         ...prev,
+    //         [currentQuestion.category]: {
+    //             ...(prev[currentQuestion.category] || {}),
+    //             [currentIndex]: selectedAnswer
+    //         }
+    //     }));
+    // };
+    const handleSelectAnswer = (questionId, selectedAnswer, category) => {
+        setAnswers(prev => {
+            const updatedAnswers = { ...prev };
+
+            if (!updatedAnswers[category]) {
+                updatedAnswers[category] = {};  // Ensure the category exists
             }
-        }));
+
+            updatedAnswers[category][questionId] = selectedAnswer; // Store answer
+
+            console.log("Updated Answers:", updatedAnswers); // Debugging Log
+
+            return updatedAnswers;
+        });
     };
 
     // Handle Writing Answer
@@ -194,6 +198,7 @@ function PracticeTestPage() {
             ...prev,
             writing: inputText
         }));
+
     };
 
     const handleMouseDown = (e) => {
@@ -264,11 +269,11 @@ function PracticeTestPage() {
                                 <label key={index} className="flex items-center space-x-2 py-4 px-2 bg-gray-200 border border-gray-300 rounded-lg">
                                     <input
                                         type="radio"
-                                        name={`question-${currentIndex}`}
+                                        name={`question-${currentQuestion.id}`}
                                         value={option}
                                         className="peer h-8 w-8"
-                                        onChange={() => handleSelectAnswer(option)}
-                                        checked={answers[currentQuestion.category]?.[currentIndex] === option}
+                                        onChange={() => handleSelectAnswer(currentQuestion.id, option, currentQuestion.category)}
+                                        checked={answers[currentQuestion.category]?.[currentQuestion.id] === option}
                                     />
                                     <span className="text-black text-lg font-semibold">{option}</span>
                                 </label>
