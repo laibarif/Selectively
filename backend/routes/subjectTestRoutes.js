@@ -7,7 +7,13 @@ const OpenAI = require("openai");
 require("dotenv").config();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
+const generateTestId = async (childId) => {
+  const [lastTest] = await db.query(
+    "SELECT MAX(test_id) AS lastTestId FROM practice_test_table WHERE childId = ?",
+    [childId]
+  );
+  return lastTest[0]?.lastTestId ? lastTest[0].lastTestId + 1 : 1;
+};
 router.get("/:category", async (req, res) => {
   try {
     const { category } = req.params;
@@ -143,7 +149,7 @@ const transporter = nodemailer.createTransport({
 router.post("/submit", async (req, res) => {
   try {
     const { childId, category, testType, questionStatus, responses } = req.body;
-
+    const testId = await generateTestId(childId);
     if (!childId || !category || !testType || !questionStatus || !responses) {
       console.log("❌ Missing required fields:", { childId, category, testType, questionStatus, responses });
       return res.status(400).json({ message: "Invalid request data" });
@@ -248,9 +254,9 @@ router.post("/submit", async (req, res) => {
     const feedbackToStore = category === "writing" ? detailedFeedback : null; // ✅ Store feedback only for writing
 
     await db.query(
-      `INSERT INTO subject_test_results (child_id, category, test_type, score, question_status, responses, feedback)
-   VALUES (?, ?, ?, ?, ?, ?, ?);`,
-      [childId, category, testType, finalScore, JSON.stringify(questionStatus), JSON.stringify(responses), feedbackToStore]
+      `INSERT INTO subject_test_results (child_id, category, test_type, score, question_status, responses, feedback,test_id)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+      [childId, category, testType, finalScore, JSON.stringify(questionStatus), JSON.stringify(responses), feedbackToStore,testId]
     );
 
     // ✅ Generate Email Report
@@ -280,7 +286,7 @@ router.post("/submit", async (req, res) => {
               <td style="padding: 10px; border: 1px solid #ddd;">${new Date().toLocaleDateString()}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Category</td>
+              <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Subject</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${category.toUpperCase()}</td>
             </tr>
             <tr>

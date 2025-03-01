@@ -35,7 +35,7 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/freeassesment', freeAssesmentRoutes);
 app.use('/api/addQuestions', addQuestionsRoute);
 app.use("/api/test/subject-test", subjectTestRoutes);
-app.use("/api/test", practiceTestRoutes);
+app.use("/api/practice-test", practiceTestRoutes);
 // Global error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
