@@ -194,8 +194,15 @@ router.post("/submitPracticeTest", async (req, res) => {
         if (!writingResponse) {
           return res.status(400).json({ message: "Writing response is empty." });
         }
-
-        const question = "Given writing prompt"; // Fetch actual question if needed
+        const [writingQuestion] = await db.query(`
+          SELECT question FROM original_writingquestion 
+          WHERE id = ? LIMIT 1;
+        `, [responses[0]?.questionId]);
+      
+        if (!writingQuestion.length) {
+          return res.status(400).json({ message: "Writing question not found." });
+        }
+        const question = writingQuestion[0].question; // Fetch actual question if needed
         const { score, feedback } = await gradeWritingResponse(question, writingResponse);
         finalScore = score;
         detailedFeedback = feedback;
@@ -226,15 +233,15 @@ router.post("/submitPracticeTest", async (req, res) => {
         // Calculate the number of correct answers
         finalScore = responses.reduce((score, ans) => {
           if (!ans.selectedAnswer) return score; // Skip unanswered questions
-        
+
           const userAnswer = ans.selectedAnswer.trim().charAt(0).toLowerCase(); // Take first character only
           const correctAnswer = (correctAnswersMap[ans.questionId] || "").trim().charAt(0).toLowerCase();
-        
+
           console.log(`QID: ${ans.questionId}, User: "${userAnswer}", Correct: "${correctAnswer}"`);
-        
+
           return userAnswer === correctAnswer ? score + 1 : score;
         }, 0);
-        
+
       }
 
       // Update sectionScores with the number of correct answers
@@ -281,7 +288,20 @@ router.post("/submitPracticeTest", async (req, res) => {
       FinalScore: finalScore
     });
     const totalScore = 100;
-    // Store final score in `practice_test_table`
+    // Fetch feedback from subject_test_results table
+    const [feedbackResults] = await db.query(`
+  SELECT category, feedback 
+  FROM subject_test_results 
+  WHERE child_id = ? AND test_id = ?;
+`, [childId, testId]);
+
+    // Combine feedback into a single string
+    let finalFeedback = feedbackResults
+      .map(result => `${result.category}: ${result.feedback}`)
+      .join("\n\n");
+
+    console.log("Final Feedback Retrieved:", finalFeedback);
+
     await db.query(`
       INSERT INTO practice_test_table 
       (childId, test_id, reading_score, maths_score, thinking_skills_score, writing_score, final_score, feedback) 
@@ -296,9 +316,9 @@ router.post("/submitPracticeTest", async (req, res) => {
     `, [
       childId, testId,
       sectionScores.reading, sectionScores.maths, sectionScores.thinkingskills, sectionScores.writing,
-      finalScore, "Final feedback"
+      finalScore, finalFeedback
     ]);
-    await sendReportEmail(parent_email, child_name, sectionScores,finalScore, totalScore);
+    await sendReportEmail(parent_email, child_name, sectionScores, finalScore, totalScore);
 
     res.status(200).json({ message: `Test submitted successfully for Test ${testId}.`, finalScore });
   } catch (error) {
@@ -307,12 +327,12 @@ router.post("/submitPracticeTest", async (req, res) => {
   }
 });
 async function sendReportEmail(parentEmail, childName, sectionScores, finalScore, totalScore) {
- 
+
   console.log("✅ Extracted Data:", { childName, parentEmail });
 
   let subjectScoreRows = Object.entries(sectionScores)
     .map(([subject, score]) => `<tr>
-      <td style="padding: 10px; border: 1px solid #ddd;">${subject}</td>
+      <td style="padding: 10px; border: 1px solid #ddd; text-transform: uppercase;">${subject.toUpperCase()}</td>
       <td style="padding: 10px; border: 1px solid #ddd;">${score}</td>
     </tr>`)
     .join("");
@@ -366,19 +386,19 @@ async function sendReportEmail(parentEmail, childName, sectionScores, finalScore
     </html>
   `;
   const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: `${parentEmail} `,
-        subject: `Exam Report for ${childName}`,
-        html: emailContent,
-        attachments: [
-          {
-            filename: "logo.png",
-            path: path.join(__dirname, "../assests/Logo_White-Complete.jpg"),
-            cid: "logo@unique.id"
-          }
-        ]
-      };
-  
+    from: process.env.EMAIL_USER,
+    to: `${parentEmail} `,
+    subject: `Exam Report for ${childName}`,
+    html: emailContent,
+    attachments: [
+      {
+        filename: "logo.png",
+        path: path.join(__dirname, "../assests/Logo_White-Complete.jpg"),
+        cid: "logo@unique.id"
+      }
+    ]
+  };
+
   await transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.error("Error sending email:", error);

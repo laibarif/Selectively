@@ -286,7 +286,7 @@ router.post("/submit", async (req, res) => {
               <td style="padding: 10px; border: 1px solid #ddd;">${new Date().toLocaleDateString()}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Category</td>
+              <td style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Subject</td>
               <td style="padding: 10px; border: 1px solid #ddd;">${category.toUpperCase()}</td>
             </tr>
             <tr>

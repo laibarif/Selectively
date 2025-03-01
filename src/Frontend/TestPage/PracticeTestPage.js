@@ -256,13 +256,17 @@ function PracticeTestPage() {
                 <div className="w-full md:w-1/2 bg-white pb-32 md:p-6">
                     <div className="space-y-6 mt-10">
                         {currentQuestion.category === "writing" ? (
-                            // ✅ Show writing input instead of MCQs
-                            <textarea
-                                className="w-full p-2 border rounded"
-                                rows="5"
-                                placeholder="Write your answer here..."
-                                onChange={handleWritingAnswer}
-                            ></textarea>
+                            <div>
+                                <textarea
+                                    className="w-full p-2 border rounded"
+                                    rows="5"
+                                    placeholder="Write your answer here..."
+                                    onChange={handleWritingAnswer}
+                                ></textarea>
+                                <p className="text-gray-600 mt-2">
+                                    Word Count: {answers.writing ? answers.writing.trim().split(/\s+/).length : 0} / 300
+                                </p>
+                            </div>
                         ) : (
                             // ✅ Show MCQs
                             currentQuestion?.mcq_options?.split(/,\s*|\r\n|\n/).map((option, index) => (

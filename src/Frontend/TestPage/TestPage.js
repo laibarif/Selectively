@@ -153,11 +153,11 @@ function TestPage() {
     const handleWritingAnswer = (event) => {
         const inputText = event.target.value;
         const wordCount = inputText.trim().split(/\s+/).length;
-    
+
         if (wordCount > 300) {
             toast.error("Your response is too long. Please limit to 300 words.");
             return;
-        }    
+        }
         setAnswers((prev) => ({
             ...prev,
             writing: event.target.value
@@ -197,7 +197,7 @@ function TestPage() {
                 setIsLoading(false);
                 return;
             }
-        }else {
+        } else {
             // ✅ For MCQ tests, calculate the score
             score = answers.reduce((acc, ans, index) => {
                 const submittedAnswer = ans?.selectedAnswer?.trim().charAt(0);
@@ -333,18 +333,18 @@ function TestPage() {
                     <div className="space-y-6 mt-10">
                         {currentQuestion.subject === "Writing" ? (
                             <div>
-                            <textarea
-                                className="w-full p-2 border rounded"
-                                rows="10"
-                                placeholder="Write your answer here..."
-                                onChange={handleWritingAnswer}
-                                value={answers.writing || ""}
-                            ></textarea>
-                            <p className="text-gray-600 mt-2">
-                                Word Count: {answers.writing ? answers.writing.trim().split(/\s+/).length : 0} / 300
-                            </p>
-                        </div>
-                            
+                                <textarea
+                                    className="w-full p-2 border rounded"
+                                    rows="10"
+                                    placeholder="Write your answer here..."
+                                    onChange={handleWritingAnswer}
+                                    value={answers.writing || ""}
+                                ></textarea>
+                                <p className="text-gray-600 mt-2">
+                                    Word Count: {answers.writing ? answers.writing.trim().split(/\s+/).length : 0} / 300
+                                </p>
+                            </div>
+
                         ) : (currentQuestion.mcq_options
                             ?.split(/,\s*|\r\n|\n/)
                             .map((option, index) => (
