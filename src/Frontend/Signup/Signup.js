@@ -106,14 +106,6 @@ const Signup = () => {
     const { firstName, lastName, grade, school, username, password } =
       formData.currentChild;
 
-    // Ensure all required fields are filled, including username and password
-    if (!firstName || !lastName || !grade || !username || !password) {
-      alert(
-        "Please fill in all required child fields (First Name, Last Name, Grade, Username, and Password)."
-      );
-      return;
-    }
-
     // Add new child to the formData state
     setFormData((prevData) => {
       const newChild = {
@@ -203,12 +195,10 @@ const Signup = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert(
-          "Signup successful! Please check your email for the 2FA OTP code."
-        );
-        setIs2FASent(true);
-        setUserEmailForOTP(formData.parent.email);
-        console.log("2FA Sent", setIs2FASent);
+        navigate("/login");
+        // setIs2FASent(true);
+        // setUserEmailForOTP(formData.parent.email);
+        // console.log("2FA Sent", setIs2FASent);
         setFormData({
           parent: { firstName: "", lastName: "", phone: "", email: "" },
           children: [],
@@ -225,76 +215,76 @@ const Signup = () => {
   };
 
   // Send the 2FA code (Resend OTP)
-  const handleSend2FA = async () => {
-    console.log("Sending OTP request...");
-    const { email } = formData.parent;
-    console.log("Parent email:", email);
-    if (!email) {
-      alert("Please enter your email before requesting 2FA code.");
-      return;
-    }
+  // const handleSend2FA = async () => {
+  //   console.log("Sending OTP request...");
+  //   const { email } = formData.parent;
+  //   console.log("Parent email:", email);
+  //   if (!email) {
+  //     alert("Please enter your email before requesting 2FA code.");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/auth/send-otp`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
-        }
-      );
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.REACT_APP_BACKEND_URL}/api/auth/send-otp`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ email })
+  //       }
+  //     );
 
-      const data = await response.json();
-      if (response.ok) {
-        console.log("OTP sent successfully");
-        alert("2FA OTP sent to your email.");
-        setIs2FASent(true);
-        // Ensure this is updating the state correctly
-        console.log("email for OTP:", emailforverifyotp); // Log here to confirm
-        console.log("Parent email:", formData.parent.email);
-      } else {
-        alert(data.message || "Error sending 2FA OTP.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred while sending 2FA OTP.");
-    }
-  };
+  //     const data = await response.json();
+  //     if (response.ok) {
+  //       console.log("OTP sent successfully");
+  //       alert("2FA OTP sent to your email.");
+  //       setIs2FASent(true);
+  //       // Ensure this is updating the state correctly
+  //       console.log("email for OTP:", emailforverifyotp); // Log here to confirm
+  //       console.log("Parent email:", formData.parent.email);
+  //     } else {
+  //       alert(data.message || "Error sending 2FA OTP.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     alert("An error occurred while sending 2FA OTP.");
+  //   }
+  // };
 
-  const handleVerifyOTP = async () => {
-    console.log("Verifying OTP");
-    console.log("emailforverifyotp:", emailforverifyotp);
-    console.log("OTP:", otp);
-    if (!emailforverifyotp || !otp) {
-      alert("email and OTP are required.");
-      return;
-    }
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/auth/verify-otp`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ emailforverifyotp: emailforverifyotp, otp })
-        }
-      );
+  // const handleVerifyOTP = async () => {
+  //   console.log("Verifying OTP");
+  //   console.log("emailforverifyotp:", emailforverifyotp);
+  //   console.log("OTP:", otp);
+  //   if (!emailforverifyotp || !otp) {
+  //     alert("email and OTP are required.");
+  //     return;
+  //   }
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.REACT_APP_BACKEND_URL}/api/auth/verify-otp`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ emailforverifyotp: emailforverifyotp, otp })
+  //       }
+  //     );
 
-      const data = await response.json();
-      console.log("OTP verification response:", data);
+  //     const data = await response.json();
+  //     console.log("OTP verification response:", data);
 
-      if (response.ok) {
-        alert("OTP verified successfully! Your account is now active.");
-        setUserEmailForOTP(""); // Clear after successful verification
-        setOtp(""); // Reset OTP field
-        navigate("/login");
-      } else {
-        alert(data.message || "OTP verification failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error verifying OTP:", error);
-      alert("An error occurred while verifying OTP. Please try again.");
-    }
-  };
+  //     if (response.ok) {
+  //       alert("OTP verified successfully! Your account is now active.");
+  //       setUserEmailForOTP(""); // Clear after successful verification
+  //       setOtp(""); // Reset OTP field
+  //       navigate("/login");
+  //     } else {
+  //       alert(data.message || "OTP verification failed. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error verifying OTP:", error);
+  //     alert("An error occurred while verifying OTP. Please try again.");
+  //   }
+  // };
   const [shown, setShown] = useState(false);
   // create a derived state for the input type
   const type = shown ? "text" : "password";
@@ -481,8 +471,7 @@ const Signup = () => {
           </button>
         </form>
 
-        {/* OTP Verification Section */}
-        {is2FASent && (
+        {/* {is2FASent && (
           <div className="otp-verification">
             <h3>Verify Your Email</h3>
             <p>
@@ -513,7 +502,7 @@ const Signup = () => {
               Resend OTP
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

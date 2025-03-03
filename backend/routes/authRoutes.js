@@ -97,53 +97,54 @@ router.post('/signup', async (req, res) => {
       console.log('Child added:', child);
     }
 
-    // Generate 2FA secret
-    const secret = speakeasy.generateSecret({ length: 20 });
+    // // Generate 2FA secret
+    // const secret = speakeasy.generateSecret({ length: 20 });
 
-    // Store 2FA secret in the database
-    await connection.query('UPDATE users SET two_fa_secret = ? WHERE id = ?', [secret.base32, parentId]);
+    // // Store 2FA secret in the database
+    // await connection.query('UPDATE users SET two_fa_secret = ? WHERE id = ?', [secret.base32, parentId]);
 
-    // Generate OTP
-    const otpCode = speakeasy.totp({
-      secret: secret.base32,
-      encoding: 'base32',
-      step: 600, // 10 minutes validity
-    });
+    // // Generate OTP
+    // const otpCode = speakeasy.totp({
+    //   secret: secret.base32,
+    //   encoding: 'base32',
+    //   step: 600, // 10 minutes validity
+    // });
 
-    // Store OTP and expiry in the database
-    await connection.query(
-      'UPDATE users SET two_fa_otp = ?, two_fa_otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?',
-      [otpCode, parentId]
-    );
+    // // Store OTP and expiry in the database
+    // await connection.query(
+    //   'UPDATE users SET two_fa_otp = ?, two_fa_otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?',
+    //   [otpCode, parentId]
+    // );
 
     // Commit transaction
     await connection.commit();
 
-    // Send OTP via email
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.hostinger.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD, // Your Hostinger email password
-      },
-    });
+    // // Send OTP via email
+    // const transporter = nodemailer.createTransport({
+    //   host: 'smtp.hostinger.com',
+    //   port: 465,
+    //   secure: true,
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASSWORD, // Your Hostinger email password
+    //   },
+    // });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: parent.email,
-      subject: 'Your 2FA OTP Code',
-      text: `Thank you for registering. Your One-Time Password (OTP) for 2FA is: ${otpCode}. It is valid for 10 minutes.`,
-    };
+    // const mailOptions = {
+    //   from: process.env.EMAIL_USER,
+    //   to: parent.email,
+    //   subject: 'Your 2FA OTP Code',
+    //   text: `Thank you for registering. Your One-Time Password (OTP) for 2FA is: ${otpCode}. It is valid for 10 minutes.`,
+    // };
 
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.error('Error sending 2FA email:', err);
-        return res.status(500).json({ message: 'Failed to send 2FA email.' });
-      }
-      res.status(200).json({ message: 'Registration successful, 2FA OTP sent to your email.' });
-    });
+    // transporter.sendMail(mailOptions, (err, info) => {
+    //   if (err) {
+    //     console.error('Error sending 2FA email:', err);
+    //     return res.status(500).json({ message: 'Failed to send 2FA email.' });
+    //   }
+    //   res.status(200).json({ message: 'Registration successful, 2FA OTP sent to your email.' });
+    // });
+    res.status(200).json({ message: 'Registration successful !!' });
   } catch (error) {
     // Rollback transaction in case of error
     if (connection) {
@@ -162,111 +163,110 @@ router.post('/signup', async (req, res) => {
 
 
 // Route to verify OTP
-router.post('/verify-otp', async (req, res) => {
-  const { emailforverifyotp, otp } = req.body;
-console.log(emailforverifyotp,otp)
-  if (!emailforverifyotp || !otp) {
-    return res.status(400).json({ message: 'Username and OTP are required.' });
-  }
+// router.post('/verify-otp', async (req, res) => {
+//   const { emailforverifyotp, otp } = req.body;
+// console.log(emailforverifyotp,otp)
+//   if (!emailforverifyotp || !otp) {
+//     return res.status(400).json({ message: 'Username and OTP are required.' });
+//   }
 
-  try {
-    // Fetch user by username
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [emailforverifyotp]);
-    if (users.length === 0) {
-      return res.status(400).json({ message: 'Invalid firstName or OTP.' });
-    }
+//   try {
+//     // Fetch user by username
+//     const [users] = await db.query('SELECT * FROM users WHERE email = ?', [emailforverifyotp]);
+//     if (users.length === 0) {
+//       return res.status(400).json({ message: 'Invalid firstName or OTP.' });
+//     }
 
-    const user = users[0];
+//     const user = users[0];
 
-    // Check if OTP matches and is not expired
-    if (
-      user.two_fa_otp === otp 
+//     // Check if OTP matches and is not expired
+//     if (
+//       user.two_fa_otp === otp 
       
-    ) {
-      console.log("ENter")
-      // OTP is valid
-      // Mark 2FA as verified and clear OTP fields
-      await db.query(
-        'UPDATE users SET two_fa_verified = 1, two_fa_otp = NULL, two_fa_otp_expiry = NULL WHERE id = ?',
-        [user.id]
-      );
-      console.log("Query",db.query)
-      res.status(200).json({ message: 'OTP verified successfully.' });
-    } else {
-      res.status(400).json({ message: 'Invalid or expired OTP.' });
-    }
-  } catch (error) {
-    console.error('Error verifying OTP:', error);
-    res.status(500).json({ message: 'Error verifying OTP. Please try again.' });
-  }
-});
+//     ) {
+//       console.log("ENter")
+//       // OTP is valid
+//       // Mark 2FA as verified and clear OTP fields
+//       await db.query(
+//         'UPDATE users SET two_fa_verified = 1, two_fa_otp = NULL, two_fa_otp_expiry = NULL WHERE id = ?',
+//         [user.id]
+//       );
+//       console.log("Query",db.query)
+//       res.status(200).json({ message: 'OTP verified successfully.' });
+//     } else {
+//       res.status(400).json({ message: 'Invalid or expired OTP.' });
+//     }
+//   } catch (error) {
+//     console.error('Error verifying OTP:', error);
+//     res.status(500).json({ message: 'Error verifying OTP. Please try again.' });
+//   }
+// });
 
-// Route to send OTP (resend feature)
-router.post('/send-otp', async (req, res) => {
-  const { email } = req.body;
-  console.log(email);
+// // Route to send OTP (resend feature)
+// router.post('/send-otp', async (req, res) => {
+//   const { email } = req.body;
+//   console.log(email);
 
-  if (!email) {
-    return res.status(400).json({ message: 'Email is required.' });
-  }
+//   if (!email) {
+//     return res.status(400).json({ message: 'Email is required.' });
+//   }
 
-  try {
-    // Fetch user by email
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (users.length === 0) {
-      return res.status(400).json({ message: 'No user found with this email.' });
-    }
+//   try {
+//     // Fetch user by email
+//     const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+//     if (users.length === 0) {
+//       return res.status(400).json({ message: 'No user found with this email.' });
+//     }
 
-    const user = users[0];
+//     const user = users[0];
 
-    // Generate new OTP
-    const otpCode = speakeasy.totp({
-      secret: user.two_fa_secret,
-      encoding: 'base32',
-      step: 600, // 10 minutes validity
-    });
-    try{
-    // Update OTP and expiry
-    await db.query(
-      'UPDATE users SET two_fa_otp = ?, two_fa_otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?',
-      [otpCode, user.id]
-    );
-    console.log("Verified");
-  }
-    catch{
-      console.log("Not Verified");
-    }
- const transporter = nodemailer.createTransport({
-       host: "smtp.hostinger.com",
-       port: 465,
-       secure: true,
-       auth: {
-         user: process.env.EMAIL_USER,
-         pass: process.env.EMAIL_PASSWORD // Your Hostinger email password
-       }
-     });
+//     // Generate new OTP
+//     const otpCode = speakeasy.totp({
+//       secret: user.two_fa_secret,
+//       encoding: 'base32',
+//       step: 600, // 10 minutes validity
+//     });
+//     try{
+//     // Update OTP and expiry
+//     await db.query(
+//       'UPDATE users SET two_fa_otp = ?, two_fa_otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?',
+//       [otpCode, user.id]
+//     );
+//     console.log("Verified");
+//   }
+//     catch{
+//       console.log("Not Verified");
+//     }
+//  const transporter = nodemailer.createTransport({
+//        host: "smtp.hostinger.com",
+//        port: 465,
+//        secure: true,
+//        auth: {
+//          user: process.env.EMAIL_USER,
+//          pass: process.env.EMAIL_PASSWORD // Your Hostinger email password
+//        }
+//      });
 
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: 'Your 2FA OTP Code',
-      text: `Your new One-Time Password (OTP) for 2FA is: ${otpCode}. It is valid for 10 minutes.`,
-    };
+//     const mailOptions = {
+//       from: process.env.EMAIL_USER,
+//       to: user.email,
+//       subject: 'Your 2FA OTP Code',
+//       text: `Your new One-Time Password (OTP) for 2FA is: ${otpCode}. It is valid for 10 minutes.`,
+//     };
 
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.error('Error sending 2FA email:', err);
-        return res.status(500).json({ message: 'Failed to send 2FA email.' });
-      }
-      res.status(200).json({ message: '2FA OTP sent to your email.' });
-    });
-  } catch (error) {
-    console.error('Error sending OTP:', error);
-    res.status(500).json({ message: 'Error sending OTP. Please try again.' });
-  }
-});
-
+//     transporter.sendMail(mailOptions, (err, info) => {
+//       if (err) {
+//         console.error('Error sending 2FA email:', err);
+//         return res.status(500).json({ message: 'Failed to send 2FA email.' });
+//       }
+//       res.status(200).json({ message: '2FA OTP sent to your email.' });
+//     });
+//   } catch (error) {
+//     console.error('Error sending OTP:', error);
+//     res.status(500).json({ message: 'Error sending OTP. Please try again.' });
+//   }
+// });
 
 router.post('/login', async (req, res) => {
   const { email_or_username, password } = req.body;
